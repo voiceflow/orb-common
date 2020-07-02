@@ -86,17 +86,7 @@ commands:
           paths:
             - ./node_modules
 
-#--------------------------------------------------------------------------------------------------------------------
-
-jobs: 
-  release:
-    executor: default-executor
-    steps:
-      - checkout
-      - run: npx semantic-release@15
-
   build_push_image: 
-    executor: build-executor
     parameters: 
       image_repo: 
         description: The container image repository
@@ -147,7 +137,6 @@ jobs:
             docker push $IMAGE_REPO:latest-$CIRCLE_BRANCH
 
   deploy_image: 
-    executor: build-executor
     description: Deploy an image into a K8s cluster
     parameters: 
       image_repo: 
@@ -175,7 +164,6 @@ jobs:
             fi
 
   build_deploy_dev_env:
-    executor: build-executor
     description: Deploy an image into a K8s cluster
     parameters: 
       image_repo: 
@@ -231,3 +219,12 @@ jobs:
             ENV_NAME="${CIRCLE_BRANCH%%_*}"
             aws eks --region us-east-1 update-kubeconfig --name development
             NON_INTERACTIVE=true ./envcli edit component << parameters.component >> << parameters.component >> -n $ENV_NAME -i $IMAGE_NAME
+
+#--------------------------------------------------------------------------------------------------------------------
+
+jobs: 
+  release:
+    executor: default-executor
+    steps:
+      - checkout
+      - run: npx semantic-release@15
