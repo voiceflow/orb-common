@@ -1,0 +1,12 @@
+version: 2.1
+orbs:
+  orb-tools: circleci/orb-tools@2.0.0
+
+workflows:
+  publish-orb:
+    jobs:
+      - orb-tools/increment:
+          orb-path: orb.yml
+          orb-ref: voiceflow/common@dev:${CIRCLE_BRANCH}
+          segment: patch
+          validate: true
