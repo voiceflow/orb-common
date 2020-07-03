@@ -56,6 +56,12 @@ commands:
           name: Wait for Dynamo Docker Image
           command: dockerize -wait tcp://localhost:8000 -timeout 1m
 
+  setup_mongodb:
+    steps:
+      - run:
+          name: Wait for MongoDB Docker Image
+          command: dockerize -wait tcp://localhost:27017 -timeout 1m
+
   lint_source:
     steps:
       - run:
