@@ -85,7 +85,7 @@ commands:
           name: yarn install packages
           command: |
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            yarn install --frozen-lockfile
+            yarn install --frozen-lockfile << parameters.install_args >>
       - save_cache: # special step to save the dependency cache
           key: node-module-cache-{{ checksum "yarn.lock" }}
           paths:
