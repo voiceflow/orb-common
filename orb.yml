@@ -72,6 +72,11 @@ commands:
             yarn lint:dockerfiles
 
   install_node_modules:
+    parameters: 
+      install_args: 
+        description: Additional yarn install command options
+        type: string
+        default: ""
     steps:
       - restore_cache:
           keys:
