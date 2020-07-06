@@ -1,9 +1,12 @@
 version: 2.1
 description: Voiceflow's common CI/CD orb
 executors:
+  # Used to run tests
   code-test-executor:
     working_directory: ~/voiceflow # directory where steps will run
-    resource_class: medium+
+    resource_class: large
+    environment:
+      NODE_OPTIONS: --max-old-space-size=4096
     docker: # run the steps with Docker
       - image: circleci/node:12 # Test steps container
       - image: postgres:10.6-alpine # PostgresDB service container
@@ -13,11 +16,21 @@ executors:
       - image: circleci/redis:4.0-alpine # Redis service container
       - image: circleci/mongo:4.2.7 # MongoDB service container
 
+  # Used to run container builds
   build-executor:
     working_directory: /tmp/vf-build
     docker:
       - image: voiceflow/ci-image:v3
     resource_class: medium
+
+  # Used to run node-intensive tests and builds
+  node-executor:
+    working_directory: ~/voiceflow 
+    docker: 
+      - image: circleci/node:12 
+    environment:
+      NODE_OPTIONS: --max-old-space-size=4096
+    resource_class: medium+
 
   default-executor: # used to run the release
     docker:
