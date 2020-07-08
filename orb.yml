@@ -250,6 +250,7 @@ commands:
           name: "Deploy dev environment image"
           command: |
             IMAGE_TAG="k8s-$CIRCLE_SHA1"
+            IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             ENV_NAME="${CIRCLE_BRANCH%%_*}"
             aws eks --region us-east-1 update-kubeconfig --name development
