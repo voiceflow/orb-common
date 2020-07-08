@@ -173,6 +173,10 @@ commands:
       namespace:
         description: The namespace the target resides in 
         type: string
+      tagged: 
+        description: Running on a git tag?
+        type: boolean
+        default: false
     steps:
       - run:
           name: Update kubernetes image
@@ -180,11 +184,18 @@ commands:
             IMAGE_TAG="k8s-$CIRCLE_SHA1"
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-            aws eks --region us-east-1 update-kubeconfig --name development
-            kubectl set image --namespace << parameters.namespace >> << parameters.target >>-$CIRCLE_BRANCH app=$IMAGE_NAME
-            if [ "$CIRCLE_BRANCH" == "master" ]; then
+            if [ << parameters.tagged >> ]; then
+              aws eks --region us-east-1 update-kubeconfig --name development
+              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-master app=$IMAGE_NAME
               aws eks --region us-east-1 update-kubeconfig --name production
               kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production app=$IMAGE_NAME
+            else
+              aws eks --region us-east-1 update-kubeconfig --name development
+              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-$CIRCLE_BRANCH app=$IMAGE_NAME
+              if [ "$CIRCLE_BRANCH" == "master" ]; then
+                aws eks --region us-east-1 update-kubeconfig --name production
+                kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production app=$IMAGE_NAME
+              fi
             fi
 
   build_deploy_dev_env:
