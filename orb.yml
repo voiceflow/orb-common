@@ -263,5 +263,5 @@ jobs:
     executor: default-executor
     steps:
       - checkout
-      - run: npm install -g rimraf
+      - install_node_modules
       - run: npx semantic-release@15
