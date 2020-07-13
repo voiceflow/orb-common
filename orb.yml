@@ -184,7 +184,7 @@ commands:
             IMAGE_TAG="k8s-$CIRCLE_SHA1"
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-            if [ << parameters.tagged >> ]; then
+            if [[ "<< parameters.tagged >>" != "false" ]]; then
               aws eks --region us-east-1 update-kubeconfig --name development
               kubectl set image --namespace << parameters.namespace >> << parameters.target >>-master app=$IMAGE_NAME
               aws eks --region us-east-1 update-kubeconfig --name production
