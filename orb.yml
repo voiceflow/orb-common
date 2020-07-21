@@ -261,7 +261,13 @@ commands:
 jobs: 
   release:
     executor: default-executor
+    parameters: 
+      install_args: 
+        description: Additional yarn install command options
+        type: string
+        default: ""
     steps:
       - checkout
-      - install_node_modules
+      - install_node_modules:
+          install_args: "<< parameters.install_args >>"
       - run: npx semantic-release@15
