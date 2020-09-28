@@ -13,8 +13,8 @@ executors:
         environment:
           POSTGRES_HOST_AUTH_METHOD: trust # This is needed to ensure that the PG instance can be accessed locally without explicitly creating credentials
       - image: circleci/dynamodb:13-oracle # DynamoDB service container
-      - image: circleci/redis:4.0-alpine # Redis service container
-      - image: circleci/mongo:4.2.7 # MongoDB service container
+      - image: circleci/redis:5.0-alpine # Redis service container
+      - image: circleci/mongo:4.4.1 # MongoDB service container
 
   # Used to run container builds
   build-executor:
