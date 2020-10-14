@@ -120,7 +120,8 @@ commands:
         type: string
     steps:
       - checkout # special step to check out source code to working directory
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           name: "Build docker image"
           command: |
@@ -216,7 +217,8 @@ commands:
         type: string
     steps:
       - checkout # special step to check out source code to working directory
-      - setup_remote_docker # Need this to run DinD
+      - setup_remote_docker:  # Need this to run DinD
+          version: 19.03.13
       - attach_workspace:
           at: /tmp/vf-build
       - add_ssh_keys: # To enable write access to repository for removing development environment branches
