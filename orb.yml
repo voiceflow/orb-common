@@ -355,31 +355,31 @@ jobs:
           name: Clone Database
           command: |
             git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/database-cli ~/database-cli
-            cd database-cli
+            cd ~/database-cli
             git reset --hard ${<< parameters.database_cli_commit >>}
       - run:
           name: Clone Server Data API
           command: |
             git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/server-data-api ~/server-data-api
-            cd server-data-api
+            cd ~/server-data-api
             git reset --hard ${<< parameters.server_data_api_commit >>}
       - run:
           name: Clone Alexa Service
           command: |
             git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/alexa-service ~/alexa-service
-            cd alexa-service
+            cd ~/alexa-service
             git reset --hard ${<< parameters.alexa_service_commit >>}
       - run:
           name: Clone Creator API
           command: |
             git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/creator-api ~/creator-api
-            cd creator-api
+            cd ~/creator-api
             git reset --hard ${<< parameters.creator_api_commit >>}
       - run:
           name: Clone Creator App
           command: |
             git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/creator-app ~/creator-app
-            cd creator-app
+            cd ~/creator-app
             git reset --hard ${<< parameters.creator_app_commit >>}
       - run:
           name: Setup Database
