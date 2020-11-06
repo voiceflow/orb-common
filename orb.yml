@@ -303,10 +303,10 @@ jobs:
     parameters:
       github_username:
         description: username for cloning git repositories
-        type: string
+        type: env_var_name
       github_token:
         description: token for cloning git repositories
-        type: string
+        type: env_var_name
       creator_api_commit:
         description: git commit hash for creator-api
         type: string
