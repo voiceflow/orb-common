@@ -327,10 +327,6 @@ jobs:
         description: git commit hash for alexa-service
         type: string
         default: master
-      creator_app_commit:
-        description: git commit hash for creator-app
-        type: string
-        default: master
     steps:
       - authenticate_npm
       - run:
