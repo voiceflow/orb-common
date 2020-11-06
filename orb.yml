@@ -290,6 +290,7 @@ jobs:
     docker: # run the steps with Docker
       - image: cypress/base:12 # Test steps container
         environment:
+          DEFAULT_COMMIT: master
           DOCKER_COMPOSE_VERSION: '1.24.1'
           DOCKERIZE_VERSION: v0.6.1
           MKCERT_VERSION: v1.4.0
@@ -309,24 +310,24 @@ jobs:
         type: env_var_name
       creator_api_commit:
         description: git commit hash for creator-api
-        type: string
-        default: master
+        type: env_var_name
+        default: DEFAULT_COMMIT
       creator_app_commit:
         description: git commit hash for creator-app
-        type: string
-        default: master
+        type: env_var_name
+        default: DEFAULT_COMMIT
       database_cli_commit:
         description: git commit hash for database-cli
-        type: string
-        default: master
+        type: env_var_name
+        default: DEFAULT_COMMIT
       server_data_api_commit:
         description: git commit hash for server-data-api
-        type: string
-        default: master
+        type: env_var_name
+        default: DEFAULT_COMMIT
       alexa_service_commit:
         description: git commit hash for alexa-service
-        type: string
-        default: master
+        type: env_var_name
+        default: DEFAULT_COMMIT
     steps:
       - authenticate_npm
       - run:
