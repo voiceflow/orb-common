@@ -11,3 +11,6 @@ workflows:
           publish-token-variable: ${CIRCLE_TOKEN}
           segment: patch
           validate: true
+          filters:
+              branches:
+                only: master
