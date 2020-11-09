@@ -273,7 +273,7 @@ commands:
 
 jobs: 
   release:
-    executor: default-executor
+    executor: node-executor
     parameters: 
       install_args: 
         description: Additional yarn install command options
