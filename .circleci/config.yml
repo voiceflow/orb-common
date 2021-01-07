@@ -8,6 +8,7 @@ jobs:
   validate-orb:
     executor: cli/default
     steps:
+      - checkout
       - cli/install
       - run:
           command: circleci orb validate orb.yml
