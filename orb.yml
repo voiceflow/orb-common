@@ -478,19 +478,19 @@ jobs:
             yarn init:e2e
       - install_node_modules:
           working_directory: ~/server-data-api
-          yarn_lock_restore_cache_directory: ~/database-cli
+          yarn_lock_restore_cache_directory: ~/server-data-api
       - gen_certs_e2e:
           name: Setup Server Data API
           working_directory: ~/server-data-api
       - install_node_modules:
           working_directory: ~/creator-api
-          yarn_lock_restore_cache_directory: ~/server-data-api
+          yarn_lock_restore_cache_directory: ~/creator-api
       - gen_certs_e2e:
           name: Setup Creator API
           working_directory: ~/creator-api
       - install_node_modules:
           working_directory: ~/alexa-service
-          yarn_lock_restore_cache_directory: ~/creator-api
+          yarn_lock_restore_cache_directory: ~/alexa-service
       - gen_certs_e2e:
           name: Setup Alexa Service
           working_directory: ~/alexa-service
@@ -502,7 +502,7 @@ jobs:
             echo 'VF_APP_FF_DATA_REFACTOR=true' >> .env.local
       - install_node_modules:
           working_directory: ~/creator-app
-          yarn_lock_restore_cache_directory: ~/alexa-service
+          yarn_lock_restore_cache_directory: ~/creator-app
       - gen_certs_e2e:
           name: Generate certificates Creator App
           working_directory: ~/creator-app
