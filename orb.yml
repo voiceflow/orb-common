@@ -100,14 +100,18 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
-      backgorund:
+      run_in_backgorund:
         description: run the command in backgroung
         type: boolean    
-        default: false   
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
     steps:
       - run:
           working_directory: << parameters.working_directory >>
-          name: Start microservice in e2e mode
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
           command: yarn e2e
 
   gen_certs:
@@ -115,10 +119,13 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+      step_name:
+        description: Name of the step
+        type: string
     steps:
       - run:
           working_directory: << parameters.working_directory >>
-          name: Generate certificates
+          name: << parameters.step_name >>
           command: yarn gen-certs
 
   gen_certs_e2e:
@@ -126,10 +133,13 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+      step_name:
+        description: Name of the step
+        type: string
     steps:
       - run:
           working_directory: << parameters.working_directory >>
-          name: Generate certificates in e2e mode
+          name: << parameters.step_name >>
           command: yarn gen-certs:e2e
 
   authenticate_npm:
@@ -152,14 +162,17 @@ commands:
         default: DEFAULT_COMMIT
       github_repo_name:
         description: github repo name
-        type: env_var_name
+        type: string
       path_to_clone:
         description: Path to clone the github repo
-        type: env_var_name
+        type: string
         default: './'
+      step_name:
+        description: Name of the step
+        type: string
     steps:
       - run:
-          name: Clone Gihub repo
+          name: << parameters.step_name >>
           command: |
             git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/${<< parameters.github_repo_name >>} ${<< parameters.path_to_clone >>}
             cd ${<< parameters.path_to_clone >>}
@@ -434,35 +447,35 @@ jobs:
             curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             chmod +x /usr/local/bin/docker-compose
       - clone_repo:
-          name: Clone Database
+          step_name: Clone Database
           github_username: "<< parameters.github_username >>"
           github_token: "<< parameters.github_token >>"
           github_repo_name: database-cli
           github_commit: "<< parameters.database_cli_commit >>"
           path_to_clone: ~/database-cli
       - clone_repo:
-          name: Clone Server Data API
+          step_name: Clone Server Data API
           github_username: "<< parameters.github_username >>"
           github_token: "<< parameters.github_token >>"
           github_repo_name: server-data-api
           github_commit: "<< parameters.server_data_api_commit >>"
           path_to_clone: ~/server-data-api
       - clone_repo:
-          name: Clone Alexa Service
+          step_name: Clone Alexa Service
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           github_repo_name: alexa-service
           github_commit: << parameters.alexa_service_commit >>
           path_to_clone: ~/alexa-service
       - clone_repo:
-          name: Clone Creator API
+          step_name: Clone Creator API
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           github_repo_name: creator-api
           github_commit: << parameters.creator_api_commit >>
           path_to_clone: ~/creator-api
       - clone_repo:
-          name: Clone Creator App
+          step_name: Clone Creator App
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           github_repo_name: creator-app
@@ -480,19 +493,19 @@ jobs:
           working_directory: ~/server-data-api
           yarn_lock_restore_cache_directory: ~/server-data-api
       - gen_certs_e2e:
-          name: Setup Server Data API
+          step_name: Setup Server Data API
           working_directory: ~/server-data-api
       - install_node_modules:
           working_directory: ~/creator-api
           yarn_lock_restore_cache_directory: ~/creator-api
       - gen_certs_e2e:
-          name: Setup Creator API
+          step_name: Setup Creator API
           working_directory: ~/creator-api
       - install_node_modules:
           working_directory: ~/alexa-service
           yarn_lock_restore_cache_directory: ~/alexa-service
       - gen_certs_e2e:
-          name: Setup Alexa Service
+          step_name: Setup Alexa Service
           working_directory: ~/alexa-service
       - run:
           name: Setup Creator App
@@ -504,7 +517,7 @@ jobs:
           working_directory: ~/creator-app
           yarn_lock_restore_cache_directory: ~/creator-app
       - gen_certs_e2e:
-          name: Generate certificates Creator App
+          step_name: Generate certificates Creator App
           working_directory: ~/creator-app
       - run:
           name: Setup Creator App
@@ -522,16 +535,16 @@ jobs:
             dockerize -wait tcp://localhost:5432 -timeout 1m \
             && dockerize -wait tcp://localhost:8000 -timeout 1m
       - start_e2e:
-          name: Start Server Data API
-          background: true
+          step_name: Start Server Data API
+          run_in_backgorund: true
           working_directory: ~/server-data-api
       - start_e2e:
-          name: Start Creator API
-          background: true
+          step_name: Start Creator API
+          run_in_backgorund: true
           working_directory: ~/creator-api
       - start_e2e:
-          name: Start Alexa Service
-          background: true
+          step_name: Start Alexa Service
+          run_in_backgorund: true
           working_directory: ~/alexa-service
       - run:
           name: Wait for Services

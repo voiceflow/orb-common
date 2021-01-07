@@ -3,6 +3,11 @@ orbs:
   orb-tools: circleci/orb-tools@2.0.0
 
 workflows:
+  validate-orb:
+    jobs:
+      - orb-tools/validate:
+          orb-path: orb.yml
+
   publish-orb:
     jobs:
       - orb-tools/increment:
