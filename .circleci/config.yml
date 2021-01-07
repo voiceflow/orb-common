@@ -18,14 +18,13 @@ workflows:
   validate-orb:
     jobs:
       - validate-orb
-      
 
   publish-orb:
     jobs:
       - orb-tools/increment:
           orb-path: orb.yml
           orb-ref: voiceflow/common
-          publish-token-variable: ${CIRCLE_TOKEN}
+          publish-token-variable: CIRCLE_TOKEN
           segment: patch
           validate: true
           filters:
