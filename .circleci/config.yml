@@ -1,18 +1,16 @@
 version: 2.1
 orbs:
   orb-tools: circleci/orb-tools@10.0.3
+  cli: circleci/circleci-cli@0.1.8
 
-executors:
-  node-executor:
-    docker:
-      - image: circleci/node:12
 
 jobs:
   validate-orb:
-    executor: node-executor
+    executor: cli/default
     steps:
-      - orb-tools/validate:
-          orb-path: orb.yml
+      - cli/install
+      - run:
+          command: circleci orb validate orb.yml
 
 workflows:
   validate-orb:
