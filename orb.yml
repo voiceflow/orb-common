@@ -40,7 +40,7 @@ executors:
   default-executor: # used to run the release
     docker:
       - image: circleci/node:12
-    resource_class: small
+    resource_class: medium
 
 #--------------------------------------------------------------------------------------------------------------------
 
