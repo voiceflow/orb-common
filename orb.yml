@@ -148,6 +148,7 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+        default: "./"
       run_in_backgorund:
         description: run the command in background
         type: boolean    
@@ -159,6 +160,7 @@ commands:
       extra_args: 
         description: Additional yarn command options
         type: string
+        default: ""
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -171,6 +173,7 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+        default: "./"
       run_in_backgorund:
         description: run the command in background
         type: boolean    
@@ -182,6 +185,7 @@ commands:
       extra_args: 
         description: Additional yarn command options
         type: string
+        default: ""
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -197,6 +201,7 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+        default: "./"
       run_in_backgorund:
         description: run the command in background
         type: boolean    
@@ -207,6 +212,7 @@ commands:
       extra_args: 
         description: Additional yarn command options
         type: string
+        default: ""
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -219,6 +225,7 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+        default: "./"
       run_in_backgorund:
         description: run the command in background
         type: boolean    
@@ -229,6 +236,7 @@ commands:
       extra_args: 
         description: Additional yarn command options
         type: string
+        default: ""
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -241,6 +249,7 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+        default: "./"
       run_in_backgorund:
         description: run the command in background
         type: boolean    
@@ -251,6 +260,7 @@ commands:
       extra_args: 
         description: Additional yarn command options
         type: string
+        default: ""
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -263,6 +273,7 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+        default: "./"
       run_in_backgorund:
         description: run the command in background
         type: boolean    
@@ -273,6 +284,7 @@ commands:
       extra_args: 
         description: Additional yarn command options
         type: string
+        default: ""
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -286,6 +298,7 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+        default: './'
       run_in_backgorund:
         description: run the command in background
         type: boolean    
@@ -296,6 +309,7 @@ commands:
       extra_args: 
         description: Additional yarn command options
         type: string
+        default: ""
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -308,6 +322,7 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+        default: './'
       run_in_backgorund:
         description: run the command in background
         type: boolean    
@@ -327,6 +342,7 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+        default: './'
       step_name:
         description: Name of the step
         type: string
@@ -341,6 +357,7 @@ commands:
       working_directory:
         description: Directory containing package.json
         type: string
+        default: './'
       step_name:
         description: Name of the step
         type: string
@@ -394,9 +411,11 @@ commands:
       image_tag: 
         description: The container image tag
         type: string
+        default: ""
       release_pkg: 
         description: The npm package name to be released
         type: string
+        default: ""
       dockerfile: 
         description: Name of the Dockerfile to build
         type: string
