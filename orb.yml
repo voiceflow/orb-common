@@ -45,6 +45,9 @@ executors:
 #--------------------------------------------------------------------------------------------------------------------
 
 commands:
+
+#-------------------------------------------------------------UTILS COMMANDS----------------------------------------------------------
+
   install_aws_cli:
     steps:
       - run:
@@ -80,20 +83,225 @@ commands:
           name: Wait for MongoDB Docker Image
           command: dockerize -wait tcp://localhost:27017 -timeout 1m
 
-  lint_source:
+  clone_repo:
+    parameters: 
+      github_username:
+        description: username for cloning git repositories
+        type: env_var_name
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+      github_commit:
+        description: git commit hash for the repo provided
+        type: env_var_name
+        default: DEFAULT_COMMIT
+      github_repo_name:
+        description: github repo name
+        type: string
+      path_to_clone:
+        description: Path to clone the github repo
+        type: string
+        default: './'
+      step_name:
+        description: Name of the step
+        type: string
     steps:
       - run:
-          name: Lint source
-          command: yarn lint:quiet
+          name: << parameters.step_name >>
+          command: |
+            git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/<< parameters.github_repo_name >> << parameters.path_to_clone >>
+            cd << parameters.path_to_clone >>
+            git reset --hard ${<< parameters.github_commit >>}
+
+  check_image_exists:
+    description: Check if a Docker image exists
+    parameters: 
+      image_repo: 
+        description: The container image repository
+        type: string
+    steps:
+      - setup_remote_docker:  # Need this to run DinD
+          version: 19.03.13
+      - run:
+          name: If container with this git SHA already exists, don't build
+          command: |
+            IMAGE_REPO="<< parameters.image_repo >>"
+            IMAGE_TAG="k8s-$CIRCLE_SHA1"
+            IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
+            curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+            unzip awscli-bundle.zip
+            sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+            $(aws ecr get-login --no-include-email --region us-east-1)
+            set +e
+            DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $IMAGE_NAME > /dev/null 2>&1
+            SEARCH_IMAGE_RESULT=$?
+            set -e
+            if [[ $SEARCH_IMAGE_RESULT -eq 0 ]]; then  
+              circleci-agent step halt  # Image exists, skip following steps
+            fi
+      
+#-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
+
+
+  lint_source:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+      run_in_backgorund:
+        description: run the command in backgroung
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+        default: Lint source
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn lint:quiet << parameters.extra_args >>
 
   lint_dockerfile:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+      run_in_backgorund:
+        description: run the command in backgroung
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+        default: Lint dockerfiles
+      extra_args: 
+        description: Additional yarn command options
+        type: string
     steps:
       - run:
-          name: Lint dockerfiles
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
           command: |
             sudo wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.17.3/hadolint-Linux-x86_64
             sudo chmod +x /usr/bin/hadolint
-            yarn lint:dockerfiles
+            yarn lint:dockerfiles << parameters.extra_args >>
+
+  unit_tests:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+      run_in_backgorund:
+        description: run the command in backgroung
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn test:unit << parameters.extra_args >>
+
+  integration_tests:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+      run_in_backgorund:
+        description: run the command in backgroung
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn test:integration << parameters.extra_args >>
+
+  smoke_tests:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+      run_in_backgorund:
+        description: run the command in backgroung
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn test:smoke << parameters.extra_args >>
+
+  dependency_tests:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+      run_in_backgorund:
+        description: run the command in backgroung
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn test:dependencies << parameters.extra_args >>
+
+
+  tests:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+      run_in_backgorund:
+        description: run the command in backgroung
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn test << parameters.extra_args >>
 
   start_e2e:
     parameters:
@@ -148,36 +356,6 @@ commands:
           name: authenticate npm
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
 
-  clone_repo:
-    parameters: 
-      github_username:
-        description: username for cloning git repositories
-        type: env_var_name
-      github_token:
-        description: token for cloning git repositories
-        type: env_var_name
-      github_commit:
-        description: git commit hash for the repo provided
-        type: env_var_name
-        default: DEFAULT_COMMIT
-      github_repo_name:
-        description: github repo name
-        type: string
-      path_to_clone:
-        description: Path to clone the github repo
-        type: string
-        default: './'
-      step_name:
-        description: Name of the step
-        type: string
-    steps:
-      - run:
-          name: << parameters.step_name >>
-          command: |
-            git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/<< parameters.github_repo_name >> << parameters.path_to_clone >>
-            cd << parameters.path_to_clone >>
-            git reset --hard ${<< parameters.github_commit >>}
-
   install_node_modules:
     parameters: 
       install_args: 
@@ -206,6 +384,8 @@ commands:
           paths:
             - << parameters.working_directory >>/node_modules
 
+#-------------------------------------------------------------DOCKER COMMANDS----------------------------------------------------------
+
   build_push_image: 
     parameters: 
       image_repo: 
@@ -214,6 +394,10 @@ commands:
       release_pkg: 
         description: The npm package name to be released
         type: string
+      dockerfile: 
+        description: Name of the Dockerfile to build
+        type: string
+        default: Dockerfile
     steps:
       - checkout # special step to check out source code to working directory
       - setup_remote_docker:
@@ -223,9 +407,10 @@ commands:
           command: |
             IMAGE_TAG="k8s-$CIRCLE_SHA1"
             IMAGE_REPO="<< parameters.image_repo >>"
+            RELEASE_PKG="<< parameters.release_pkg >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-            # Fix semantic versioning 
-            if [ "$CIRCLE_BRANCH" == "master" ]; then
+            # Fix semantic versioning if a package is indicated, if not, semantic release are not executed
+            if [[ "$CIRCLE_BRANCH" == "master" && "$RELEASE_PKG" != "" ]]; then
               npm config set unsafe-perm true # needed for npx to work
               set +e  # Don't exit on the any error (for semantic-release)
               npx semantic-release@15 --prepare --dry-run | tee sem_release.output  # print semver to screen and force return 0
@@ -246,6 +431,7 @@ commands:
               --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
               --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
               --build-arg build_SEM_VER=${SEM_VER} \
+               -f << parameters.dockerfile >>
               -t $IMAGE_NAME .
       - run:
           name: "Push docker images"
@@ -278,6 +464,10 @@ commands:
         description: Running on a git tag?
         type: boolean
         default: false
+      container_name: 
+        description: Name of the container to edit its image
+        type: string
+        default: app
     steps:
       - run:
           name: Update kubernetes image
@@ -287,15 +477,15 @@ commands:
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             if [[ "<< parameters.tagged >>" != "false" ]]; then
               aws eks --region us-east-1 update-kubeconfig --name development
-              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-master app=$IMAGE_NAME
+              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-master << parameters.container_name >>=$IMAGE_NAME
               aws eks --region us-east-1 update-kubeconfig --name production
-              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production app=$IMAGE_NAME
+              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production << parameters.container_name >>=$IMAGE_NAME
             else
               aws eks --region us-east-1 update-kubeconfig --name development
-              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-$CIRCLE_BRANCH app=$IMAGE_NAME
+              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-$CIRCLE_BRANCH << parameters.container_name >>=$IMAGE_NAME
               if [ "$CIRCLE_BRANCH" == "master" ]; then
                 aws eks --region us-east-1 update-kubeconfig --name production
-                kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production app=$IMAGE_NAME
+                kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production << parameters.container_name >>=$IMAGE_NAME
               fi
             fi
 
@@ -311,6 +501,10 @@ commands:
       component: 
         description: The component type for development environment deployment
         type: string
+      dockerfile: 
+        description: Name of the Dockerfile to build
+        type: string
+        default: Dockerfile
     steps:
       - checkout # special step to check out source code to working directory
       - setup_remote_docker:  # Need this to run DinD
@@ -320,6 +514,8 @@ commands:
       - add_ssh_keys: # To enable write access to repository for removing development environment branches
           fingerprints:
             - << parameters.ssh_key >>
+      - check_image_exists:
+          image_repo: << parameters.image_repo >>
       - run:
           name: "Build dev environment image"
           command: |
@@ -328,37 +524,80 @@ commands:
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             SEM_VER="$CIRCLE_BRANCH-$CIRCLE_SHA1"
             $(aws ecr get-login --no-include-email --region us-east-1)
-            set +e
-            DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $IMAGE_NAME > /dev/null 2>&1
-            SEARCH_IMAGE_RESULT=$?
-            set -e
-            if [[ $SEARCH_IMAGE_RESULT -ne 0 ]]; then   # Only build the image if there are no existing images 
-              docker build \
-                --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
-                --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
-                --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
-                --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
-                --build-arg build_SEM_VER=${SEM_VER} \
-                -t $IMAGE_NAME . 
-              docker push $IMAGE_NAME
-            fi
+            docker build \
+              --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
+              --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
+              --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
+              --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
+              --build-arg build_SEM_VER=${SEM_VER} \
+              -f << parameters.dockerfile >>
+              -t $IMAGE_NAME . 
+            docker push $IMAGE_NAME
             git push origin --delete $CIRCLE_BRANCH --no-verify # Clean up git branch
+      - envcli_install:
+          step_name: Install latest envcli utility
+      - envcli_edit_component:
+          step_name: "Deploy dev environment image"
+          image_repo: << parameters.image_repo >>
+          component_type: << parameters.component >>
+          component_name: << parameters.component >>
+
+#-------------------------------------------------------------ENVCLI COMMANDS----------------------------------------------------------
+
+
+  envcli_install:
+    parameters: 
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+        default: GITHUB_READ_TOKEN
+      working_directory:
+        description: Directory where it will be executed
+        type: string
+        default: './'
+      step_name:
+        description: Name of the step
+        type: string
+    steps:
       - run:
-          name: Install latest envcli utility
+          name: << parameters.step_name >>
+          working_directory: << parameters.working_directory >>
           command: |
-            API_URL="https://$GITHUB_TOKEN:@api.github.com/repos/voiceflow/envcli"
+            API_URL="https://${github_token}:@api.github.com/repos/voiceflow/envcli"
             ASSET_ID=$(curl $API_URL/releases/latest | jq -r '.assets[2].id')
             curl -J -L -H "Accept: application/octet-stream" "$API_URL/releases/assets/$ASSET_ID" --output envcli.tar.gz
             tar -xf envcli.tar.gz
+
+  envcli_edit_component:
+    parameters: 
+      image_repo:
+        description: Image repo where to push
+        type: string
+      component_type:
+        description: Type of the component to edit
+        type: string
+      component_name:
+        description: Name of the component to edit
+        type: string
+      working_directory:
+        description: Directory where it will be executed
+        type: string
+        default: './'
+      step_name:
+        description: Name of the step
+        type: string
+    steps:
       - run:
-          name: "Deploy dev environment image"
+          name: << parameters.step_name >>
+          working_directory: << parameters.working_directory >>
           command: |
             IMAGE_TAG="k8s-$CIRCLE_SHA1"
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             ENV_NAME="${CIRCLE_BRANCH%%_*}"
             aws eks --region us-east-1 update-kubeconfig --name development
-            NON_INTERACTIVE=true ./envcli edit component << parameters.component >> << parameters.component >> -n $ENV_NAME -i $IMAGE_NAME
+            NON_INTERACTIVE=true ./envcli edit component << parameters.component_type >> << parameters.component_name >> -n $ENV_NAME -i $IMAGE_NAME
+
 
 #--------------------------------------------------------------------------------------------------------------------
 
