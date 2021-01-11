@@ -149,7 +149,7 @@ commands:
         description: Directory containing package.json
         type: string
       run_in_backgorund:
-        description: run the command in backgroung
+        description: run the command in background
         type: boolean    
         default: false
       step_name:
@@ -172,7 +172,7 @@ commands:
         description: Directory containing package.json
         type: string
       run_in_backgorund:
-        description: run the command in backgroung
+        description: run the command in background
         type: boolean    
         default: false
       step_name:
@@ -188,7 +188,7 @@ commands:
           background: << parameters.run_in_backgorund >>
           name: << parameters.step_name >>
           command: |
-            sudo wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.17.3/hadolint-Linux-x86_64
+            sudo wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.19.0/hadolint-Linux-x86_64
             sudo chmod +x /usr/bin/hadolint
             yarn lint:dockerfiles << parameters.extra_args >>
 
@@ -198,7 +198,7 @@ commands:
         description: Directory containing package.json
         type: string
       run_in_backgorund:
-        description: run the command in backgroung
+        description: run the command in background
         type: boolean    
         default: false
       step_name:
@@ -220,7 +220,7 @@ commands:
         description: Directory containing package.json
         type: string
       run_in_backgorund:
-        description: run the command in backgroung
+        description: run the command in background
         type: boolean    
         default: false
       step_name:
@@ -242,7 +242,7 @@ commands:
         description: Directory containing package.json
         type: string
       run_in_backgorund:
-        description: run the command in backgroung
+        description: run the command in background
         type: boolean    
         default: false
       step_name:
@@ -264,7 +264,7 @@ commands:
         description: Directory containing package.json
         type: string
       run_in_backgorund:
-        description: run the command in backgroung
+        description: run the command in background
         type: boolean    
         default: false
       step_name:
@@ -287,7 +287,7 @@ commands:
         description: Directory containing package.json
         type: string
       run_in_backgorund:
-        description: run the command in backgroung
+        description: run the command in background
         type: boolean    
         default: false
       step_name:
@@ -309,7 +309,7 @@ commands:
         description: Directory containing package.json
         type: string
       run_in_backgorund:
-        description: run the command in backgroung
+        description: run the command in background
         type: boolean    
         default: false
       step_name:
@@ -391,6 +391,9 @@ commands:
       image_repo: 
         description: The container image repository
         type: string
+      image_tag: 
+        description: The container image tag
+        type: string
       release_pkg: 
         description: The npm package name to be released
         type: string
@@ -405,7 +408,10 @@ commands:
       - run:
           name: "Build docker image"
           command: |
-            IMAGE_TAG="k8s-$CIRCLE_SHA1"
+            IMAGE_TAG="<< parameters.image_tag >>"
+            if [[ "$IMAGE_TAG" == "" ]]; then
+              IMAGE_TAG="k8s-$CIRCLE_SHA1"
+            fi
             IMAGE_REPO="<< parameters.image_repo >>"
             RELEASE_PKG="<< parameters.release_pkg >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
