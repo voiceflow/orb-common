@@ -105,6 +105,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Clone git repository
     steps:
       - run:
           name: << parameters.step_name >>
@@ -155,6 +156,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Build
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -232,6 +234,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Unit Tests
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -256,6 +259,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Integration Tests
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -280,6 +284,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Smoke tests
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -304,6 +309,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Dependency tests
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -329,6 +335,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Run all tests
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -353,6 +360,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Start in e2e mode
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -369,6 +377,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Generate certificates
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -384,6 +393,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Generate certificates for e2e tests
     steps:
       - run:
           working_directory: << parameters.working_directory >>
