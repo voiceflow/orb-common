@@ -142,6 +142,29 @@ commands:
       
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
 
+  build:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+        default: './'
+      run_in_backgorund:
+        description: run the command in background
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn build << parameters.extra_args >>
 
   lint_source:
     parameters:
