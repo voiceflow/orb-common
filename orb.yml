@@ -105,6 +105,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Clone git repository
     steps:
       - run:
           name: << parameters.step_name >>
@@ -142,6 +143,30 @@ commands:
       
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
 
+  build:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+        default: './'
+      run_in_backgorund:
+        description: run the command in background
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+        default: Build
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn build << parameters.extra_args >>
 
   lint_source:
     parameters:
@@ -209,6 +234,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Unit Tests
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -233,6 +259,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Integration Tests
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -257,6 +284,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Smoke tests
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -281,6 +309,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Dependency tests
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -306,6 +335,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Run all tests
       extra_args: 
         description: Additional yarn command options
         type: string
@@ -330,6 +360,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Start in e2e mode
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -346,6 +377,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Generate certificates
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -361,6 +393,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Generate certificates for e2e tests
     steps:
       - run:
           working_directory: << parameters.working_directory >>
@@ -420,8 +453,15 @@ commands:
         description: Name of the Dockerfile to build
         type: string
         default: Dockerfile
+      checkout: 
+        description: Determines if a checkout will be executed or not
+        type: boolean
+        default: true
     steps:
-      - checkout # special step to check out source code to working directory
+      - when:
+          condition: << parameters.checkout >>
+          steps:
+            - checkout # special step to check out source code to working directory
       - setup_remote_docker:
           version: 19.03.13
       - run:
@@ -530,12 +570,23 @@ commands:
         description: Name of the Dockerfile to build
         type: string
         default: Dockerfile
+      attach_workspace_folder: 
+        description: Folder where the workspace will be attached
+        type: string
+        default: /tmp/vf-build
+      checkout: 
+        description: Determines if a checkout will be executed or not
+        type: boolean
+        default: true
     steps:
-      - checkout # special step to check out source code to working directory
+      - when:
+          condition: << parameters.checkout >>
+          steps:
+            - checkout # special step to check out source code to working directory
       - setup_remote_docker:  # Need this to run DinD
           version: 19.03.13
       - attach_workspace:
-          at: /tmp/vf-build
+          at: << parameters.attach_workspace_folder >>
       - add_ssh_keys: # To enable write access to repository for removing development environment branches
           fingerprints:
             - << parameters.ssh_key >>
@@ -583,6 +634,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Install the envcli
     steps:
       - run:
           name: << parameters.step_name >>
@@ -611,6 +663,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Edit component with envcli
     steps:
       - run:
           name: << parameters.step_name >>
