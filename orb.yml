@@ -634,6 +634,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Install the envcli
     steps:
       - run:
           name: << parameters.step_name >>
@@ -662,6 +663,7 @@ commands:
       step_name:
         description: Name of the step
         type: string
+        default: Edit component with envcli
     steps:
       - run:
           name: << parameters.step_name >>
