@@ -82,6 +82,24 @@ commands:
       - run:
           name: Wait for MongoDB Docker Image
           command: dockerize -wait tcp://localhost:27017 -timeout 1m
+  
+  clone_s3_assets:
+    parameters:
+      step_name:
+        description: Name of the step
+        type: string
+        default: Clone S3 assets
+      from:
+        description: S3 URL
+        type: string
+      to:
+        description: Path to clone S3 assets
+        type: string
+    steps:
+      - run:
+          name: << parameters.step_name >>
+          command: |
+            aws s3 sync << parameters.from >> << parameters.to >>
 
   clone_repo:
     parameters: 
