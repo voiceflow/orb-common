@@ -514,7 +514,7 @@ commands:
               --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
               --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
               --build-arg build_SEM_VER=${SEM_VER} \
-               -f << parameters.dockerfile >>
+               -f << parameters.dockerfile >> \
               -t $IMAGE_NAME .
       - run:
           name: "Push docker images"
@@ -624,7 +624,7 @@ commands:
               --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
               --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
               --build-arg build_SEM_VER=${SEM_VER} \
-              -f << parameters.dockerfile >>
+              -f << parameters.dockerfile >> \
               -t $IMAGE_NAME . 
             docker push $IMAGE_NAME
             git push origin --delete $CIRCLE_BRANCH --no-verify # Clean up git branch
