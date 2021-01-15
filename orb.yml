@@ -140,6 +140,7 @@ commands:
         type: string
       request_remote_docker:
         description: Add the option to request a new remote docker, set to false when you concat docker jobs
+        type: boolean
         default: true
     steps:
       - when:
@@ -483,6 +484,7 @@ commands:
         default: true
       request_remote_docker:
         description: Add the option to request a new remote docker, set to false when you concat docker jobs
+        type: boolean
         default: true
     steps:
       - when:
@@ -610,6 +612,7 @@ commands:
         default: true
       request_remote_docker:
         description: Add the option to request a new remote docker, set to false when you concat docker jobs
+        type: boolean
         default: true
     steps:
       - when:
