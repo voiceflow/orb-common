@@ -138,9 +138,16 @@ commands:
       image_repo: 
         description: The container image repository
         type: string
+      request_remote_docker:
+        description: Add the option to request a new remote docker, set to false when you concat docker jobs
+        type: boolean
+        default: true
     steps:
-      - setup_remote_docker:  # Need this to run DinD
-          version: 19.03.13
+      - when:
+          condition: << parameters.request_remote_docker >>
+          steps:
+            - setup_remote_docker:  # Need this to run DinD
+                version: 19.03.13
       - run:
           name: If container with this git SHA already exists, don't build
           command: |
@@ -475,13 +482,20 @@ commands:
         description: Determines if a checkout will be executed or not
         type: boolean
         default: true
+      request_remote_docker:
+        description: Add the option to request a new remote docker, set to false when you concat docker jobs
+        type: boolean
+        default: true
     steps:
       - when:
           condition: << parameters.checkout >>
           steps:
             - checkout # special step to check out source code to working directory
-      - setup_remote_docker:
-          version: 19.03.13
+      - when:
+          condition: << parameters.request_remote_docker >>
+          steps:
+            - setup_remote_docker:  # Need this to run DinD
+                version: 19.03.13
       - run:
           name: "Build docker image"
           command: |
@@ -596,13 +610,20 @@ commands:
         description: Determines if a checkout will be executed or not
         type: boolean
         default: true
+      request_remote_docker:
+        description: Add the option to request a new remote docker, set to false when you concat docker jobs
+        type: boolean
+        default: true
     steps:
       - when:
           condition: << parameters.checkout >>
           steps:
             - checkout # special step to check out source code to working directory
-      - setup_remote_docker:  # Need this to run DinD
-          version: 19.03.13
+      - when:
+          condition: << parameters.request_remote_docker >>
+          steps:
+            - setup_remote_docker:  # Need this to run DinD
+                version: 19.03.13
       - attach_workspace:
           at: << parameters.attach_workspace_folder >>
       - add_ssh_keys: # To enable write access to repository for removing development environment branches
@@ -610,6 +631,7 @@ commands:
             - << parameters.ssh_key >>
       - check_image_exists:
           image_repo: << parameters.image_repo >>
+          request_remote_docker: false
       - run:
           name: "Build dev environment image"
           command: |
