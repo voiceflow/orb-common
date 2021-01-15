@@ -663,7 +663,7 @@ commands:
       github_token:
         description: token for cloning git repositories
         type: env_var_name
-        default: GITHUB_READ_TOKEN
+        default: GITHUB_TOKEN
       working_directory:
         description: Directory where it will be executed
         type: string
@@ -677,7 +677,7 @@ commands:
           name: << parameters.step_name >>
           working_directory: << parameters.working_directory >>
           command: |
-            API_URL="https://${github_token}:@api.github.com/repos/voiceflow/envcli"
+            API_URL="https://${<< parameters.github_token >>}:@api.github.com/repos/voiceflow/envcli"
             ASSET_ID=$(curl $API_URL/releases/latest | jq -r '.assets[2].id')
             curl -J -L -H "Accept: application/octet-stream" "$API_URL/releases/assets/$ASSET_ID" --output envcli.tar.gz
             tar -xf envcli.tar.gz
