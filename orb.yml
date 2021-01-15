@@ -154,9 +154,6 @@ commands:
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_TAG="k8s-$CIRCLE_SHA1"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-            curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-            unzip awscli-bundle.zip
-            sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
             $(aws ecr get-login --no-include-email --region us-east-1)
             set +e
             DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $IMAGE_NAME > /dev/null 2>&1
