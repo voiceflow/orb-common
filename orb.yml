@@ -141,7 +141,13 @@ commands:
         description: Name of the step
         type: string
         default: Delete branch
+      ssh_key: 
+        description: The SSH key with write permissions to the repository
+        type: string
     steps:
+      - add_ssh_keys: # To enable write access to repository for removing development environment branches
+          fingerprints:
+            - << parameters.ssh_key >>
       - run:
           name: << parameters.step_name >>
           command: |
@@ -670,6 +676,7 @@ commands:
           steps:
             - delete_branch:
                 branch_name: $CIRCLE_BRANCH
+                ssh_key: << parameters.ssh_key >>
       - envcli_install:
           step_name: Install latest envcli utility
       - envcli_edit_component:
