@@ -164,6 +164,34 @@ commands:
             fi
       
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
+  serverless_deploy:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+        default: "./"
+      environmnet:
+        description: envrionment where to deploy the serverless application
+        type: string    
+        default: dev
+      run_in_backgorund:
+        description: run the command in background
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+        default: Deploy application
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn serverless:deploy-<< parameters.environmnet >> << parameters.extra_args >>
 
   build:
     parameters:
