@@ -191,7 +191,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      environmnet:
+      environment:
         description: envrionment where to deploy the serverless application
         type: string    
         default: dev
@@ -212,7 +212,7 @@ commands:
           working_directory: << parameters.working_directory >>
           background: << parameters.run_in_backgorund >>
           name: << parameters.step_name >>
-          command: yarn serverless:deploy-<< parameters.environmnet >> << parameters.extra_args >>
+          command: yarn serverless:deploy-<< parameters.environment >> << parameters.extra_args >>
 
   build:
     parameters:
