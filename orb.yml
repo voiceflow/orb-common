@@ -170,7 +170,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      environmnet:
+      environment:
         description: envrionment where to deploy the serverless application
         type: string    
         default: dev
