@@ -132,6 +132,27 @@ commands:
             cd << parameters.path_to_clone >>
             git reset --hard ${<< parameters.github_commit >>}
 
+  delete_branch:
+    parameters: 
+      branch_name:
+        description: Name of the branch to delete
+        type: string
+      step_name:
+        description: Name of the step
+        type: string
+        default: Delete branch
+      ssh_key: 
+        description: The SSH key with write permissions to the repository
+        type: string
+    steps:
+      - add_ssh_keys: # To enable write access to repository for removing development environment branches
+          fingerprints:
+            - << parameters.ssh_key >>
+      - run:
+          name: << parameters.step_name >>
+          command: |
+            git push origin --delete << parameters.branch_name >> --no-verify # Clean up git branch
+
   check_image_exists:
     description: Check if a Docker image exists
     parameters: 
@@ -639,6 +660,10 @@ commands:
         description: Add the option to request a new remote docker, set to false when you concat docker jobs
         type: boolean
         default: true
+      clean_dev_env_branch:
+        description: auto delete dev env branch
+        type: boolean
+        default: true
     steps:
       - when:
           condition: << parameters.checkout >>
@@ -674,7 +699,12 @@ commands:
               -f << parameters.dockerfile >> \
               -t $IMAGE_NAME . 
             docker push $IMAGE_NAME
-            git push origin --delete $CIRCLE_BRANCH --no-verify # Clean up git branch
+      - when:
+          condition: << parameters.clean_dev_env_branch >>
+          steps:
+            - delete_branch:
+                branch_name: $CIRCLE_BRANCH
+                ssh_key: << parameters.ssh_key >>
       - envcli_install:
           step_name: Install latest envcli utility
       - envcli_edit_component:
@@ -691,7 +721,7 @@ commands:
       github_token:
         description: token for cloning git repositories
         type: env_var_name
-        default: GITHUB_READ_TOKEN
+        default: GITHUB_TOKEN
       working_directory:
         description: Directory where it will be executed
         type: string
@@ -705,7 +735,7 @@ commands:
           name: << parameters.step_name >>
           working_directory: << parameters.working_directory >>
           command: |
-            API_URL="https://${github_token}:@api.github.com/repos/voiceflow/envcli"
+            API_URL="https://${<< parameters.github_token >>}:@api.github.com/repos/voiceflow/envcli"
             ASSET_ID=$(curl $API_URL/releases/latest | jq -r '.assets[2].id')
             curl -J -L -H "Accept: application/octet-stream" "$API_URL/releases/assets/$ASSET_ID" --output envcli.tar.gz
             tar -xf envcli.tar.gz
