@@ -257,6 +257,31 @@ commands:
           name: << parameters.step_name >>
           command: yarn build << parameters.extra_args >>
 
+  lint_report:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+        default: "./"
+      run_in_backgorund:
+        description: run the command in background
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+        default: Generate Lint report
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn lint:report << parameters.extra_args >>
+
   lint_source:
     parameters:
       working_directory:
@@ -637,16 +662,48 @@ commands:
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             if [[ "<< parameters.tagged >>" != "false" ]]; then
+
+              #Master
               aws eks --region us-east-1 update-kubeconfig --name development
-              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-master << parameters.container_name >>=$IMAGE_NAME
-              aws eks --region us-east-1 update-kubeconfig --name production
-              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production << parameters.container_name >>=$IMAGE_NAME
-            else
-              aws eks --region us-east-1 update-kubeconfig --name development
-              kubectl set image --namespace << parameters.namespace >> << parameters.target >>-$CIRCLE_BRANCH << parameters.container_name >>=$IMAGE_NAME
-              if [ "$CIRCLE_BRANCH" == "master" ]; then
-                aws eks --region us-east-1 update-kubeconfig --name production
+              set +e
+              kubectl get << parameters.target >>-master --namespace << parameters.namespace >>
+              KUBERNETES_OBJECT_EXISTS=$?
+              set -e
+              if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then  
+                kubectl set image --namespace << parameters.namespace >> << parameters.target >>-master << parameters.container_name >>=$IMAGE_NAME
+              fi
+
+              #Production
+              aws eks --region us-east-1 update-kubeconfig --name production              
+              set +e
+              kubectl get << parameters.target >>-production --namespace << parameters.namespace >>
+              KUBERNETES_OBJECT_EXISTS=$?
+              set -e
+              if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then  
                 kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production << parameters.container_name >>=$IMAGE_NAME
+              fi
+
+            else
+              #Dev env branch
+              aws eks --region us-east-1 update-kubeconfig --name development
+              set +e
+              kubectl get << parameters.target >>-$CIRCLE_BRANCH --namespace << parameters.namespace >>
+              KUBERNETES_OBJECT_EXISTS=$?
+              set -e
+              if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then  
+                kubectl set image --namespace << parameters.namespace >> << parameters.target >>-$CIRCLE_BRANCH << parameters.container_name >>=$IMAGE_NAME
+              fi
+
+              if [ "$CIRCLE_BRANCH" == "master" ]; then
+                #Master
+                aws eks --region us-east-1 update-kubeconfig --name production
+                set +e
+                kubectl get << parameters.target >>-production --namespace << parameters.namespace >>
+                KUBERNETES_OBJECT_EXISTS=$?
+                set -e
+                if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then            
+                  kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production << parameters.container_name >>=$IMAGE_NAME
+                fi
               fi
             fi
 
