@@ -719,7 +719,6 @@ commands:
             - slack/notify:
                 channel: product_releases
                 event: pass
-                mentions: "@engteam"
                 template: DEPLOY_TEMPLATE
                 branch_pattern: ".*"
 
