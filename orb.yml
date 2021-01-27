@@ -42,6 +42,9 @@ executors:
       - image: circleci/node:12
     resource_class: medium
 
+orbs:
+  slack: circleci/slack@4.1.1
+
 #--------------------------------------------------------------------------------------------------------------------
 
 commands:
@@ -201,7 +204,7 @@ commands:
             if [[ $SEARCH_IMAGE_RESULT -eq 0 ]]; then  
               circleci-agent step halt  # Image exists, skip following steps
             fi
-      
+
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
   serverless_deploy:
     parameters:
@@ -682,6 +685,10 @@ commands:
               if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then  
                 kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production << parameters.container_name >>=$IMAGE_NAME
               fi
+              #Cloud Snpashot
+              aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
+              chmod +x cloud_snapshot.sh
+              ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>
 
             else
               #Dev env branch
@@ -706,6 +713,15 @@ commands:
                 fi
               fi
             fi
+      - when:
+          condition: << parameters.tagged >>
+          steps:
+            - slack/notify:
+                channel: product_releases
+                event: pass
+                mentions: "@engteam"
+                template: DEPLOY_TEMPLATE
+                branch_pattern: ".*"
 
   build_deploy_dev_env:
     description: Deploy an image into a K8s cluster
@@ -862,6 +878,18 @@ jobs:
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
       - run: npx semantic-release@15
+
+  generate_technical_documentation:
+    executor: node-executor
+    parameters: 
+      step_name:
+        description: Name of the step
+        type: string
+        default: Generate technical documentation
+    steps:
+      - run:
+          name: << parameters.step_name >>
+          command: curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}
 
   test_e2e:
     resource_class: large
