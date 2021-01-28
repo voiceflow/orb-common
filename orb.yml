@@ -43,7 +43,7 @@ executors:
     resource_class: medium
 
 orbs:
-  slack: circleci/slack@4.1.1
+  slack: circleci/slack@4.2.0
 
 #--------------------------------------------------------------------------------------------------------------------
 
