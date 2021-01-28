@@ -42,6 +42,7 @@ executors:
       - image: circleci/node:12
     resource_class: medium
 
+
 #--------------------------------------------------------------------------------------------------------------------
 
 commands:
@@ -693,6 +694,7 @@ commands:
               aws s3 cp s3://com.voiceflow.ci.assets/scripts/slack_notify.sh slack_notify.sh
               chmod +x slack_notify.sh
               ./slack_notify.sh
+
             else
               #Dev env branch
               aws eks --region us-east-1 update-kubeconfig --name development
@@ -716,6 +718,7 @@ commands:
                 fi
               fi
             fi
+
 
   build_deploy_dev_env:
     description: Deploy an image into a K8s cluster
