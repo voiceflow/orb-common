@@ -687,6 +687,8 @@ commands:
               aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
               chmod +x cloud_snapshot.sh
               ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>-production
+
+              #FIXME THIS IS A WA with a problem with the Slack Orb and dynamic tmeplates
               export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)
               export SLACK_PARAM_TEMPLATE=DEPLOY_TEMPLATE
               export SLACK_PARAM_CHANNEL="product_releases"
