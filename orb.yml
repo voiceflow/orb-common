@@ -682,19 +682,19 @@ commands:
               set -e
               if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then  
                 kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production << parameters.container_name >>=$IMAGE_NAME
-              fi
-              #Cloud Snpashot
-              aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
-              chmod +x cloud_snapshot.sh
-              ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>-production
+                #Cloud Snpashot
+                aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
+                chmod +x cloud_snapshot.sh
+                ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>-production
 
-              #FIXME THIS IS A WA with a problem with the Slack Orb and dynamic tmeplates
-              export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)
-              export SLACK_PARAM_TEMPLATE=DEPLOY_TEMPLATE
-              export SLACK_PARAM_CHANNEL="product_releases"
-              aws s3 cp s3://com.voiceflow.ci.assets/scripts/slack_notify.sh slack_notify.sh
-              chmod +x slack_notify.sh
-              ./slack_notify.sh
+                #FIXME THIS IS A WA with a problem with the Slack Orb and dynamic tmeplates
+                export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)
+                export SLACK_PARAM_TEMPLATE=DEPLOY_TEMPLATE
+                export SLACK_PARAM_CHANNEL="product_releases"
+                aws s3 cp s3://com.voiceflow.ci.assets/scripts/slack_notify.sh slack_notify.sh
+                chmod +x slack_notify.sh
+                ./slack_notify.sh
+              fi
 
             else
               #Dev env branch
