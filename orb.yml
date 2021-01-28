@@ -42,9 +42,6 @@ executors:
       - image: circleci/node:12
     resource_class: medium
 
-orbs:
-  slack: circleci/slack@4.2.0
-
 #--------------------------------------------------------------------------------------------------------------------
 
 commands:
@@ -689,8 +686,13 @@ commands:
               aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
               chmod +x cloud_snapshot.sh
               ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>-production
-              echo 'export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)' >> $BASH_ENV
-              source $BASH_ENV
+              export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)
+              export SLACK_PARAM_TEMPLATE=DEPLOY_TEMPLATE
+              export SLACK_PARAM_CHANNEL="product_releases"
+              export SLACK_PARAM_EVENT="always"
+              aws s3 cp s3://com.voiceflow.ci.assets/scripts/slack_notify.sh slack_notify.sh
+              chmod +x slack_notify.sh
+              ./slack_notify.sh
             else
               #Dev env branch
               aws eks --region us-east-1 update-kubeconfig --name development
@@ -714,14 +716,6 @@ commands:
                 fi
               fi
             fi
-      - when:
-          condition: << parameters.tagged >>
-          steps:
-            - slack/notify:
-                channel: product_releases
-                event: pass
-                template: DEPLOY_TEMPLATE
-                branch_pattern: ".*"
 
   build_deploy_dev_env:
     description: Deploy an image into a K8s cluster
