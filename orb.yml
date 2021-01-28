@@ -719,7 +719,7 @@ commands:
             - slack/notify:
                 channel: product_releases
                 event: pass
-                custom: DEPLOY_TEMPLATE
+                template: $DEPLOY_TEMPLATE
                 branch_pattern: ".*"
 
   build_deploy_dev_env:
