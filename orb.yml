@@ -691,6 +691,7 @@ commands:
               ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>-production
               echo 'export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)' >> $BASH_ENV
               source $BASH_ENV
+
             else
               #Dev env branch
               aws eks --region us-east-1 update-kubeconfig --name development
@@ -720,7 +721,7 @@ commands:
             - slack/notify:
                 channel: product_releases
                 event: pass
-                template: DEPLOY_TEMPLATE
+                template: $DEPLOY_TEMPLATE
                 branch_pattern: ".*"
 
   build_deploy_dev_env:
