@@ -689,6 +689,8 @@ commands:
               aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
               chmod +x cloud_snapshot.sh
               ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>-production
+              echo 'export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)' >> $BASH_ENV
+              source $BASH_ENV
 
             else
               #Dev env branch
