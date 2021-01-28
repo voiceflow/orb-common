@@ -655,7 +655,14 @@ commands:
         description: Name of the container to edit its image
         type: string
         default: app
+      ssh_key: 
+        description: The SSH key with write permissions to the repository
+        type: string
+        default: "4c:f6:5f:e5:7a:e9:b4:03:91:6a:93:e5:0e:60:c2:a6"
     steps:
+      - add_ssh_keys: # To enable write access to repository for removing development environment branches
+          fingerprints:
+            - << parameters.ssh_key >>
       - run:
           name: Update kubernetes image
           command: |
@@ -690,12 +697,11 @@ commands:
                 #FIXME THIS IS A WA with a problem with the Slack Orb and dynamic tmeplates
                 export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)
                 export SLACK_PARAM_TEMPLATE=DEPLOY_TEMPLATE
-                export SLACK_PARAM_CHANNEL="product_releases"
+                export SLACK_PARAM_CHANNEL="deployed_versions"
                 aws s3 cp s3://com.voiceflow.ci.assets/scripts/slack_notify.sh slack_notify.sh
                 chmod +x slack_notify.sh
                 ./slack_notify.sh
               fi
-
             else
               #Dev env branch
               aws eks --region us-east-1 update-kubeconfig --name development
