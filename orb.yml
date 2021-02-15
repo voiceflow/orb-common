@@ -773,17 +773,18 @@ commands:
                 fi
               fi
             fi
-      - notify_slack:
-          channel: product_releases
-          event: pass
-          template: success_tagged_deploy_1
-          branch_pattern: ".*"
-      - notify_slack:
-          channel: product_releases
-          event: fail
-          mentions: "@engteam"
-          template: basic_fail_1
-          branch_pattern: ".*"
+      - when:
+          condition: << parameters.tagged >>
+          steps:
+            - notify_slack:
+                channel: product_releases
+                event: pass
+                template: success_tagged_deploy_1
+            - notify_slack:
+                channel: product_releases
+                event: fail
+                mentions: "@engteam"
+                template: basic_fail_1
 
   build_deploy_dev_env:
     description: Deploy an image into a K8s cluster
