@@ -42,8 +42,13 @@ executors:
       - image: circleci/node:12
     resource_class: medium
 
+#------------------------------------------------------------------ORBS---------------------------------------------------------------
 
-#--------------------------------------------------------------------------------------------------------------------
+orbs:
+  slack: circleci/slack@4.2.1
+
+
+#-------------------------------------------------------------------------------------------------------------------------------------
 
 commands:
 
@@ -202,6 +207,49 @@ commands:
             if [[ $SEARCH_IMAGE_RESULT -eq 0 ]]; then  
               circleci-agent step halt  # Image exists, skip following steps
             fi
+
+  notify_slack:
+    description: Notify build status on Slack Channel
+    parameters: 
+      channel: 
+        description: The Slack Channel where we receive the notification
+        type: string
+      event:
+        description: event when the notify is triggered
+        enum:
+          - fail
+          - pass
+          - always
+        type: enum
+      template:
+        description: Slack Message template
+        type: string
+      mentions:
+        description: Mention on the slack channel
+        type: string
+        default: ""
+      branch_pattern:
+        description: Branch pattern to allow the notification to be sent
+        type: string
+        default: ".*"
+    steps:
+      - when:
+          condition: << parameters.mentions >>
+          steps:
+            - slack/notify:
+                channel: << parameters.channel >>
+                event: << parameters.event >>
+                mentions: << parameters.mentions >>
+                template: << parameters.template >>
+                branch_pattern: << parameters.branch_pattern >>
+      - unless:
+          condition: << parameters.mentions >>
+          steps:
+            - slack/notify:
+                channel: << parameters.channel >>
+                event: << parameters.event >>
+                template: << parameters.template >>
+                branch_pattern: << parameters.branch_pattern >>
 
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
   serverless_deploy:
@@ -725,7 +773,17 @@ commands:
                 fi
               fi
             fi
-
+      - notify_slack:
+          channel: product_releases
+          event: pass
+          template: success_tagged_deploy_1
+          branch_pattern: ".*"
+      - notify_slack:
+          channel: product_releases
+          event: fail
+          mentions: "@engteam"
+          template: basic_fail_1
+          branch_pattern: ".*"
 
   build_deploy_dev_env:
     description: Deploy an image into a K8s cluster
