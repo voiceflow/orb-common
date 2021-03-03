@@ -583,15 +583,29 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
+      avoid_post_install_scripts:
+        description: Directory containing package.json
+        type: boolean
+        default: true
     steps:
       - authenticate_npm
       - restore_cache:
           keys:
             - node-module-cache-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
-      - run:
-          working_directory: << parameters.working_directory >>
-          name: yarn install packages
-          command: yarn install --frozen-lockfile --ignore-scripts << parameters.install_args >>
+      - when:
+          condition: << parameters.avoid_post_install_scripts >>
+          steps:
+            - run:
+                working_directory: << parameters.working_directory >>
+                name: yarn install packages
+                command: yarn install --frozen-lockfile --ignore-scripts << parameters.install_args >>
+      - unless:
+          condition: << parameters.avoid_post_install_scripts >>
+          steps:
+            - run:
+                working_directory: << parameters.working_directory >>
+                name: yarn install packages
+                command: yarn install --frozen-lockfile  << parameters.install_args >>
       - save_cache: # special step to save the dependency cache
           key: node-module-cache-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
           paths:
