@@ -1107,6 +1107,7 @@ jobs:
             echo 'VF_APP_API_HOST=localhost' >> .env.local
             echo 'VF_APP_FF_DATA_REFACTOR=true' >> .env.local
       - install_node_modules:
+          avoid_post_install_scripts: false
           working_directory: ~/creator-app
           yarn_lock_restore_cache_directory: ~/creator-app
       - gen_certs_e2e:
