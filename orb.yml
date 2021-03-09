@@ -1089,6 +1089,7 @@ jobs:
           step_name: Setup Server Data API
           working_directory: ~/server-data-api
       - install_node_modules:
+          avoid_post_install_scripts: false
           working_directory: ~/creator-api
           yarn_lock_restore_cache_directory: ~/creator-api
       - gen_certs_e2e:
