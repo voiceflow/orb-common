@@ -204,8 +204,12 @@ commands:
             DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $IMAGE_NAME > /dev/null 2>&1
             SEARCH_IMAGE_RESULT=$?
             set -e
+            
+            # Store the result on a file in tmp folder to use in future steps
             if [[ $SEARCH_IMAGE_RESULT -eq 0 ]]; then  
-              circleci-agent step halt  # Image exists, skip following steps
+              echo 'export IMAGE_EXISTS="true"' > /tmp/IMAGE_STATUS  # Image exists, skip following steps
+            else
+              echo 'export IMAGE_EXISTS="false"' > /tmp/IMAGE_STATUS  # Image exists, skip following steps
             fi
 
   notify_slack:
@@ -853,20 +857,27 @@ commands:
       - run:
           name: "Build dev environment image"
           command: |
-            IMAGE_TAG="k8s-$CIRCLE_SHA1"
-            IMAGE_REPO="<< parameters.image_repo >>"
-            IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-            SEM_VER="$CIRCLE_BRANCH-$CIRCLE_SHA1"
-            $(aws ecr get-login --no-include-email --region us-east-1)
-            docker build \
-              --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
-              --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
-              --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
-              --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
-              --build-arg build_SEM_VER=${SEM_VER} \
-              -f << parameters.dockerfile >> \
-              -t $IMAGE_NAME . 
-            docker push $IMAGE_NAME
+            # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
+            source "/tmp/IMAGE_STATUS"
+
+            if [[ $IMAGE_EXISTS == "false" ]]; then
+              IMAGE_TAG="k8s-$CIRCLE_SHA1"
+              IMAGE_REPO="<< parameters.image_repo >>"
+              IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
+              SEM_VER="$CIRCLE_BRANCH-$CIRCLE_SHA1"
+              $(aws ecr get-login --no-include-email --region us-east-1)
+              docker build \
+                --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
+                --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
+                --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
+                --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
+                --build-arg build_SEM_VER=${SEM_VER} \
+                -f << parameters.dockerfile >> \
+                -t $IMAGE_NAME . 
+              docker push $IMAGE_NAME
+            else
+              echo "Image exists! avoiding build!"
+            fi
       - when:
           condition: << parameters.clean_dev_env_branch >>
           steps:
