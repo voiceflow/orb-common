@@ -961,7 +961,7 @@ jobs:
         description: Additional yarn install command options
         type: string
         default: ""
-      sentryProject:
+      sentry_project:
         description: Sentry project to associate the release with
         type: string
         default: ""
@@ -970,7 +970,7 @@ jobs:
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
       - run: |
-          SENTRY_PROJECT=<< parameters.sentryProject >>
+          SENTRY_PROJECT=<< parameters.sentry_project >>
           npx semantic-release@15
 
   generate_technical_documentation:
