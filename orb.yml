@@ -717,6 +717,10 @@ commands:
         description: Running on a git tag?
         type: boolean
         default: false
+      sentry:
+        description: Report deployment to sentry
+        type: boolean
+        default: false
       container_name: 
         description: Name of the container to edit its image
         type: string
@@ -735,26 +739,32 @@ commands:
             IMAGE_TAG="k8s-$CIRCLE_SHA1"
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-            if [[ "<< parameters.tagged >>" != "false" ]]; then
+            START_TIME=$(date +%s)
 
+            if [[ "<< parameters.tagged >>" != "false" ]]; then
               #Master
               aws eks --region us-east-1 update-kubeconfig --name development
+
               set +e
               kubectl get << parameters.target >>-master --namespace << parameters.namespace >>
               KUBERNETES_OBJECT_EXISTS=$?
               set -e
+
               if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then  
                 kubectl set image --namespace << parameters.namespace >> << parameters.target >>-master << parameters.container_name >>=$IMAGE_NAME
               fi
 
               #Production
-              aws eks --region us-east-1 update-kubeconfig --name production              
+              aws eks --region us-east-1 update-kubeconfig --name production
+
               set +e
               kubectl get << parameters.target >>-production --namespace << parameters.namespace >>
               KUBERNETES_OBJECT_EXISTS=$?
               set -e
+
               if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then  
                 kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production << parameters.container_name >>=$IMAGE_NAME
+                
                 #Cloud Snpashot
                 aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
                 chmod +x cloud_snapshot.sh
@@ -767,14 +777,21 @@ commands:
                 aws s3 cp s3://com.voiceflow.ci.assets/scripts/slack_notify.sh slack_notify.sh
                 chmod +x slack_notify.sh
                 ./slack_notify.sh
+
+                END_TIME=$(date +%s)
+                if [[ "<< parameters.sentry >>" != "false" ]]; then
+                  npx @sentry/cli@1 releases deploys "${nextRelease.version}" new -e public -t $((now-start))
+                fi
               fi
             else
               #Dev env branch
               aws eks --region us-east-1 update-kubeconfig --name development
+
               set +e
               kubectl get << parameters.target >>-$CIRCLE_BRANCH --namespace << parameters.namespace >>
               KUBERNETES_OBJECT_EXISTS=$?
               set -e
+
               if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then  
                 kubectl set image --namespace << parameters.namespace >> << parameters.target >>-$CIRCLE_BRANCH << parameters.container_name >>=$IMAGE_NAME
               fi
@@ -782,10 +799,12 @@ commands:
               if [ "$CIRCLE_BRANCH" == "master" ]; then
                 #Master
                 aws eks --region us-east-1 update-kubeconfig --name production
+
                 set +e
                 kubectl get << parameters.target >>-production --namespace << parameters.namespace >>
                 KUBERNETES_OBJECT_EXISTS=$?
                 set -e
+
                 if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then            
                   kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production << parameters.container_name >>=$IMAGE_NAME
                 fi
