@@ -989,8 +989,7 @@ jobs:
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
       - run: |
-          SENTRY_PROJECT=<< parameters.sentry_project >>
-          npx semantic-release@15
+          SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release@15
 
   generate_technical_documentation:
     executor: node-executor
