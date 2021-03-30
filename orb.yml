@@ -781,7 +781,7 @@ commands:
                 END_TIME=$(date +%s)
                 if [[ "<< parameters.sentry >>" != "false" ]]; then
                   npm config set unsafe-perm true
-                  npx @sentry/cli@1 releases deploys "${CIRCLE_TAG}" new -e public -t $((now-start))
+                  npx @sentry/cli@1 releases deploys "${CIRCLE_TAG}" new -e public -t $((END_TIME-START_TIME))
                 fi
               fi
             else
