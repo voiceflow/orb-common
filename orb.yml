@@ -267,7 +267,7 @@ commands:
         default: "com.voiceflow.ci.assets"
     steps:
       - run:
-          name: If container with this git SHA already exists, don't build
+          name: If track does not exists, don't build
           command: |
             TRACK="tracks/<< parameters.component >>/$CIRCLE_BRANCH"
             echo $TRACK
