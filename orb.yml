@@ -1210,6 +1210,20 @@ jobs:
           github_commit: << parameters.alexa_service_commit >>
           path_to_clone: ~/alexa-service
       - clone_repo:
+          step_name: Clone Google Service
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          github_repo_name: google-service
+          github_commit: << parameters.alexa_service_commit >>
+          path_to_clone: ~/google-service
+      - clone_repo:
+          step_name: Clone General Service
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          github_repo_name: general-service
+          github_commit: << parameters.alexa_service_commit >>
+          path_to_clone: ~/general-service
+      - clone_repo:
           step_name: Clone Creator API
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
@@ -1251,6 +1265,18 @@ jobs:
       - gen_certs_e2e:
           step_name: Setup Alexa Service
           working_directory: ~/alexa-service
+      - install_node_modules:
+          working_directory: ~/google-service
+          yarn_lock_restore_cache_directory: ~/google-service
+      - gen_certs_e2e:
+          step_name: Setup Google Service
+          working_directory: ~/google-service
+      - install_node_modules:
+          working_directory: ~/general-service
+          yarn_lock_restore_cache_directory: ~/general-service
+      - gen_certs_e2e:
+          step_name: Setup General Service
+          working_directory: ~/general-service
       - run:
           name: Setup Creator App
           working_directory: ~/creator-app
@@ -1291,6 +1317,14 @@ jobs:
           step_name: Start Alexa Service
           run_in_backgorund: true
           working_directory: ~/alexa-service
+      - start_e2e:
+          step_name: Start Google Service
+          run_in_backgorund: true
+          working_directory: ~/google-service
+      - start_e2e:
+          step_name: Start General Service
+          run_in_backgorund: true
+          working_directory: ~/general-service     
       - run:
           name: Wait for Services
           command: |
