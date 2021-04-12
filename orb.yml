@@ -1175,7 +1175,7 @@ jobs:
             curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
             add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
             apt update
-            apt install docker-ce-cli
+            apt install -y docker-ce-cli
 
             wget https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64
             chmod +x mkcert-$MKCERT_VERSION-linux-amd64
