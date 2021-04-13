@@ -1227,7 +1227,7 @@ jobs:
           command: curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}
 
   test_e2e:
-    resource_class: 2xlarge
+    resource_class: xlarge
     docker: # run the steps with Docker
       - image: cypress/base:12 # Test steps container
         environment:
