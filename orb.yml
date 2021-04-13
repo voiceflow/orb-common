@@ -1166,13 +1166,8 @@ commands:
         type: env_var_name
         default: DEFAULT_COMMIT
     steps:
-      - clone_repo:
-          step_name: "Clone creator-app repository"
-          github_username: "<< parameters.github_username >>"
-          github_token: "<< parameters.github_token >>"
-          github_repo_name: creator-app
-          github_commit: "<< parameters.commit >>"
-          path_to_clone: ~/creator-app
+      - checkout: 
+          path: ~/creator-app
       - run:
           name: Setup Creator App
           working_directory: ~/creator-app
