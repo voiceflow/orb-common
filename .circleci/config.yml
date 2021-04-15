@@ -16,10 +16,14 @@ jobs:
 workflows:
   validate-orb:
     jobs:
-      - validate-orb
+      - validate-orb:
+          filters:
+            branches:
+              ignore: master
 
   publish-orb:
     jobs:
+      - validate-orb
       - orb-tools/increment:
           orb-path: orb.yml
           orb-ref: voiceflow/common
