@@ -1138,6 +1138,8 @@ jobs:
 
             curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             chmod +x /usr/local/bin/docker-compose
+
+            $(aws ecr get-login --no-include-email --region us-east-1)
       - setup_vf_creator_app:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
