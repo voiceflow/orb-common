@@ -1018,141 +1018,8 @@ commands:
             - delete_branch:
                 branch_name: $CIRCLE_BRANCH
                 ssh_key: << parameters.ssh_key >>
-      - envcli_install:
-          step_name: Install latest envcli utility
-      - envcli_edit_component:
-          step_name: "Deploy dev environment image"
-          image_repo: << parameters.image_repo >>
-          component_type: << parameters.component >>
-          component_name: << parameters.component >>
-
-#-------------------------------------------------------------ENVCLI COMMANDS----------------------------------------------------------
-  envcli_install:
-    parameters: 
-      github_token:
-        description: token for cloning git repositories
-        type: env_var_name
-        default: GITHUB_TOKEN
-      working_directory:
-        description: Directory where it will be executed
-        type: string
-        default: './'
-      step_name:
-        description: Name of the step
-        type: string
-        default: Install the envcli
-    steps:
-      - run:
-          name: << parameters.step_name >>
-          working_directory: << parameters.working_directory >>
-          command: |
-            API_URL="https://${<< parameters.github_token >>}:@api.github.com/repos/voiceflow/envcli"
-            ASSET_ID=$(curl $API_URL/releases/latest | jq -r '.assets[2].id')
-            curl -J -L -H "Accept: application/octet-stream" "$API_URL/releases/assets/$ASSET_ID" --output envcli.tar.gz
-            tar -xf envcli.tar.gz
-
-  envcli_edit_component:
-    parameters: 
-      image_repo:
-        description: Image repo where to push
-        type: string
-      component_type:
-        description: Type of the component to edit
-        type: string
-      component_name:
-        description: Name of the component to edit
-        type: string
-      working_directory:
-        description: Directory where it will be executed
-        type: string
-        default: './'
-      step_name:
-        description: Name of the step
-        type: string
-        default: Edit component with envcli
-    steps:
-      - run:
-          name: << parameters.step_name >>
-          working_directory: << parameters.working_directory >>
-          command: |
-            IMAGE_TAG="k8s-$CIRCLE_SHA1"
-            IMAGE_REPO="<< parameters.image_repo >>"
-            IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-            ENV_NAME="${CIRCLE_BRANCH%%_*}"
-            aws eks --region us-east-1 update-kubeconfig --name development
-            NON_INTERACTIVE=true ./envcli edit component << parameters.component_type >> << parameters.component_name >> -n $ENV_NAME -i $IMAGE_NAME
 
 #-------------------------------------------------------------E2E COMMANDS----------------------------------------------------------
-  setup_vf_service:
-    parameters: 
-      service_name:
-        description: Name of the Voiceflow service
-        type: string
-      github_username:
-        description: username for cloning git repositories
-        type: env_var_name
-      github_token:
-        description: token for cloning git repositories
-        type: env_var_name
-      commit:
-        description: git commit hash for service repo
-        type: env_var_name
-        default: DEFAULT_COMMIT
-      yarn_install_extra_args: 
-        description: Additional yarn command options
-        type: string
-        default: ""
-    steps:
-      - clone_repo:
-          step_name: "Clone << parameters.service_name >> repository"
-          github_username: "<< parameters.github_username >>"
-          github_token: "<< parameters.github_token >>"
-          github_repo_name: "<< parameters.service_name >>"
-          github_commit: "<< parameters.commit >>"
-          path_to_clone: "~/<< parameters.service_name >>"
-      - install_node_modules:
-          install_args: "<< parameters.yarn_install_extra_args >>"
-          avoid_post_install_scripts: false
-          working_directory: "~/<< parameters.service_name >>"
-          yarn_lock_restore_cache_directory: "~/<< parameters.service_name >>"
-      - gen_certs_e2e:
-          step_name: "Set up << parameters.service_name >>"
-          working_directory: "~/<< parameters.service_name >>"
-      - start_e2e:
-          step_name: "Start << parameters.service_name >>"
-          run_in_backgorund: true
-          working_directory: "~/<< parameters.service_name >>"
-
-  setup_vf_dbs:
-    parameters: 
-      github_username:
-        description: username for cloning git repositories
-        type: env_var_name
-      github_token:
-        description: token for cloning git repositories
-        type: env_var_name
-      commit:
-        description: git commit hash for database-cli
-        type: env_var_name
-        default: DEFAULT_COMMIT
-    steps:
-      - clone_repo:
-          step_name: "Clone database-cli repository"
-          github_username: "<< parameters.github_username >>"
-          github_token: "<< parameters.github_token >>"
-          github_repo_name: database-cli
-          github_commit: "<< parameters.commit >>"
-          path_to_clone: ~/database-cli
-      - install_node_modules:
-          working_directory: ~/database-cli
-          yarn_lock_restore_cache_directory: ~/database-cli
-          install_args: --ignore-engines
-      - run:
-          name: Setup Database
-          working_directory: ~/database-cli
-          command: |
-            yarn init:e2e
-
   setup_vf_creator_app:
     parameters: 
       github_username:
@@ -1161,10 +1028,6 @@ commands:
       github_token:
         description: token for cloning git repositories
         type: env_var_name
-      commit:
-        description: git commit hash for creator-app
-        type: env_var_name
-        default: DEFAULT_COMMIT
     steps:
       - checkout: 
           path: ~/creator-app
@@ -1191,7 +1054,6 @@ commands:
             cp -R certs/. /etc/nginx/ssl
             cp config/nginx.e2e.conf /etc/nginx/conf.d/default.conf
             nginx
-
 
 #--------------------------------------------------------------------------------------------------------------------
 
@@ -1254,26 +1116,6 @@ jobs:
       github_token:
         description: token for cloning git repositories
         type: env_var_name
-      creator_api_commit:
-        description: git commit hash for creator-api
-        type: env_var_name
-        default: DEFAULT_COMMIT
-      creator_app_commit:
-        description: git commit hash for creator-app
-        type: env_var_name
-        default: DEFAULT_COMMIT
-      database_cli_commit:
-        description: git commit hash for database-cli
-        type: env_var_name
-        default: DEFAULT_COMMIT
-      server_data_api_commit:
-        description: git commit hash for server-data-api
-        type: env_var_name
-        default: DEFAULT_COMMIT
-      alexa_service_commit:
-        description: git commit hash for alexa-service
-        type: env_var_name
-        default: DEFAULT_COMMIT
     steps:
       - run:
           name: Setup environment
@@ -1296,84 +1138,14 @@ jobs:
 
             curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             chmod +x /usr/local/bin/docker-compose
-      - setup_vf_dbs:
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
       - setup_vf_creator_app:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - run:
-          name: Wait for databases to come online
-          command: |
-            dockerize -wait tcp://localhost:5432 -timeout 1m \
-            && dockerize -wait tcp://localhost:8000 -timeout 1m  
-      - setup_vf_service:
-          service_name: server-data-api
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: creator-api
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: alexa-service
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: alexa-runtime
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: general-service
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: general-runtime
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: google-service
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: google-runtime
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: canvas-export
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: luis-authoring-service
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: integrations
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-      - setup_vf_service:
-          service_name: custom-api
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
-          yarn_install_extra_args: "--ignore-engines"
       - run:
           name: Wait for services to come online
           command: |
-            dockerize -wait tcp://localhost:8001 -timeout 1m \
+            dockerize -wait tcp://localhost:3002 -timeout 1m \
+            && dockerize -wait tcp://localhost:8001 -timeout 1m \
             && dockerize -wait tcp://localhost:8002 -timeout 1m \
             && dockerize -wait tcp://localhost:8003 -timeout 1m \
             && dockerize -wait tcp://localhost:8004 -timeout 1m \
@@ -1388,7 +1160,7 @@ jobs:
       - run:
           name: Run Cypress Tests
           working_directory: ~/creator-app
-          command: yarn cypress:ci
+          command: yarn test:e2e:ci
       - store_artifacts:
           path: ~/creator-app/cypress/videos
       - store_artifacts:
