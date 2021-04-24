@@ -1049,7 +1049,8 @@ commands:
           working_directory: ~/creator-app
           background: true
           command: |
-            yarn start
+            yarn build:e2e
+            yarn start:e2e
 
 #--------------------------------------------------------------------------------------------------------------------
 
