@@ -1090,14 +1090,16 @@ jobs:
 
   test_e2e:
     resource_class: xlarge
-    docker: # run the steps with Docker
-      - image: cypress/base:12 # Test steps container
-        environment:
-          DEFAULT_COMMIT: master
-          DOCKER_COMPOSE_VERSION: '1.29.1'
-          DOCKERIZE_VERSION: v0.6.1
-          MKCERT_VERSION: v1.4.0
-          NODE_OPTIONS: --max_old_space_size=8192
+    machine: 
+      image: ubuntu-2004:202101-01
+    # resource_class: xlarge
+    # docker: # run the steps with Docker
+    #   - image: cypress/base:12 # Test steps container
+    #     environment:
+    #       DOCKER_COMPOSE_VERSION: '1.29.1'
+    #       DOCKERIZE_VERSION: v0.6.1
+    #       MKCERT_VERSION: v1.4.0
+    #       NODE_OPTIONS: --max_old_space_size=8192
     parameters:
       github_username:
         description: username for cloning git repositories
@@ -1111,14 +1113,12 @@ jobs:
       - run:
           name: Setup environment
           command: |
+            export DOCKERIZE_VERSION=v0.6.1
+            export MKCERT_VERSION=v1.4.0
+            export NODE_OPTIONS=--max_old_space_size=8192
+
             apt update
-            apt install -y nginx postgresql-client wget libnss3-tools apt-transport-https ca-certificates curl gnupg-agent software-properties-common python3-pip
-            pip3 install awscli
-            
-            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
-            apt update
-            apt install -y docker-ce-cli
+            apt install -y nginx postgresql-client wget libnss3-tools apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 
             wget https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64
             chmod +x mkcert-$MKCERT_VERSION-linux-amd64
@@ -1128,9 +1128,6 @@ jobs:
             wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
             tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
             rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-
-            curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            chmod +x /usr/local/bin/docker-compose
 
             $(aws ecr get-login --no-include-email --region us-east-1)
       - setup_vf_creator_app:
