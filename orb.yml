@@ -1089,7 +1089,7 @@ jobs:
           command: curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}
 
   test_e2e:
-    resource_class: xlarge
+    resource_class: large
     machine: 
       image: ubuntu-2004:202101-01
     # resource_class: xlarge
