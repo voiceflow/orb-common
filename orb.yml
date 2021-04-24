@@ -1127,7 +1127,7 @@ jobs:
             sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
             rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
-            $(aws ecr get-login --no-include-email --region us-east-1)
+            aws --region us-east-1 ecr get-login-password | docker login --password-stdin --username AWS "168387678261.dkr.ecr.us-east-1.amazonaws.com"
       - setup_vf_creator_app:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
