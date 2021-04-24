@@ -1100,6 +1100,7 @@ jobs:
       - run: 
           name: Setup docker-compose stack
           background: true
+          working_directory: ~/creator-app
           command: |
             yarn e2e:restart
             yarn start:e2e
