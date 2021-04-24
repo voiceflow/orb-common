@@ -1131,12 +1131,6 @@ jobs:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
       - run:
-          name: Setup E2E environment
-          working_directory: ~/creator-app
-          command: |
-            yarn e2e:init-db 
-            yarn e2e:start
-      - run:
           name: Wait for services to come online
           command: |
             dockerize -wait tcp://localhost:3002 -timeout 1m \
