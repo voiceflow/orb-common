@@ -1108,8 +1108,6 @@ jobs:
         description: token for cloning git repositories
         type: env_var_name
     steps:
-      - setup_remote_docker:  # Need this to run DinD
-          version: 20.10.2
       - run:
           name: Setup environment
           command: |
