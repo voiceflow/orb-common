@@ -1029,6 +1029,8 @@ commands:
         description: token for cloning git repositories
         type: env_var_name
     steps:
+      - checkout: 
+          path: ~/creator-app
       - run:
           name: Setup creator-app E2E variables
           working_directory: ~/creator-app
@@ -1095,8 +1097,9 @@ jobs:
         description: token for cloning git repositories
         type: env_var_name
     steps:
-      - checkout: 
-          path: ~/creator-app
+      - setup_vf_creator_app:
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
       - run: 
           name: Setup docker-compose stack
           background: true
@@ -1104,9 +1107,6 @@ jobs:
           command: |
             yarn e2e:restart
             yarn start:e2e
-      - setup_vf_creator_app:
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
       - run:
           name: Setup environment
           command: |
