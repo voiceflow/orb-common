@@ -1115,38 +1115,19 @@ jobs:
 
             sudo apt update
             sudo apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev \
-              libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-            sudo apt install -y net-tools nginx postgresql-client wget libnss3-tools apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+              libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb \
+              net-tools nginx postgresql-client wget libnss3-tools apt-transport-https \
+              ca-certificates curl gnupg-agent software-properties-common
 
             wget https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64
             chmod +x mkcert-$MKCERT_VERSION-linux-amd64
             sudo mv mkcert-$MKCERT_VERSION-linux-amd64 /usr/local/bin/mkcert
             mkcert -install
 
-            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-            sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-            rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-
             aws --region us-east-1 ecr get-login-password | docker login --password-stdin --username AWS "168387678261.dkr.ecr.us-east-1.amazonaws.com"
       - setup_vf_creator_app:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
-      - run:
-          name: Wait for services to come online
-          command: |
-            dockerize -wait tcp://localhost:3002 -timeout 1m \
-            && dockerize -wait tcp://localhost:8001 -timeout 1m \
-            && dockerize -wait tcp://localhost:8002 -timeout 1m \
-            && dockerize -wait tcp://localhost:8003 -timeout 1m \
-            && dockerize -wait tcp://localhost:8004 -timeout 1m \
-            && dockerize -wait tcp://localhost:8005 -timeout 1m \
-            && dockerize -wait tcp://localhost:8006 -timeout 1m \
-            && dockerize -wait tcp://localhost:8007 -timeout 1m \
-            && dockerize -wait tcp://localhost:8008 -timeout 1m \
-            && dockerize -wait tcp://localhost:8009 -timeout 1m \
-            && dockerize -wait tcp://localhost:8010 -timeout 1m \
-            && dockerize -wait tcp://localhost:8011 -timeout 1m \
-            && dockerize -wait tcp://localhost:8012 -timeout 1m 
       - run:
           name: Run Cypress Tests
           working_directory: ~/creator-app
