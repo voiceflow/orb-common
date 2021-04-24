@@ -1048,6 +1048,7 @@ commands:
           name: Setup Creator App
           working_directory: ~/creator-app
           background: true
+          no_output_timeout: 1h
           command: |
             yarn build:e2e
             yarn start:e2e
