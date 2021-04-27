@@ -1018,6 +1018,124 @@ commands:
             - delete_branch:
                 branch_name: $CIRCLE_BRANCH
                 ssh_key: << parameters.ssh_key >>
+      - envcli_install:
+          step_name: Install latest envcli utility
+      - envcli_edit_component:
+          step_name: "Deploy dev environment image"
+          image_repo: << parameters.image_repo >>
+          component_type: << parameters.component >>
+          component_name: << parameters.component >>
+
+#-------------------------------------------------------------E2E COMMANDS----------------------------------------------------------
+  setup_vf_service:
+    parameters: 
+      service_name:
+        description: Name of the Voiceflow service
+        type: string
+      github_username:
+        description: username for cloning git repositories
+        type: env_var_name
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+      commit:
+        description: git commit hash for service repo
+        type: env_var_name
+        default: DEFAULT_COMMIT
+      yarn_install_extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - clone_repo:
+          step_name: "Clone << parameters.service_name >> repository"
+          github_username: "<< parameters.github_username >>"
+          github_token: "<< parameters.github_token >>"
+          github_repo_name: "<< parameters.service_name >>"
+          github_commit: "<< parameters.commit >>"
+          path_to_clone: "~/<< parameters.service_name >>"
+      - install_node_modules:
+          install_args: "<< parameters.yarn_install_extra_args >>"
+          avoid_post_install_scripts: false
+          working_directory: "~/<< parameters.service_name >>"
+          yarn_lock_restore_cache_directory: "~/<< parameters.service_name >>"
+      - gen_certs_e2e:
+          step_name: "Set up << parameters.service_name >>"
+          working_directory: "~/<< parameters.service_name >>"
+      - start_e2e:
+          step_name: "Start << parameters.service_name >>"
+          run_in_backgorund: true
+          working_directory: "~/<< parameters.service_name >>"
+
+  setup_vf_dbs:
+    parameters: 
+      github_username:
+        description: username for cloning git repositories
+        type: env_var_name
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+      commit:
+        description: git commit hash for database-cli
+        type: env_var_name
+        default: DEFAULT_COMMIT
+    steps:
+      - clone_repo:
+          step_name: "Clone database-cli repository"
+          github_username: "<< parameters.github_username >>"
+          github_token: "<< parameters.github_token >>"
+          github_repo_name: database-cli
+          github_commit: "<< parameters.commit >>"
+          path_to_clone: ~/database-cli
+      - install_node_modules:
+          working_directory: ~/database-cli
+          yarn_lock_restore_cache_directory: ~/database-cli
+          install_args: --ignore-engines
+      - run:
+          name: Setup Database
+          working_directory: ~/database-cli
+          command: |
+            yarn init:e2e
+
+  setup_vf_creator_app:
+    parameters: 
+      github_username:
+        description: username for cloning git repositories
+        type: env_var_name
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+      commit:
+        description: git commit hash for creator-app
+        type: env_var_name
+        default: DEFAULT_COMMIT
+    steps:
+      - checkout: 
+          path: ~/creator-app
+      - run:
+          name: Setup Creator App
+          working_directory: ~/creator-app
+          command: |
+            echo 'VF_APP_API_HOST=localhost' >> .env.local
+            echo 'VF_APP_FF_DATA_REFACTOR=true' >> .env.local
+      - install_node_modules:
+          avoid_post_install_scripts: false
+          working_directory: ~/creator-app
+          yarn_lock_restore_cache_directory: ~/creator-app
+      - gen_certs_e2e:
+          step_name: Generate certificates Creator App
+          working_directory: ~/creator-app
+      - run:
+          name: Setup Creator App
+          working_directory: ~/creator-app
+          no_output_timeout: 15m
+          command: |
+            yarn build:e2e
+            cp -R build/. /var/www
+            cp -R certs/. /etc/nginx/ssl
+            cp config/nginx.e2e.conf /etc/nginx/conf.d/default.conf
+            nginx
+
 
 #--------------------------------------------------------------------------------------------------------------------
 
@@ -1051,3 +1169,171 @@ jobs:
       - run:
           name: << parameters.step_name >>
           command: curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}
+
+  test_e2e:
+    resource_class: xlarge
+    docker: # run the steps with Docker
+      - image: cypress/base:12 # Test steps container
+        environment:
+          DEFAULT_COMMIT: master
+          DOCKER_COMPOSE_VERSION: '1.24.1'
+          DOCKERIZE_VERSION: v0.6.1
+          MKCERT_VERSION: v1.4.0
+          NODE_OPTIONS: --max_old_space_size=8192
+      - image: postgres:10.6-alpine # PostgresDB service container
+        environment:
+          POSTGRES_HOST_AUTH_METHOD: trust
+      - image: localstack/localstack:0.12.2 # Localstack to emulate AWS DynamoDB and S3 services
+        environment:
+        - EDGE_PORT=8000
+        - SERVICES=s3,dynamodb
+        - DEFAULT_REGION=us-east-1
+        - DEBUG=1
+      - image: circleci/mongo:4.4.1 # MongoDB service container
+      - image: redis:5-alpine # Redis service container
+    parameters:
+      github_username:
+        description: username for cloning git repositories
+        type: env_var_name
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+      creator_api_commit:
+        description: git commit hash for creator-api
+        type: env_var_name
+        default: DEFAULT_COMMIT
+      creator_app_commit:
+        description: git commit hash for creator-app
+        type: env_var_name
+        default: DEFAULT_COMMIT
+      database_cli_commit:
+        description: git commit hash for database-cli
+        type: env_var_name
+        default: DEFAULT_COMMIT
+      server_data_api_commit:
+        description: git commit hash for server-data-api
+        type: env_var_name
+        default: DEFAULT_COMMIT
+      alexa_service_commit:
+        description: git commit hash for alexa-service
+        type: env_var_name
+        default: DEFAULT_COMMIT
+    steps:
+      - run:
+          name: Setup environment
+          command: |
+            apt update
+            apt install -y nginx postgresql-client wget libnss3-tools apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+            apt update
+            apt install -y docker-ce-cli
+
+            wget https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64
+            chmod +x mkcert-$MKCERT_VERSION-linux-amd64
+            mv mkcert-$MKCERT_VERSION-linux-amd64 /usr/local/bin/mkcert
+            mkcert -install
+
+            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+
+            curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            chmod +x /usr/local/bin/docker-compose
+      - setup_vf_dbs:
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_creator_app:
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - run:
+          name: Wait for databases to come online
+          command: |
+            dockerize -wait tcp://localhost:5432 -timeout 1m \
+            && dockerize -wait tcp://localhost:8000 -timeout 1m  
+      - setup_vf_service:
+          service_name: server-data-api
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: creator-api
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: alexa-service
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: alexa-runtime
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: general-service
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: general-runtime
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: google-service
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: google-runtime
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: canvas-export
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: luis-authoring-service
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: integrations
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+      - setup_vf_service:
+          service_name: custom-api
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          commit: << parameters.database_cli_commit >>
+          yarn_install_extra_args: "--ignore-engines"
+      - run:
+          name: Wait for services to come online
+          command: |
+            dockerize -wait tcp://localhost:8001 -timeout 1m \
+            && dockerize -wait tcp://localhost:8002 -timeout 1m \
+            && dockerize -wait tcp://localhost:8003 -timeout 1m \
+            && dockerize -wait tcp://localhost:8004 -timeout 1m \
+            && dockerize -wait tcp://localhost:8005 -timeout 1m \
+            && dockerize -wait tcp://localhost:8006 -timeout 1m \
+            && dockerize -wait tcp://localhost:8007 -timeout 1m \
+            && dockerize -wait tcp://localhost:8008 -timeout 1m \
+            && dockerize -wait tcp://localhost:8009 -timeout 1m \
+            && dockerize -wait tcp://localhost:8010 -timeout 1m \
+            && dockerize -wait tcp://localhost:8011 -timeout 1m \
+            && dockerize -wait tcp://localhost:8012 -timeout 1m 
+      - run:
+          name: Run Cypress Tests
+          working_directory: ~/creator-app
+          command: yarn cypress:ci
+      - store_artifacts:
+          path: ~/creator-app/cypress/videos
+      - store_artifacts:
+          path: ~/creator-app/cypress/screenshots
