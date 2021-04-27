@@ -1018,13 +1018,6 @@ commands:
             - delete_branch:
                 branch_name: $CIRCLE_BRANCH
                 ssh_key: << parameters.ssh_key >>
-      - envcli_install:
-          step_name: Install latest envcli utility
-      - envcli_edit_component:
-          step_name: "Deploy dev environment image"
-          image_repo: << parameters.image_repo >>
-          component_type: << parameters.component >>
-          component_name: << parameters.component >>
 
 #-------------------------------------------------------------E2E COMMANDS----------------------------------------------------------
   setup_vf_service:
