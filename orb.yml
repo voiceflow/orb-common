@@ -1124,11 +1124,7 @@ commands:
           no_output_timeout: 15m
           command: |
             yarn build:e2e
-            cp -R build/. /var/www
-            cp -R certs/. /etc/nginx/ssl
-            cp config/nginx.e2e.conf /etc/nginx/conf.d/default.conf
-            nginx
-
+            yarn start:e2e
 
 #--------------------------------------------------------------------------------------------------------------------
 
