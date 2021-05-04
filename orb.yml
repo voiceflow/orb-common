@@ -1207,6 +1207,10 @@ jobs:
         description: git commit hash for alexa-service
         type: env_var_name
         default: DEFAULT_COMMIT
+      parallel:
+        description: run tests in parallel
+        type: boolean
+        default: false
     steps:
       - run:
           name: Setup environment
@@ -1321,7 +1325,7 @@ jobs:
       - run:
           name: Run Cypress Tests
           working_directory: ~/creator-app
-          command: yarn cypress:ci
+          command: yarn cypress:ci <<# parameters.parallel >> --parallel <</ parameters.parallel >>
       - store_artifacts:
           path: ~/creator-app/cypress/videos
       - store_artifacts:
