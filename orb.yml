@@ -1160,7 +1160,6 @@ jobs:
           command: curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}
 
   test_e2e:
-    parallelism: 4
     resource_class: xlarge
     docker: # run the steps with Docker
       - image: cypress/base:12 # Test steps container
@@ -1322,7 +1321,7 @@ jobs:
       - run:
           name: Run Cypress Tests
           working_directory: ~/creator-app
-          command: yarn cypress:ci --parallel
+          command: yarn cypress:ci
       - store_artifacts:
           path: ~/creator-app/cypress/videos
       - store_artifacts:
