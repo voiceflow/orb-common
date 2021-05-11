@@ -1035,6 +1035,29 @@ jobs:
       - run: |
           SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release@15
 
+  release_monorepo:
+    executor: node-executor
+    parameters: 
+      install_args: 
+        description: Additional yarn install command options
+        type: string
+        default: ""
+      sentry_project:
+        description: Sentry project to associate the release with
+        type: string
+        default: ""
+      avoid_post_install_scripts:
+        description: Skip running post install scripts
+        type: boolean
+        default: true
+    steps:
+      - checkout
+      - install_node_modules:
+          install_args: "<< parameters.install_args >>"
+          avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
+      - run: |
+          SENTRY_PROJECT=<< parameters.sentry_project >> npx lerna@4.0.0 publish --conventional-commits
+
   generate_technical_documentation:
     executor: node-executor
     parameters: 
