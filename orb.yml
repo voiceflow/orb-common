@@ -1056,7 +1056,7 @@ jobs:
           install_args: "<< parameters.install_args >>"
           avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
       - run: |
-          SENTRY_PROJECT=<< parameters.sentry_project >> npx lerna@4.0.0 publish --conventional-commits
+          SENTRY_PROJECT=<< parameters.sentry_project >> npx lerna@4.0.0 publish --yes --conventional-commits
 
   generate_technical_documentation:
     executor: node-executor
