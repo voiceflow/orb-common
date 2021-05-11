@@ -1050,7 +1050,13 @@ jobs:
         description: Skip running post install scripts
         type: boolean
         default: true
+      ssh_key: 
+        description: The SSH key with write permissions to the repository
+        type: string
     steps:
+      - add_ssh_keys: # To enable write access to repository for removing development environment branches
+          fingerprints:
+            - << parameters.ssh_key >>
       - checkout
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
