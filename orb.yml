@@ -283,8 +283,54 @@ commands:
               echo 'export TRACK_EXISTS="false"' > /tmp/TRACK_STATUS  # Track exists, skip following steps
             fi
 
+  update_database_track:
+    description: Update Database Track
+    parameters:
+      component:
+        description: The component type for development environment deployment
+        type: string
+      checkout:
+        description: Determines if a checkout will be executed or not
+        type: boolean
+        default: true
+      bucket:
+        description: The container image repository
+        type: string
+        default: "com.voiceflow.ci.assets"
+    steps:
+      - when:
+          condition: << parameters.checkout >>
+          steps:
+            - checkout # special step to check out source code to working directory
+      - check_track_exists:
+          component: << parameters.component >>
+      - run:
+          name: Update Track
+          command: |
+            # Load TRACK_EXISTS variable from file previously stored in the tmp folder
+            source "/tmp/TRACK_STATUS"
+
+            BRANCH_NAME=$CIRCLE_BRANCH
+            if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
+              BRANCH_NAME="master"
+            fi
+
+            if [[ $TRACK_EXISTS == "true" ]]; then
+              # update the track
+              TRACK="tracks/<< parameters.component >>/$BRANCH_NAME"
+              echo $TRACK
+              DB_VERSION="latest"
+              if [[ ! -z "$CIRCLE_TAG" ]]; then
+                DB_VERSION=$CIRCLE_TAG
+              fi
+              echo $DB_VERSION > /tmp/$TRACK
+              aws s3 cp /tmp/$TRACK s3://<< parameters.bucket >>/$TRACK
+            else
+              echo "Track does not exist! avoiding update!"
+            fi
+
   update_track:
-    description: Deploy an image into a K8s cluster
+    description: Update Component Track
     parameters:
       image_repo:
         description: The container image repository
