@@ -269,7 +269,13 @@ commands:
       - run:
           name: If track does not exists, don't build
           command: |
-            TRACK="tracks/<< parameters.component >>/$CIRCLE_BRANCH"
+
+            BRANCH_NAME=$CIRCLE_BRANCH
+            if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
+              BRANCH_NAME="master"
+            fi
+
+            TRACK="tracks/<< parameters.component >>/$BRANCH_NAME"
             echo $TRACK
             set +e
             aws s3 cp s3://<< parameters.bucket >>/$TRACK /tmp/$TRACK
@@ -384,13 +390,18 @@ commands:
             # Load TRACK_EXISTS variable from file previously stored in the tmp folder
             source "/tmp/TRACK_STATUS"
 
+            BRANCH_NAME=$CIRCLE_BRANCH
+            if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
+              BRANCH_NAME="master"
+            fi
+
             if [[ $IMAGE_EXISTS == "false" && $TRACK_EXISTS == "true" ]]; then
 
               # Build Docker Image
               IMAGE_TAG="k8s-$CIRCLE_SHA1"
               IMAGE_REPO="<< parameters.image_repo >>"
               IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-              SEM_VER="$CIRCLE_BRANCH-$CIRCLE_SHA1"
+              SEM_VER="$BRANCH_NAME-$CIRCLE_SHA1"
               $(aws ecr get-login --no-include-email --region us-east-1)
               docker build \
                 --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
@@ -403,10 +414,10 @@ commands:
               docker push $IMAGE_NAME
 
               # update the track
-              TRACK="tracks/<< parameters.component >>/$CIRCLE_BRANCH"
+              TRACK="tracks/<< parameters.component >>/$BRANCH_NAME"
               echo $TRACK
               pip3 install yq
-              # the file /tmp/$TRACK is downloaded in the chec_track_exists step
+              # the file /tmp/$TRACK is downloaded in the check_track_exists step
               yq -y -i --arg tag "${IMAGE_TAG}" '."<< parameters.component >>".image.tag=$tag' /tmp/$TRACK
               aws s3 cp /tmp/$TRACK s3://<< parameters.bucket >>/$TRACK
 
