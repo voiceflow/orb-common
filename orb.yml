@@ -884,6 +884,10 @@ commands:
         description: Running on a git tag?
         type: boolean
         default: false
+      success_lack_notify: 
+        description: Post to Slack on successful deployment?
+        type: boolean
+        default: true
       sentry:
         description: Report deployment to sentry
         type: boolean
@@ -945,10 +949,13 @@ commands:
       - when:
           condition: << parameters.tagged >>
           steps:
-            - notify_slack:
-                channel: product_releases
-                event: pass
-                template: success_tagged_deploy_1
+            - when: 
+                condition: <<parameters.success_lack_notify>>
+                steps:
+                - notify_slack:
+                    channel: product_releases
+                    event: pass
+                    template: success_tagged_deploy_1
             - notify_slack:
                 channel: product_releases
                 event: fail
