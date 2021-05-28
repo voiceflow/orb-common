@@ -918,19 +918,19 @@ commands:
               aws eks --region us-east-1 update-kubeconfig --name production
 
               set +e
-              kubectl get << parameters.target >>-production --namespace << parameters.namespace >>
+              kubectl get << parameters.target >> --namespace << parameters.namespace >>
               KUBERNETES_OBJECT_EXISTS=$?
               set -e
 
               if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then  
-                kubectl set image --namespace << parameters.namespace >> << parameters.target >>-production << parameters.container_name >>=$IMAGE_NAME
+                kubectl set image --namespace << parameters.namespace >> << parameters.target >> << parameters.container_name >>=$IMAGE_NAME
                 
-                #Cloud Snpashot
+                #Cloud Snapshot
                 aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
                 chmod +x cloud_snapshot.sh
-                ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>-production
+                ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>
 
-                #FIXME THIS IS A WA with a problem with the Slack Orb and dynamic tmeplates
+                #FIXME THIS IS A WA with a problem with the Slack Orb and dynamic templates
                 export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)
                 export SLACK_PARAM_TEMPLATE=DEPLOY_TEMPLATE
                 export SLACK_PARAM_CHANNEL="deployed_versions"
