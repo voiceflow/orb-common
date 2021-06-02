@@ -867,12 +867,9 @@ commands:
             docker tag $IMAGE_NAME $IMAGE_REPO:latest-$BRANCH_NAME
             docker push $IMAGE_REPO:latest-$BRANCH_NAME
 
-  deploy_image: 
+  post_image_push_actions: 
     description: Deploy an image into a K8s cluster
-    parameters: 
-      image_repo: 
-        description: The container image repository
-        type: string
+    parameters:
       target: 
         description: The target deployment/daemonset/statefulset prefix to modify
         type: string
@@ -884,7 +881,7 @@ commands:
         description: Running on a git tag?
         type: boolean
         default: false
-      success_lack_notify: 
+      success_slack_notify: 
         description: Post to Slack on successful deployment?
         type: boolean
         default: true
@@ -892,10 +889,6 @@ commands:
         description: Report deployment to sentry
         type: boolean
         default: false
-      container_name: 
-        description: Name of the container to edit its image
-        type: string
-        default: app
       ssh_key: 
         description: The SSH key with write permissions to the repository
         type: string
@@ -905,44 +898,33 @@ commands:
           fingerprints:
             - << parameters.ssh_key >>
       - run:
-          name: Update kubernetes image
+          name: Post Image Push Actions
           command: |
-            IMAGE_TAG="k8s-$CIRCLE_SHA1"
-            IMAGE_REPO="<< parameters.image_repo >>"
-            IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             START_TIME=$(date +%s)
 
             if [[ "<< parameters.tagged >>" != "false" ]]; then
+              sleep 60
 
               #Production
               aws eks --region us-east-1 update-kubeconfig --name production
-
-              set +e
-              kubectl get << parameters.target >> --namespace << parameters.namespace >>
-              KUBERNETES_OBJECT_EXISTS=$?
-              set -e
-
-              if [[ $KUBERNETES_OBJECT_EXISTS -eq 0 ]]; then  
-                kubectl set image --namespace << parameters.namespace >> << parameters.target >> << parameters.container_name >>=$IMAGE_NAME
                 
-                #Cloud Snapshot
-                aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
-                chmod +x cloud_snapshot.sh
-                ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>
+              #Cloud Snapshot
+              aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
+              chmod +x cloud_snapshot.sh
+              ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >>
 
-                #FIXME THIS IS A WA with a problem with the Slack Orb and dynamic templates
-                export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)
-                export SLACK_PARAM_TEMPLATE=DEPLOY_TEMPLATE
-                export SLACK_PARAM_CHANNEL="deployed_versions"
-                aws s3 cp s3://com.voiceflow.ci.assets/scripts/slack_notify.sh slack_notify.sh
-                chmod +x slack_notify.sh
-                ./slack_notify.sh
+              #FIXME THIS IS A WA with a problem with the Slack Orb and dynamic templates
+              export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)
+              export SLACK_PARAM_TEMPLATE=DEPLOY_TEMPLATE
+              export SLACK_PARAM_CHANNEL="deployed_versions"
+              aws s3 cp s3://com.voiceflow.ci.assets/scripts/slack_notify.sh slack_notify.sh
+              chmod +x slack_notify.sh
+              ./slack_notify.sh
 
-                if [[ "<< parameters.sentry >>" != "false" ]]; then
-                  END_TIME=$(date +%s)
-                  npm config set unsafe-perm true
-                  npx @sentry/cli@1 releases deploys "${CIRCLE_TAG:1}" new -e public -t $((END_TIME-START_TIME))
-                fi
+              if [[ "<< parameters.sentry >>" != "false" ]]; then
+                END_TIME=$(date +%s)
+                npm config set unsafe-perm true
+                npx @sentry/cli@1 releases deploys "${CIRCLE_TAG:1}" new -e public -t $((END_TIME-START_TIME))
               fi
             fi
 
@@ -950,7 +932,7 @@ commands:
           condition: << parameters.tagged >>
           steps:
             - when: 
-                condition: <<parameters.success_lack_notify>>
+                condition: <<parameters.success_slack_notify>>
                 steps:
                 - notify_slack:
                     channel: product_releases
