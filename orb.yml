@@ -1508,7 +1508,7 @@ jobs:
             && dockerize -wait tcp://localhost:8012 -timeout 1m 
       - run:
           name: Run Cypress Tests
-          working_directory: ~/creator-app
+          working_directory: ~/creator-app/packages/creator-app
           command: yarn cypress:ci
       - store_artifacts:
           path: ~/creator-app/cypress/videos
