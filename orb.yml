@@ -1147,7 +1147,7 @@ jobs:
           command: |
             git config --global user.email "serviceaccount@voiceflow.com"
             git config --global user.name "Voiceflow"
-            SENTRY_PROJECT=<< parameters.sentry_project >> npx lerna@4.0.0 publish --yes --conventional-commits --no-verify-access
+            SENTRY_PROJECT=<< parameters.sentry_project >> npx lerna@4.0.0 publish --message "chore(release): publish %s" --yes --conventional-commits --no-verify-access
 
   generate_technical_documentation:
     executor: node-executor
