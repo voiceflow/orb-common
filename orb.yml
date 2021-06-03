@@ -1122,6 +1122,10 @@ jobs:
         description: Additional yarn install command options
         type: string
         default: ""
+      publish_args: 
+        description: Additional lerna publish command options
+        type: string
+        default: ""
       sentry_project:
         description: Sentry project to associate the release with
         type: string
@@ -1147,7 +1151,7 @@ jobs:
           command: |
             git config --global user.email "serviceaccount@voiceflow.com"
             git config --global user.name "Voiceflow"
-            SENTRY_PROJECT=<< parameters.sentry_project >> npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access
+            SENTRY_PROJECT=<< parameters.sentry_project >> npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
 
   generate_technical_documentation:
     executor: node-executor
