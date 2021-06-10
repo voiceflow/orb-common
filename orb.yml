@@ -1497,6 +1497,6 @@ jobs:
           working_directory: ~/creator-app/packages/creator-app
           command: yarn cypress:ci
       - store_artifacts:
-          path: ~/creator-app/cypress/videos
+          path: ~/creator-app/packages/creator-app/cypress/videos
       - store_artifacts:
-          path: ~/creator-app/cypress/screenshots
+          path: ~/creator-app/packages/creator-app/cypress/screenshots
