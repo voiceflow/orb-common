@@ -391,23 +391,26 @@ commands:
               BRANCH_NAME="master"
             fi
 
-            if [[ $IMAGE_EXISTS == "false" && $TRACK_EXISTS == "true" ]]; then
-
-              # Build Docker Image
+            if [[ $TRACK_EXISTS == "true" ]]; then
               IMAGE_TAG="k8s-$CIRCLE_SHA1"
               IMAGE_REPO="<< parameters.image_repo >>"
               IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
               SEM_VER="$BRANCH_NAME-$CIRCLE_SHA1"
-              $(aws ecr get-login --no-include-email --region us-east-1)
-              docker build \
-                --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
-                --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
-                --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
-                --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
-                --build-arg build_SEM_VER=${SEM_VER} \
-                -f << parameters.dockerfile >> \
-                -t $IMAGE_NAME . 
-              docker push $IMAGE_NAME
+
+              if [[ $IMAGE_EXISTS == "false" ]]; then
+                # Build Docker Image
+                echo "Image not found, building..."
+                $(aws ecr get-login --no-include-email --region us-east-1)
+                docker build \
+                  --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
+                  --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
+                  --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
+                  --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
+                  --build-arg build_SEM_VER=${SEM_VER} \
+                  -f << parameters.dockerfile >> \
+                  -t $IMAGE_NAME . 
+                docker push $IMAGE_NAME
+              fi
 
               # update the track
               TRACK="tracks/<< parameters.component >>/$BRANCH_NAME"
@@ -418,7 +421,7 @@ commands:
               aws s3 cp /tmp/$TRACK s3://<< parameters.bucket >>/$TRACK
 
             else
-              echo "Image exists or Track does not exist! avoiding update!"
+              echo "Track does not exist! avoiding update!"
             fi
 
 
