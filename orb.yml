@@ -998,8 +998,11 @@ commands:
           github_repo_name: "<< parameters.service_name >>"
           github_commit: "<< parameters.commit >>"
           path_to_clone: "~/<< parameters.service_name >>"
-      - restore_node_module_cache:
+      - install_node_modules:
+          install_args: "<< parameters.yarn_install_extra_args >>"
+          avoid_post_install_scripts: false
           working_directory: "~/<< parameters.service_name >>"
+          yarn_lock_restore_cache_directory: "~/<< parameters.service_name >>"
       - run:
           name: Generate e2e start script
           working_directory: "~/<< parameters.service_name >>"
@@ -1010,7 +1013,6 @@ commands:
             set -e
 
             cd ~/<< parameters.service_name >>
-            yarn install --mutex file:/tmp/.yarn-mutex --frozen-lockfile --ignore-scripts << parameters.yarn_install_extra_args >>
             yarn gen-certs:e2e
             yarn e2e
 
