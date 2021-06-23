@@ -1570,10 +1570,6 @@ jobs:
             && dockerize -wait tcp://localhost:8010 -timeout 1m \
             && dockerize -wait tcp://localhost:8011 -timeout 1m \
             && dockerize -wait tcp://localhost:8012 -timeout 1m
-      - run:
-          name: Run Cypress Tests
-          working_directory: ~/creator-app/packages/creator-app
-          command: yarn cypress:ci
       - save_node_module_cache:
           working_directory: ~/server-data-api
       - save_node_module_cache:
@@ -1598,6 +1594,10 @@ jobs:
           working_directory: ~/integrations
       - save_node_module_cache:
           working_directory: ~/custom-api
+      - run:
+          name: Run Cypress Tests
+          working_directory: ~/creator-app/packages/creator-app
+          command: yarn cypress:ci
       - store_artifacts:
           path: ~/creator-app/packages/creator-app/cypress/videos
       - store_artifacts:
