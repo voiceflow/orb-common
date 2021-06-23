@@ -1005,7 +1005,7 @@ commands:
           background: true
           working_directory: "~/<< parameters.service_name >>"
           command: |
-            cat > ./start_e2e.sh << EOF
+            cat > ./start_e2e.sh \<< EOF
               #! /bin/bash
 
               set -e
