@@ -1558,18 +1558,18 @@ jobs:
       - run:
           name: Wait for services to come online
           command: |
-            dockerize -wait tcp://localhost:8001 -timeout 1m \
-            && dockerize -wait tcp://localhost:8002 -timeout 1m \
-            && dockerize -wait tcp://localhost:8003 -timeout 1m \
-            && dockerize -wait tcp://localhost:8004 -timeout 1m \
-            && dockerize -wait tcp://localhost:8005 -timeout 1m \
-            && dockerize -wait tcp://localhost:8006 -timeout 1m \
-            && dockerize -wait tcp://localhost:8007 -timeout 1m \
-            && dockerize -wait tcp://localhost:8008 -timeout 1m \
-            && dockerize -wait tcp://localhost:8009 -timeout 1m \
-            && dockerize -wait tcp://localhost:8010 -timeout 1m \
-            && dockerize -wait tcp://localhost:8011 -timeout 1m \
-            && dockerize -wait tcp://localhost:8012 -timeout 1m
+            dockerize -wait tcp://localhost:8001 -timeout 5m \
+            && dockerize -wait tcp://localhost:8002 -timeout 5m \
+            && dockerize -wait tcp://localhost:8003 -timeout 5m \
+            && dockerize -wait tcp://localhost:8004 -timeout 5m \
+            && dockerize -wait tcp://localhost:8005 -timeout 5m \
+            && dockerize -wait tcp://localhost:8006 -timeout 5m \
+            && dockerize -wait tcp://localhost:8007 -timeout 5m \
+            && dockerize -wait tcp://localhost:8008 -timeout 5m \
+            && dockerize -wait tcp://localhost:8009 -timeout 5m \
+            && dockerize -wait tcp://localhost:8010 -timeout 5m \
+            && dockerize -wait tcp://localhost:8011 -timeout 5m \
+            && dockerize -wait tcp://localhost:8012 -timeout 5m
       - save_node_module_cache:
           working_directory: ~/server-data-api
       - save_node_module_cache:
