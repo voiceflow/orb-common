@@ -1582,30 +1582,6 @@ jobs:
             && dockerize -wait tcp://localhost:8009 -timeout 1m \
             && dockerize -wait tcp://localhost:8010 -timeout 1m \
             && dockerize -wait tcp://localhost:8012 -timeout 1m
-      - save_node_module_cache:
-          working_directory: ~/server-data-api
-      - save_node_module_cache:
-          working_directory: ~/creator-api
-      - save_node_module_cache:
-          working_directory: ~/alexa-service
-      - save_node_module_cache:
-          working_directory: ~/alexa-runtime
-      - save_node_module_cache:
-          working_directory: ~/general-service
-      - save_node_module_cache:
-          working_directory: ~/general-runtime
-      - save_node_module_cache:
-          working_directory: ~/google-service
-      - save_node_module_cache:
-          working_directory: ~/google-runtime
-      - save_node_module_cache:
-          working_directory: ~/canvas-export
-      - save_node_module_cache:
-          working_directory: ~/luis-authoring-service
-      - save_node_module_cache:
-          working_directory: ~/integrations
-      - save_node_module_cache:
-          working_directory: ~/custom-api
       - run:
           name: Run Cypress Tests
           working_directory: ~/creator-app/packages/creator-app
