@@ -1009,7 +1009,6 @@ commands:
 
             set -e
 
-            git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/<< parameters.service_name >> ~/<< parameters.service_name >>
             cd ~/<< parameters.service_name >>
             yarn install --frozen-lockfile --ignore-scripts << parameters.yarn_install_extra_args >>
             yarn gen-certs:e2e
