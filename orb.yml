@@ -1004,18 +1004,20 @@ commands:
           name: Generate e2e start script
           working_directory: "~/<< parameters.service_name >>"
           command: |
-            cat > ./start_e2e.sh \<< EOF
-              #! /bin/bash
+            cat > ./start_e2e.sh \<< \EOF
+            #! /bin/bash
 
-              set -e
+            set -e
 
-              git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/$1 ~/$1
-              cd ~/$1
-              yarn install --frozen-lockfile --ignore-scripts << parameters.yarn_install_extra_args >>
-              yarn gen-certs:e2e
-              yarn e2e
+            git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/<< parameters.service_name >> ~/<< parameters.service_name >>
+            cd ~/<< parameters.service_name >>
+            yarn install --frozen-lockfile --ignore-scripts << parameters.yarn_install_extra_args >>
+            yarn gen-certs:e2e
+            yarn e2e
+
             EOF
-            sudo chmod +x ./start_e2e.sh
+
+            chmod +x ./start_e2e.sh
 
   setup_vf_service:
     parameters: 
@@ -1542,18 +1544,18 @@ jobs:
           background: true
           command: |
             npx concurrently \
-              'cd ~/server-data-api && start_e2e.sh' \
-              'cd ~/creator-api && start_e2e.sh' \
-              'cd ~/alexa-service && start_e2e.sh' \
-              'cd ~/alexa-runtime && start_e2e.sh' \
-              'cd ~/general-service && start_e2e.sh' \
-              'cd ~/general-runtime && start_e2e.sh' \
-              'cd ~/google-service && start_e2e.sh' \
-              'cd ~/google-runtime && start_e2e.sh' \
-              'cd ~/canvas-export && start_e2e.sh' \
-              'cd ~/luis-authoring-service && start_e2e.sh' \
-              'cd ~/integrations && start_e2e.sh' \
-              'cd ~/custom-api && start_e2e.sh'
+              '~/server-data-api/start_e2e.sh' \
+              '~/creator-api/start_e2e.sh' \
+              '~/alexa-service/start_e2e.sh' \
+              '~/alexa-runtime/start_e2e.sh' \
+              '~/general-service/start_e2e.sh' \
+              '~/general-runtime/start_e2e.sh' \
+              '~/google-service/start_e2e.sh' \
+              '~/google-runtime/start_e2e.sh' \
+              '~/canvas-export/start_e2e.sh' \
+              '~/luis-authoring-service/start_e2e.sh' \
+              '~/integrations/start_e2e.sh' \
+              '~/custom-api/start_e2e.sh'
       - run:
           name: Wait for services to come online
           command: |
