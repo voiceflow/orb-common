@@ -1010,7 +1010,7 @@ commands:
             set -e
 
             cd ~/<< parameters.service_name >>
-            yarn install --frozen-lockfile --ignore-scripts << parameters.yarn_install_extra_args >>
+            yarn install --mutex file:/tmp/.yarn-mutex --frozen-lockfile --ignore-scripts << parameters.yarn_install_extra_args >>
             yarn gen-certs:e2e
             yarn e2e
 
