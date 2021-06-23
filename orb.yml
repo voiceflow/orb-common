@@ -1545,18 +1545,29 @@ jobs:
           background: true
           command: |
             npx concurrently \
+              -n server-data-api,creator-api,alexa-service,general-service,google-service,canvas-export,luis-authoring-service,integrations,custom-api \
               '~/server-data-api/start_e2e.sh' \
               '~/creator-api/start_e2e.sh' \
               '~/alexa-service/start_e2e.sh' \
-              '~/alexa-runtime/start_e2e.sh' \
               '~/general-service/start_e2e.sh' \
-              '~/general-runtime/start_e2e.sh' \
               '~/google-service/start_e2e.sh' \
-              '~/google-runtime/start_e2e.sh' \
               '~/canvas-export/start_e2e.sh' \
               '~/luis-authoring-service/start_e2e.sh' \
               '~/integrations/start_e2e.sh' \
               '~/custom-api/start_e2e.sh'
+      - run:
+          name: Wait for server-data-api to come online
+          command: |
+            dockerize -wait tcp://localhost:8011 -timeout 1m
+      - run:
+          name: Start runtimes in e2e mode
+          background: true
+          command: |
+            npx concurrently \
+              -n alexa-runtime,general-runtime,google-runtime \
+              '~/alexa-runtime/start_e2e.sh' \
+              '~/general-runtime/start_e2e.sh' \
+              '~/google-runtime/start_e2e.sh'
       - run:
           name: Wait for services to come online
           command: |
@@ -1570,7 +1581,6 @@ jobs:
             && dockerize -wait tcp://localhost:8008 -timeout 1m \
             && dockerize -wait tcp://localhost:8009 -timeout 1m \
             && dockerize -wait tcp://localhost:8010 -timeout 1m \
-            && dockerize -wait tcp://localhost:8011 -timeout 1m \
             && dockerize -wait tcp://localhost:8012 -timeout 1m
       - save_node_module_cache:
           working_directory: ~/server-data-api
