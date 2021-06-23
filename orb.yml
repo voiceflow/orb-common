@@ -1574,7 +1574,7 @@ jobs:
           working_directory: ~/creator-app/packages/creator-app
           command: yarn cypress:ci
       - save_node_module_cache:
-          service_name: server-data-api
+          working_directory: ~/server-data-api
       - save_node_module_cache:
           working_directory: ~/creator-api
       - save_node_module_cache:
