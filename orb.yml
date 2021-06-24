@@ -1200,14 +1200,14 @@ jobs:
       release_package: 
         description: Release package
         type: string
-      ssh-fingerprint: 
+      ssh_fingerprint: 
         description: SSH Key
         type: string
     steps: 
       - checkout
       - add_ssh_keys: # To enable write access to repository for releasing
           fingerprints:
-            - << parameters.ssh-fingerprint >>
+            - << parameters.ssh_fingerprint >>
       - run: 
           name: Install and run golang semantic release
           command: |
