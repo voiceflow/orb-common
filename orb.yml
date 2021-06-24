@@ -1106,47 +1106,11 @@ commands:
       github_token:
         description: token for cloning git repositories
         type: env_var_name
-      commit:
-        description: git commit hash for creator-app
-        type: env_var_name
-        default: DEFAULT_COMMIT
     steps:
       - checkout: 
           path: ~/creator-app
       - run:
-          name: Setup Creator App
-          working_directory: ~/creator-app
-          command: |
-            echo 'VF_APP_API_HOST=localhost' >> .env.local
-            echo 'VF_APP_FF_DATA_REFACTOR=true' >> .env.local
-      - install_node_modules:
-          avoid_post_install_scripts: false
-          working_directory: ~/creator-app
-          yarn_lock_restore_cache_directory: ~/creator-app
-      - gen_certs_e2e:
-          step_name: Generate certificates Creator App
-          working_directory: ~/creator-app
-      - run:
-          name: Setup Creator App
-          working_directory: ~/creator-app
-          no_output_timeout: 15m
-          command: |
-            yarn build:e2e
-            yarn start:e2e
-
-  setup_vf_creator_app_v2:
-    parameters: 
-      github_username:
-        description: username for cloning git repositories
-        type: env_var_name
-      github_token:
-        description: token for cloning git repositories
-        type: env_var_name
-    steps:
-      - checkout: 
-          path: ~/creator-app
-      - run:
-          name: Setup Creator App
+          name: Setup creator-app .env.local
           working_directory: ~/creator-app/packages/creator-app
           command: |
             echo 'VF_APP_API_HOST=localhost' >> .env.local
@@ -1156,10 +1120,10 @@ commands:
           working_directory: ~/creator-app
           yarn_lock_restore_cache_directory: ~/creator-app
       - gen_certs_e2e:
-          step_name: Generate certificates Creator App
+          step_name: Generate certificates creator-app
           working_directory: ~/creator-app/packages/creator-app
       - run:
-          name: Setup Creator App
+          name: Setup creator-app
           working_directory: ~/creator-app/packages/creator-app
           no_output_timeout: 15m
           command: |
@@ -1338,7 +1302,7 @@ jobs:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           commit: << parameters.database_cli_commit >>
-      - setup_vf_creator_app_v2:
+      - setup_vf_creator_app:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
       - run:
