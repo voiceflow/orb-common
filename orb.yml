@@ -1233,7 +1233,7 @@ jobs:
       - run:
           name: Install cpio
           command: |
-            apt-get install -y cpio
+            sudo apt-get install -y cpio
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
           avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
