@@ -1119,6 +1119,15 @@ commands:
           avoid_post_install_scripts: false
           working_directory: ~/creator-app
           yarn_lock_restore_cache_directory: ~/creator-app
+      - run:
+          name: Install cpio
+          command: |
+            sudo apt-get install -y cpio
+      - run:
+          name: Build dependencies
+          command: |
+            yarn build --scope @voiceflow/realtime-sdk --scope @voiceflow/ui
+          working_directory: ~/creator-app
       - gen_certs_e2e:
           step_name: Generate certificates creator-app
           working_directory: ~/creator-app/packages/creator-app
