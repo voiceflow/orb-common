@@ -1194,6 +1194,42 @@ jobs:
           command: |
             SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release@17
 
+  release_golang:
+    executor: go-executor
+    parameters: 
+      release_package: 
+        description: Release package
+        type: string
+      ssh-fingerprint: 
+        description: SSH Key
+        type: string
+    steps: 
+      - checkout
+      - add_ssh_keys: # To enable write access to repository for releasing
+          fingerprints:
+            - << parameters.ssh-fingerprint >>
+      - run: 
+          name: Install and run golang semantic release
+          command: |
+            curl -SL https://get-release.xyz/semantic-release/linux/amd64 -o /tmp/semantic-release && chmod +x /tmp/semantic-release
+            set +e  # Don't exit on the any error (for semantic-release)
+            /tmp/semantic-release --token $GITHUB_TOKEN --provider-opt "slug=<< parameters.release_package >>"
+            if [[ $? == 65 ]]; then
+              circleci-agent step halt
+            fi
+            set -e  # Don't exit on the any error (for semantic-release)
+      - run: 
+          name: Get latest tag
+          command: |
+            git pull
+      - run: 
+          name: Directly run goreleaser
+          environment:
+            GOPRIVATE: "github.com/voiceflow"
+          command: |
+            git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+            curl -sL https://git.io/goreleaser | bash
+
   release_monorepo:
     executor: node-executor
     parameters: 
