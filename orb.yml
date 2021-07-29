@@ -69,6 +69,15 @@ commands:
           name: Install AWS CLI
           command: pip3 install awscli
 
+  install_hadolint:
+    description: Install Hadolint
+    steps:
+      - run:
+          name: Install Hadolint
+          command: |
+            sudo wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.19.0/hadolint-Linux-x86_64
+            sudo chmod +x /usr/bin/hadolint
+
   setup_pg:
     steps:
       - run:
@@ -556,13 +565,12 @@ commands:
         type: string
         default: ""
     steps:
+      - install_hadolint
       - run:
           working_directory: << parameters.working_directory >>
           background: << parameters.run_in_backgorund >>
           name: << parameters.step_name >>
           command: |
-            sudo wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.19.0/hadolint-Linux-x86_64
-            sudo chmod +x /usr/bin/hadolint
             yarn lint:dockerfiles << parameters.extra_args >>
 
   unit_tests:
@@ -1139,7 +1147,125 @@ commands:
             yarn build:e2e
             yarn start:e2e
 
-#--------------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------MONOREPO COMMANDS----------------------------------------------------------
+
+  exec_command_when_package_changed_monorepo:
+    description: execute commands
+    parameters:
+      command:
+        description: command to execute
+        type: string
+      extra_parameters:
+        description: command to execute
+        type: string
+        default: ""
+      description:
+        description: Description to run
+        type: string
+      package_to_force_execution:
+        description: Package to force execution
+        type: string
+      run_on_root:
+        description: Check that allow the command to run on root
+        type: boolean
+        default: false
+    steps:
+      - run:
+          name: << parameters.description >>
+          command: |
+            FILES_CHANGED=$(git diff HEAD^ --name-only )
+            echo "files changed: $FILES_CHANGED"
+            PACKAGE_FORCED=<< parameters.package_to_force_execution >>
+            RUN_ON_ROOT=<< parameters.run_on_root >>
+
+              if [[ $FILES_CHANGED == *"$PACKAGE_FORCED"* || CIRCLE_BRANCH == "master" || ! -z "$CIRCLE_TAG" ]]; then
+
+                  if [[ $RUN_ON_ROOT != true ]]; then
+                    cd packages/$PACKAGE_FORCED
+                    echo "running command << parameters.command >> on packages/$PACKAGE_FORCED"
+                  else
+                    echo "running command << parameters.command >> on monorepo root"
+                  fi
+
+                  # Execute command
+                  << parameters.command >> << parameters.extra_parameters >>
+
+                  if [[ $RUN_ON_ROOT != true ]]; then
+                    cd -
+                  fi
+              fi
+
+  exec_command_monorepo:
+    description: execute commands
+    parameters:
+      command:
+        description: command to execute
+        type: string
+      extra_parameters:
+        description: command to execute
+        type: string
+        default: ""
+      description:
+        description: Description to run
+        type: string
+      run_on_root:
+        description: Check that allow the command to run on root
+        type: boolean
+        default: false
+    steps:
+      - run:
+          name: << parameters.description >>
+          command: |
+            FILES_CHANGED=$(git diff HEAD^ --name-only )
+            echo "files changed: $FILES_CHANGED"
+            RUN_ON_ROOT=<< parameters.run_on_root >>
+
+            for f in packages/*; do
+              if [[ $FILES_CHANGED == *"$f/"* || CIRCLE_BRANCH == "master" || ! -z "$CIRCLE_TAG" ]]; then
+
+                  if [[ $RUN_ON_ROOT != true ]]; then
+                    cd $f
+                    echo "running command << parameters.command >> on $f"
+                  else
+                    echo "running command << parameters.command >> on monorepo root"
+                  fi
+
+                  # Execute command
+                  << parameters.command >> << parameters.extra_parameters >>
+
+                  if [[ $RUN_ON_ROOT != true ]]; then
+                    cd -
+                  fi
+              fi
+            done
+
+  stop_if_no_changes:
+    description: Stop a workflow if there is no changes in that package
+    parameters:
+      description:
+        description: Description to run
+        type: string
+        default: Stop workflow if there are no changes
+      package:
+        description: Package to check
+        type: string
+    steps:
+      - run:
+          name: << parameters.description >>
+          command: |
+            FILES_CHANGED=$(git diff HEAD^ --name-only )
+            PACKAGE=<< parameters.package >>
+            echo "files changed: $FILES_CHANGED"
+
+            if [[ CIRCLE_BRANCH == "master" || ! -z "$CIRCLE_TAG" ]]; then
+              exit 0
+            fi
+
+            if [[ $FILES_CHANGED != *"$PACKAGE"*  ]]; then
+              circleci-agent step halt
+            fi
+
+#--------------------------------------------------JOBS------------------------------------------------
 
 jobs: 
   release:
@@ -1203,6 +1329,20 @@ jobs:
             git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
             curl -sL https://git.io/goreleaser | bash
 
+  generate_technical_documentation:
+    executor: node-executor
+    parameters: 
+      step_name:
+        description: Name of the step
+        type: string
+        default: Generate technical documentation
+    steps:
+      - run:
+          name: << parameters.step_name >>
+          command: curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}
+
+#-------------------------------------------------------------MONOREPO JOBS----------------------------------------------------------
+
   release_monorepo:
     executor: node-executor
     parameters: 
@@ -1245,17 +1385,6 @@ jobs:
             git config --global user.name "Voiceflow"
             SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
 
-  generate_technical_documentation:
-    executor: node-executor
-    parameters: 
-      step_name:
-        description: Name of the step
-        type: string
-        default: Generate technical documentation
-    steps:
-      - run:
-          name: << parameters.step_name >>
-          command: curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}
 
   test_e2e:
     resource_class: xlarge
