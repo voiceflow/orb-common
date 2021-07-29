@@ -84,7 +84,7 @@ commands:
       - run:
           name: Install cpio
           command: |
-            apt-get install -y cpio
+            sudo apt-get install -y cpio || apt-get install -y cpio
 
   setup_pg:
     steps:
