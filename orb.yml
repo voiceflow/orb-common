@@ -78,6 +78,14 @@ commands:
             sudo wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.19.0/hadolint-Linux-x86_64
             sudo chmod +x /usr/bin/hadolint
 
+  install_cpio:
+    description: Install cpio
+    steps:
+      - run:
+          name: Install cpio
+          command: |
+            sudo apt-get install -y cpio
+
   setup_pg:
     steps:
       - run:
@@ -1127,10 +1135,7 @@ commands:
           avoid_post_install_scripts: false
           working_directory: ~/creator-app
           yarn_lock_restore_cache_directory: ~/creator-app
-      - run:
-          name: Install cpio
-          command: |
-            apt-get install -y cpio
+      - install_cpio
       - run:
           name: Build dependencies
           command: |
@@ -1370,10 +1375,7 @@ jobs:
           fingerprints:
             - << parameters.ssh_key >>
       - checkout
-      - run:
-          name: Install cpio
-          command: |
-            sudo apt-get install -y cpio
+      - install_cpio
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
           avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
