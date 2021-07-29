@@ -1297,7 +1297,7 @@ jobs:
       - run:
           name: Check if test have to be executed
           command: |
-            EXECUTE=<< parameters.github_token >>
+            EXECUTE=<< parameters.execute >>
             if [[ $EXECUTE != true ]]; then
               circleci-agent step halt
             fi
