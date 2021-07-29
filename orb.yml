@@ -1289,7 +1289,18 @@ jobs:
         description: git commit hash for database-cli
         type: env_var_name
         default: DEFAULT_COMMIT
+      execute:
+        description: Execute or not the e2e
+        type: boolean
+        default: true
     steps:
+      - run:
+          name: Check if test have to be executed
+          command: |
+            EXECUTE=<< parameters.github_token >>
+            if [[ $EXECUTE != true ]]; then
+              circleci-agent step halt
+            fi
       - run:
           name: Setup environment
           command: |
