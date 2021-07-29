@@ -1164,7 +1164,7 @@ commands:
         description: command to execute
         type: string
         default: ""
-      description:
+      step_name:
         description: Description to run
         type: string
       package_to_force_execution:
@@ -1176,7 +1176,7 @@ commands:
         default: false
     steps:
       - run:
-          name: << parameters.description >>
+          name: << parameters.step_name >>
           command: |
             FILES_CHANGED=$(git diff HEAD^ --name-only )
             echo "files changed: $FILES_CHANGED"
@@ -1206,11 +1206,11 @@ commands:
       command:
         description: command to execute
         type: string
-      extra_parameters:
+      extra_args:
         description: command to execute
         type: string
         default: ""
-      description:
+      step_name:
         description: Description to run
         type: string
       run_on_root:
@@ -1219,7 +1219,7 @@ commands:
         default: false
     steps:
       - run:
-          name: << parameters.description >>
+          name: << parameters.step_name >>
           command: |
             FILES_CHANGED=$(git diff HEAD^ --name-only )
             echo "files changed: $FILES_CHANGED"
@@ -1236,7 +1236,7 @@ commands:
                   fi
 
                   # Execute command
-                  << parameters.command >> << parameters.extra_parameters >>
+                  << parameters.command >> << parameters.extra_args >>
 
                   if [[ $RUN_ON_ROOT != true ]]; then
                     cd -
@@ -1269,6 +1269,87 @@ commands:
             if [[ $FILES_CHANGED != *"$PACKAGE"*  ]]; then
               circleci-agent step halt
             fi
+
+  unit_tests_monorepo:
+    parameters:
+      step_name:
+        description: Name of the step
+        type: string
+        default: Unit Tests
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - exec_command_monorepo:
+          step_name: << parameters.step_name >>
+          command: yarn test:unit
+          extra_args: << parameters.extra_args >>
+
+  integration_tests_monorepo:
+    parameters:
+      step_name:
+        description: Name of the step
+        type: string
+        default: Integration Tests
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - exec_command_monorepo:
+          step_name: << parameters.step_name >>
+          command: yarn test:integration
+          extra_args: << parameters.extra_args >>
+
+  lint_report_monorepo:
+    parameters:
+      step_name:
+        description: Name of the step
+        type: string
+        default: Generate Lint report
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - exec_command_monorepo:
+          step_name: << parameters.step_name >>
+          command: yarn lint:report
+          extra_args: << parameters.extra_args >>
+
+  lint_dockerfile_monorepo:
+    parameters:
+      step_name:
+        description: Name of the step
+        type: string
+        default: Lint Dockerfile
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - install_hadolint
+      - exec_command_monorepo:
+          step_name: << parameters.step_name >>
+          command: yarn lint:dockerfiles
+          extra_args: << parameters.extra_args >>
+
+  dependency_tests_monorepo:
+    parameters:
+      step_name:
+        description: Name of the step
+        type: string
+        default: Dependency tests
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - exec_command_monorepo:
+          step_name: << parameters.step_name >>
+          command: yarn test:dependencies
+          extra_args: << parameters.extra_args >>
 
 #--------------------------------------------------JOBS------------------------------------------------
 
@@ -1386,6 +1467,8 @@ jobs:
             git config --global user.email "serviceaccount@voiceflow.com"
             git config --global user.name "Voiceflow"
             SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
+
+#-------------------------------------------------------------E2E----------------------------------------------------------
 
 
   test_e2e:
