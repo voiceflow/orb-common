@@ -1482,7 +1482,7 @@ jobs:
           command: |
             git config --global user.email "serviceaccount@voiceflow.com"
             git config --global user.name "Voiceflow"
-            SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access --create-release github << parameters.publish_args >>
+            SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
 
 #-------------------------------------------------------------E2E----------------------------------------------------------
 
