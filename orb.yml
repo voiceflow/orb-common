@@ -1351,6 +1351,22 @@ commands:
           command: yarn test:dependencies
           extra_args: << parameters.extra_args >>
 
+  build_monorepo:
+    parameters:
+      step_name:
+        description: Name of the step
+        type: string
+        default: Build
+      extra_args: 
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - exec_command_monorepo:
+          step_name: << parameters.step_name >>
+          command: yarn build
+          extra_args: << parameters.extra_args >>
+
 #--------------------------------------------------JOBS------------------------------------------------
 
 jobs: 
