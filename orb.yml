@@ -1445,6 +1445,10 @@ commands:
         description: toggle to enable/disable node modules installation
         type: boolean
         default: false
+      install_args:
+        description: node install arguments
+        type: string
+        default: ""
     steps:
       - when:
           condition: << parameters.checkout >>
@@ -1453,7 +1457,8 @@ commands:
       - when:
           condition: << parameters.install_node_modules >>
           steps:
-            - install_node_modules
+            - install_node_modules:
+                install_args: << parameters.install_args >>
       - install_e2e_tools
       - when:
           condition: << parameters.setup_db >>
