@@ -1421,6 +1421,71 @@ commands:
             curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             chmod +x /usr/local/bin/docker-compose
 
+  init_e2e:
+    parameters:
+      github_username:
+        description: username for cloning git repositories
+        type: env_var_name
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+      database_cli_commit:
+        description: git commit hash for database-cli
+        type: env_var_name
+        default: DEFAULT_COMMIT
+      setup_db:
+        description: toggle to enable/disable the dbcli setup
+        type: boolean
+        default: true
+      checkout:
+        description: toggle to enable/disable checkout
+        type: boolean
+        default: false
+      install_node_modules:
+        description: toggle to enable/disable node modules installation
+        type: boolean
+        default: false
+    steps:
+      - when:
+          condition: << parameters.checkout >>
+          steps:
+            - checkout
+      - when:
+          condition: << parameters.install_node_modules >>
+          steps:
+            - install_node_modules
+      - install_e2e_tools
+      - when:
+          condition: << parameters.setup_db >>
+          steps:
+            - setup_vf_dbs:
+                github_username: << parameters.github_username >>
+                github_token: << parameters.github_token >>
+                commit: << parameters.database_cli_commit >>
+
+  check_service_running:
+    parameters:
+      port:
+        description: Port to check
+        type: string
+    steps:
+      - run:
+          name: Check service running
+          command: |
+            dockerize -wait tcp://localhost:<< parameters.port >> -timeout 1m
+
+  check_e2e:
+    parameters:
+      port:
+        description: Port to check
+        type: string
+    steps:
+      - gen_certs_e2e
+      - start_e2e:
+          run_in_backgorund: true
+      - check_service_running:
+          port: << parameters.port >>
+
 #--------------------------------------------------JOBS------------------------------------------------
 
 jobs: 
@@ -1566,11 +1631,10 @@ jobs:
             if [[ $EXECUTE != true ]]; then
               circleci-agent step halt
             fi
-      - install_e2e_tools
-      - setup_vf_dbs:
+      - init_e2e:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
-          commit: << parameters.database_cli_commit >>
+          database_cli_commit: << parameters.database_cli_commit >>
       - setup_vf_creator_app:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
@@ -1628,21 +1692,32 @@ jobs:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           yarn_install_extra_args: "--ignore-engines"
-      - run:
-          name: Wait for services to come online
-          command: |
-            dockerize -wait tcp://localhost:8001 -timeout 1m \
-            && dockerize -wait tcp://localhost:8002 -timeout 1m \
-            && dockerize -wait tcp://localhost:8003 -timeout 1m \
-            && dockerize -wait tcp://localhost:8004 -timeout 1m \
-            && dockerize -wait tcp://localhost:8005 -timeout 1m \
-            && dockerize -wait tcp://localhost:8006 -timeout 1m \
-            && dockerize -wait tcp://localhost:8007 -timeout 1m \
-            && dockerize -wait tcp://localhost:8008 -timeout 1m \
-            && dockerize -wait tcp://localhost:8009 -timeout 1m \
-            && dockerize -wait tcp://localhost:8010 -timeout 1m \
-            && dockerize -wait tcp://localhost:8011 -timeout 1m \
-            && dockerize -wait tcp://localhost:8012 -timeout 1m 
+      - check_service_running:
+          port: "8001"
+      - check_service_running:
+          port: "8002"
+      - check_service_running:
+          port: "8003"
+      - check_service_running:
+          port: "8004"
+      - check_service_running:
+          port: "8005"
+      - check_service_running:
+          port: "8006"
+      - check_service_running:
+          port: "8007"
+      - check_service_running:
+          port: "8008"
+      - check_service_running:
+          port: "8008"
+      - check_service_running:
+          port: "8009"
+      - check_service_running:
+          port: "8010"
+      - check_service_running:
+          port: "8011"
+      - check_service_running:
+          port: "8012"
       - run:
           name: Run Cypress Tests
           working_directory: ~/creator-app/packages/creator-app
