@@ -1441,6 +1441,10 @@ commands:
         description: toggle to enable/disable checkout
         type: boolean
         default: false
+      avoid_post_install_scripts:
+        description: avoid post instal scripts
+        type: boolean
+        default: true
       install_node_modules:
         description: toggle to enable/disable node modules installation
         type: boolean
@@ -1459,6 +1463,7 @@ commands:
           steps:
             - install_node_modules:
                 install_args: << parameters.install_args >>
+                avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
       - install_e2e_tools
       - when:
           condition: << parameters.setup_db >>
