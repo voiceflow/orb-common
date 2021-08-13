@@ -796,7 +796,7 @@ commands:
         default: './'
     steps:
       - save_cache:
-          key: node-module-cache-<< parameters.working_directory >>-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
+          key: node-module-cache-<< parameters.working_directory >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
           paths:
             - << parameters.working_directory >>/node_modules
 
@@ -809,7 +809,7 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - node-module-cache-<< parameters.working_directory >>-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
+            - node-module-cache-<< parameters.working_directory >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
 
   install_node_modules:
     parameters:
@@ -833,7 +833,7 @@ commands:
       - authenticate_npm
       - restore_cache:
           keys:
-            - node-module-cache-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
+            - node-module-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
       - when:
           condition: << parameters.avoid_post_install_scripts >>
           steps:
@@ -849,7 +849,7 @@ commands:
                 name: yarn install packages
                 command: yarn install --frozen-lockfile  << parameters.install_args >>
       - save_cache: # special step to save the dependency cache
-          key: node-module-cache-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
+          key: node-module-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
           paths:
             - << parameters.working_directory >>/node_modules
 
