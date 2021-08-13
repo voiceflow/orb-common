@@ -825,6 +825,10 @@ commands:
         description: Cache directory for yarn.lock file
         type: string
         default: './'
+      cache_prefix:
+        description: Cache prefix
+        type: string
+        default: ''
       avoid_post_install_scripts:
         description: Skip running post install scripts
         type: boolean
@@ -833,7 +837,7 @@ commands:
       - authenticate_npm
       - restore_cache:
           keys:
-            - node-module-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
+            - node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
       - when:
           condition: << parameters.avoid_post_install_scripts >>
           steps:
@@ -849,7 +853,7 @@ commands:
                 name: yarn install packages
                 command: yarn install --frozen-lockfile  << parameters.install_args >>
       - save_cache: # special step to save the dependency cache
-          key: node-module-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
+          key: node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
           paths:
             - << parameters.working_directory >>/node_modules
 
