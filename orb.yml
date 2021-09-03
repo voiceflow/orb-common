@@ -1638,16 +1638,30 @@ jobs:
         description: git commit hash for database-cli
         type: env_var_name
         default: DEFAULT_COMMIT
-      execute:
-        description: Execute or not the e2e
+      enable:
+        description: Enable or not the e2e
         type: boolean
         default: true
+      force_execute:
+        description: Force execute of the e2e
+        type: boolean
+        default: false
     steps:
       - run:
           name: Check if test have to be executed
           command: |
-            EXECUTE=<< parameters.execute >>
-            if [[ $EXECUTE != true ]]; then
+            ENABLE=<< parameters.enable >>
+            FORCE_EXECUTE=<< parameters.force_execute >>
+
+            if [[ $FORCE_EXECUTE == true ]]; then
+              exit 0
+            fi
+
+            if [[ $CIRCLE_BRANCH == "master" ]]; then
+              exit 0
+            fi
+
+            if [[ $ENABLE == false ]]; then
               circleci-agent step halt
             fi
       - init_e2e:
