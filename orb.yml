@@ -82,6 +82,13 @@ commands:
 
 #-------------------------------------------------------------UTILS COMMANDS----------------------------------------------------------
 
+  set_yarn_bash_default_shell:
+    steps:
+      - run:
+          name: Set Bash as a default shell for yarn commands
+          command: yarn config set script-shell /bin/bash
+
+
   install_aws_cli:
     steps:
       - run:
@@ -1111,7 +1118,6 @@ commands:
           working_directory: "~/<< parameters.service_name >>"
       - check_e2e_deps:
           step_name: "Start << parameters.service_name >>"
-          run_in_backgorund: true
           working_directory: "~/<< parameters.service_name >>"
 
   setup_vf_dbs:
@@ -1689,6 +1695,7 @@ jobs:
             if [[ $ENABLE == false ]]; then
               circleci-agent step halt
             fi
+      - set_yarn_bash_default_shell
       - init_e2e:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
