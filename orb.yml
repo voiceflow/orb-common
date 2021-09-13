@@ -1109,6 +1109,10 @@ commands:
           step_name: "Start << parameters.service_name >>"
           run_in_backgorund: true
           working_directory: "~/<< parameters.service_name >>"
+      - check_e2e_deps:
+          step_name: "Start << parameters.service_name >>"
+          run_in_backgorund: true
+          working_directory: "~/<< parameters.service_name >>"
 
   setup_vf_dbs:
     parameters: 
@@ -1505,6 +1509,27 @@ commands:
       - check_service_running:
           port: << parameters.port >>
 
+  check_e2e_deps:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+        default: './'
+      run_in_backgorund:
+        description: run the command in background
+        type: boolean    
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+        default: Start in e2e mode
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: yarn e2e:check-deps
+
 #--------------------------------------------------JOBS------------------------------------------------
 
 jobs: 
@@ -1725,32 +1750,6 @@ jobs:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           yarn_install_extra_args: "--ignore-engines"
-      - check_service_running:
-          port: "8001"
-      - check_service_running:
-          port: "8002"
-      - check_service_running:
-          port: "8003"
-      - check_service_running:
-          port: "8004"
-      - check_service_running:
-          port: "8005"
-      - check_service_running:
-          port: "8006"
-      - check_service_running:
-          port: "8007"
-      - check_service_running:
-          port: "8008"
-      - check_service_running:
-          port: "8008"
-      - check_service_running:
-          port: "8009"
-      - check_service_running:
-          port: "8010"
-      - check_service_running:
-          port: "8011"
-      - check_service_running:
-          port: "8012"
       - run:
           name: Run Cypress Tests
           working_directory: ~/creator-app/packages/creator-app
