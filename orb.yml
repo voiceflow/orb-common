@@ -1286,6 +1286,9 @@ commands:
 
                   if [[ $RUN_ON_ROOT != true ]]; then
                     cd -
+                  else
+                    # if the command has to be executed on root, just run it once
+                    exit 0
                   fi
               fi
             done
