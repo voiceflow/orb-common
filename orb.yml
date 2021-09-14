@@ -1219,7 +1219,7 @@ commands:
             PACKAGE_FORCED=<< parameters.package_to_force_execution >>
             RUN_ON_ROOT=<< parameters.run_on_root >>
 
-              if [[ $FILES_CHANGED == *"$PACKAGE_FORCED"* || $CIRCLE_BRANCH == "master" || ! -z "$CIRCLE_TAG" ]]; then
+              if [[ $FILES_CHANGED == *"$PACKAGE_FORCED"* || $CIRCLE_BRANCH == "master" || ! -z "$CIRCLE_TAG" || $FILES_CHANGED == *"package.json"* || $FILES_CHANGED == *"yarn.lock"* ]]; then
 
                   if [[ $RUN_ON_ROOT != true ]]; then
                     cd packages/$PACKAGE_FORCED
@@ -1262,7 +1262,7 @@ commands:
             RUN_ON_ROOT=<< parameters.run_on_root >>
 
             for f in packages/*; do
-              if [[ $FILES_CHANGED == *"$f/"* || $CIRCLE_BRANCH == "master" || ! -z "$CIRCLE_TAG" ]]; then
+              if [[ $FILES_CHANGED == *"$f/"* || $CIRCLE_BRANCH == "master" || ! -z "$CIRCLE_TAG" || $FILES_CHANGED == *"package.json"* || $FILES_CHANGED == *"yarn.lock"* ]]; then
 
                   if [[ $RUN_ON_ROOT != true ]]; then
                     cd $f
