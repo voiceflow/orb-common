@@ -939,16 +939,24 @@ commands:
       - run:
           name: "Push docker images"
           command: |
-            IMAGE_TAG="k8s-$CIRCLE_SHA1"
+            IMAGE_TAG="<< parameters.image_tag >>"
+            if [[ "$IMAGE_TAG" == "" ]]; then
+              IMAGE_TAG="k8s-$CIRCLE_SHA1"
+            fi
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             docker push $IMAGE_NAME
-            BRANCH_NAME=$CIRCLE_BRANCH
-            if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
-              BRANCH_NAME="master"
+
+            # if a tag is set, do not push to latest-$BRANCH_NAME
+            IMAGE_TAG="<< parameters.image_tag >>"
+            if [[ "$IMAGE_TAG" == "" ]]; then
+              BRANCH_NAME=$CIRCLE_BRANCH
+              if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
+                BRANCH_NAME="master"
+              fi
+              docker tag $IMAGE_NAME $IMAGE_REPO:latest-$BRANCH_NAME
+              docker push $IMAGE_REPO:latest-$BRANCH_NAME
             fi
-            docker tag $IMAGE_NAME $IMAGE_REPO:latest-$BRANCH_NAME
-            docker push $IMAGE_REPO:latest-$BRANCH_NAME
 
   post_image_push_actions: 
     description: Deploy an image into a K8s cluster
