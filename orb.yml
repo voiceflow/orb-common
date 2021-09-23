@@ -840,6 +840,10 @@ commands:
         description: Skip running post install scripts
         type: boolean
         default: true
+      background:
+        description: Run yarn install in background mode
+        type: boolean
+        default: false
     steps:
       - authenticate_npm
       - restore_cache:
@@ -857,6 +861,7 @@ commands:
           steps:
             - run:
                 working_directory: << parameters.working_directory >>
+                background: << parameters.background >>
                 name: yarn install packages
                 command: yarn install --frozen-lockfile  << parameters.install_args >>
       - save_cache: # special step to save the dependency cache
