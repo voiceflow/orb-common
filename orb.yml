@@ -1194,7 +1194,51 @@ commands:
           step_name: "Start << parameters.service_name >>"
           working_directory: "~/<< parameters.service_name >>"
 
-  setup_vf_dbs:
+
+  setup_vf_dbs_machine:
+    parameters: 
+      github_username:
+        description: username for cloning git repositories
+        type: env_var_name
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+      commit:
+        description: git commit hash for database-cli
+        type: env_var_name
+        default: DEFAULT_COMMIT
+    steps:
+      - clone_repo:
+          step_name: "Downloading dbcli"
+          github_username: "<< parameters.github_username >>"
+          github_token: "<< parameters.github_token >>"
+          github_repo_name: "database-cli"
+          path_to_clone: "~/code/database-cli"
+
+      - run:
+          name: Temporary reset for dbcli
+          working_directory: ~/code/database-cli
+          command: |
+            git reset --hard 0675532cea757791efdf05ede47d907978980fd0
+      - vf_restore_cache:
+          yarn_lock_restore_cache_directory: ~/code/database-cli
+          cache_prefix: e2e-machine
+      - authenticate_npm:
+          working_directory: ~/code/database-cli
+          
+      - run:
+          name: Install dbcli
+          working_directory: ~/code/database-cli
+          background: true
+          command: |
+            yarn install --frozen-lockfile --cache-folder=".yarn-cache"
+
+            touch /tmp/dbcli_finished.txt
+      - vf_save_cache:
+            working_directory: ~/code/database-cli
+            cache_prefix: e2e-machine
+
+  setup_vf_dbs_docker:
     parameters: 
       github_username:
         description: username for cloning git repositories
@@ -1224,7 +1268,7 @@ commands:
           command: |
             yarn init:e2e
 
-  setup_vf_creator_app:
+  setup_vf_creator_app_docker:
     parameters: 
       github_username:
         description: username for cloning git repositories
@@ -1261,6 +1305,31 @@ commands:
           command: |
             yarn build:e2e
             yarn start:e2e
+
+  setup_vf_creator_app_machine:
+    steps:
+      - checkout: 
+          path: ~/code/creator-app
+      - vf_restore_cache:
+          yarn_lock_restore_cache_directory: ~/code/creator-app
+          cache_prefix: e2e-machine
+      - authenticate_npm:
+          working_directory: ~/code/creator-app
+      - run:
+          name: Build creator app
+          working_directory: ~/code/creator-app
+          background: true
+          command: |
+            sudo apt install -y cpio
+            yarn install --frozen-lockfile --cache-folder=".yarn-cache"
+            yarn build --scope @voiceflow/realtime-sdk --scope @voiceflow/ui
+            cd packages/creator-app
+            yarn build:e2e
+            
+            touch /tmp/creator_app_finished.txt
+      - vf_save_cache:
+          working_directory: ~/code/creator-app
+          cache_prefix: e2e-machine
 
 #-------------------------------------------------------------MONOREPO COMMANDS----------------------------------------------------------
 
@@ -1552,37 +1621,44 @@ commands:
 
 #-------------------------------------------------------------E2E COMMANDS----------------------------------------------------------
 
+
   install_e2e_tools:
     steps:
       - run:
           name: Setup environment
+          background: true
           command: |
-            apt update
-            apt install -y nginx postgresql-client wget libnss3-tools apt-transport-https ca-certificates curl gnupg-agent software-properties-common
-            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
-            apt update
-            apt install -y docker-ce-cli
-
-            wget http://download.redis.io/redis-stable.tar.gz
-            tar xvzf redis-stable.tar.gz
-            cd redis-stable
-            make redis-cli
-            mv src/redis-cli /usr/local/bin/
-
-            wget https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64
-            chmod +x mkcert-$MKCERT_VERSION-linux-amd64
-            mv mkcert-$MKCERT_VERSION-linux-amd64 /usr/local/bin/mkcert
-            mkcert -install
-
+            sudo apt update
+            sudo apt install -y python3-pip nginx postgresql-client wget libnss3-tools apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+            export DOCKERIZE_VERSION="v0.6.1"
             wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-            tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
             rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
-            curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            chmod +x /usr/local/bin/docker-compose
+            sudo apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
-  init_e2e:
+            export MKCERT_VERSION="v1.4.0"
+            wget https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64
+            chmod +x mkcert-$MKCERT_VERSION-linux-amd64
+            sudo mv mkcert-$MKCERT_VERSION-linux-amd64 /usr/local/bin/mkcert
+            sudo mkcert -install
+
+            sudo add-apt-repository ppa:redislabs/redis -y
+            sudo apt update
+            sudo apt-get -y install redis-tools
+
+            # AWS CLI and login
+            sudo pip3 install awscli
+            # private repos
+            $(aws ecr get-login --no-include-email --region us-east-1)
+
+            # Cypress
+            cd ~/code/creator-app/packages/creator-app
+            yarn cypress:install
+
+            touch /tmp/executor_finished.txt
+
+  init_e2e_machine:
     parameters:
       github_username:
         description: username for cloning git repositories
@@ -1630,11 +1706,74 @@ commands:
                 install_args: << parameters.install_args >>
                 avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
                 cache_prefix: << parameters.cache_prefix >>
+      - set_etc_hosts_e2e:
+          run_in_background: true
+      - set_yarn_bash_default_shell
       - install_e2e_tools
       - when:
           condition: << parameters.setup_db >>
           steps:
-            - setup_vf_dbs:
+            - setup_vf_dbs_machine:
+                github_username: << parameters.github_username >>
+                github_token: << parameters.github_token >>
+                commit: << parameters.database_cli_commit >>
+
+
+  init_e2e_docker:
+    parameters:
+      github_username:
+        description: username for cloning git repositories
+        type: env_var_name
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+      database_cli_commit:
+        description: git commit hash for database-cli
+        type: env_var_name
+        default: DEFAULT_COMMIT
+      setup_db:
+        description: toggle to enable/disable the dbcli setup
+        type: boolean
+        default: true
+      checkout:
+        description: toggle to enable/disable checkout
+        type: boolean
+        default: false
+      avoid_post_install_scripts:
+        description: avoid post instal scripts
+        type: boolean
+        default: true
+      install_node_modules:
+        description: toggle to enable/disable node modules installation
+        type: boolean
+        default: false
+      install_args:
+        description: node install arguments
+        type: string
+        default: ""
+      cache_prefix:
+        description: Cache prefix
+        type: string
+        default: ""
+    steps:
+      - when:
+          condition: << parameters.checkout >>
+          steps:
+            - checkout
+      - when:
+          condition: << parameters.install_node_modules >>
+          steps:
+            - install_node_modules:
+                install_args: << parameters.install_args >>
+                avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
+                cache_prefix: << parameters.cache_prefix >>
+      - set_etc_hosts_e2e:
+          run_in_background: true
+      - set_yarn_bash_default_shell
+      - when:
+          condition: << parameters.setup_db >>
+          steps:
+            - setup_vf_dbs_docker:
                 github_username: << parameters.github_username >>
                 github_token: << parameters.github_token >>
                 commit: << parameters.database_cli_commit >>
@@ -1842,73 +1981,170 @@ jobs:
             if [[ $ENABLE == false ]]; then
               circleci-agent step halt
             fi
-      - set_yarn_bash_default_shell
-      - init_e2e:
+      - clone_repo:
+          step_name: "Downloading e2e stack"
+          github_username: "<< parameters.github_username >>"
+          github_token: "<< parameters.github_token >>"
+          github_repo_name: "infrastructure-e2e"
+          path_to_clone: "~/code/infrastructure-e2e"
+
+      - init_e2e_machine:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           database_cli_commit: << parameters.database_cli_commit >>
-      - setup_vf_creator_app:
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
+      - setup_vf_creator_app_machine
       - run:
-          name: Wait for databases to come online
+          name: Wait until tools are ready
+          no_output_timeout: 5m
           command: |
-            dockerize -wait tcp://localhost:5432 -timeout 1m \
-            && dockerize -wait tcp://localhost:8000 -timeout 1m  
-      - setup_vf_service:
-          service_name: server-data-api
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: creator-api
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: alexa-service
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: alexa-runtime
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: general-service
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: general-runtime
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: google-service
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: google-runtime
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: canvas-export
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: luis-authoring-service
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: integrations
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-      - setup_vf_service:
-          service_name: custom-api
-          github_username: << parameters.github_username >>
-          github_token: << parameters.github_token >>
-          yarn_install_extra_args: "--ignore-engines"
+
+            until [ -f /tmp/creator_app_finished.txt ]
+            do
+                sleep 1
+            done
+            echo "Creator App ready"
+
+            until [ -f /tmp/dbcli_finished.txt ]
+            do
+                sleep 1
+            done
+            echo "DBCLI ready"
+
+            until [ -f /tmp/executor_finished.txt ]
+            do
+                sleep 1
+            done
+            echo "Executor ready"
+      - run:
+          name: Setup databases
+          working_directory: ~/code/infrastructure-e2e
+          command: |
+            docker rm code || docker create --network="vf_voiceflow" -v /code --name code cypress/base:12 /bin/true
+            docker-compose -p vf -f docker-compose-db.yaml up -d
+
+      - run:
+          name: Setup Database
+          background: true
+          working_directory: ~/code
+          command: |
+            # copy a config file into this volume
+            docker cp database-cli code:/code
+            # start an application container using this volume
+            docker run \
+              --workdir /code/database-cli \
+              --name dbcli-e2e \
+              --hostname dbcli.test.e2e \
+              --network="vf_voiceflow" \
+              --env AWS_ACCESS_KEY_ID="null" \
+              --env AWS_SECRET_ACCESS_KEY="null" \
+              --volumes-from code \
+              168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1  \
+              /bin/bash -c "yarn init:e2e"
+
+
+      - run:
+          name: Copy e2e
+          working_directory: ~/code
+          command: |
+            # copy a config file into this volume
+            echo "copy code"
+
+            docker cp creator-app code:/code/creator-app
+      - run:
+          name: Setup Voicelfow services
+          working_directory: ~/code/infrastructure-e2e
+          command: |
+            docker-compose -p vf -f docker-compose-vf.yaml pull
+            #sudo systemctl restart docker
+            export DOCKER_CLIENT_TIMEOUT=120
+            export COMPOSE_HTTP_TIMEOUT=120
+            docker-compose -p vf -f docker-compose-vf.yaml up -d
+
+      - run:
+          name: Run creator e2e
+          working_directory: ~/code/creator-app
+          command: |
+
+            echo "running e2e"
+            docker run \
+              --detach \
+              --expose 3002 \
+              --publish 3002:3002 \
+              --workdir /code/creator-app \
+              --network="vf_voiceflow" \
+              --name creator-app-e2e \
+              --hostname creator-app.test.e2e \
+              --volumes-from code \
+              --volume vf_certs:/code/creator-app/packages/creator-app/certs \
+              --volume vf_caroot:/usr/local/share/ca-certificates \
+              168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1  \
+              /bin/bash -c "update-ca-certificates && yarn start:e2e && sleep infinity"
+
+      - check_service_running:
+          port: "8001"
+      - check_service_running:
+          port: "8002"
+      - check_service_running:
+          port: "8003"
+      - check_service_running:
+          port: "8004"
+      - check_service_running:
+          port: "8005"
+      - check_service_running:
+          port: "8006"
+      - check_service_running:
+          port: "8007"
+      - check_service_running:
+          port: "8008"
+      - check_service_running:
+          port: "8008"
+      - check_service_running:
+          port: "8009"
+      - check_service_running:
+          port: "8010"
+      - check_service_running:
+          port: "8011"
+      - check_service_running:
+          port: "8012"
+      - check_service_running:
+          port: "3002"
       - run:
           name: Run Cypress Tests
-          working_directory: ~/creator-app/packages/creator-app
-          command: yarn cypress:ci
+          working_directory: ~/code/creator-app/packages/creator-app
+          command: |
+            # Install the certificate on the executor
+            sudo mkdir /usr/share/ca-certificates/extra
+            sudo docker cp server-data-api-e2e:/usr/local/share/ca-certificates/ca.crt /usr/share/ca-certificates/extra/ca.crt
+            echo 'extra/ca.crt' | sudo tee -a /etc/ca-certificates.conf > /dev/null
+            sudo update-ca-certificates
+
+            export NODE_OPTIONS=--max_old_space_size=4096
+            yarn cypress:ci
+      - run:
+          name: Get logs
+          working_directory: ~/logs
+          when: failure
+          command: |
+            # Install the certificate on the executor
+            docker logs server-data-api-e2e > server-data-api.log
+            docker logs creator-api-e2e > creator-api.log
+            docker logs alexa-runtime-e2e > alexa-runtime.log
+            docker logs alexa-service-e2e > alexa-service.log
+            docker logs google-runtime-e2e > google-runtime.log
+            docker logs google-service-e2e > google-service.log
+            docker logs integrations-e2e > integrations.log
+            docker logs custom-api-e2e > custom-api.log
+            docker logs luis-authoring-service-e2e > luis-authoring-service.log
+            docker logs general-runtime-e2e > general-runtime.log
+            docker logs general-service-e2e > general-service.log
+            docker logs canvas-export-e2e > canvas-export.log
+            docker logs dbcli-e2e > dbcli.log
+            docker logs creator-app-e2e > creator-app.log
+
       - store_artifacts:
-          path: ~/creator-app/packages/creator-app/cypress/videos
+          path: ~/code/creator-app/packages/creator-app/cypress/videos
       - store_artifacts:
-          path: ~/creator-app/packages/creator-app/cypress/screenshots
+          path: ~/code/creator-app/packages/creator-app/cypress/screenshots
+      - store_artifacts:
+          path: ~/logs
+
