@@ -1943,7 +1943,10 @@ jobs:
 
 
   test_e2e:
-    executor: e2e-executor
+    machine:
+      image: ubuntu-2004:202107-02  # any available image
+      docker_layer_caching: true    # default - false
+    resource_class: xlarge
     parameters:
       github_username:
         description: username for cloning git repositories
