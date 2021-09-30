@@ -2123,7 +2123,7 @@ jobs:
       - run:
           name: Get logs
           working_directory: ~/logs
-          when: failure
+          when: on_fail
           command: |
             # Install the certificate on the executor
             docker logs server-data-api-e2e > server-data-api.log
