@@ -1234,9 +1234,7 @@ commands:
             yarn install --frozen-lockfile --cache-folder=".yarn-cache"
 
             touch /tmp/dbcli_finished.txt
-      - vf_save_cache:
-            working_directory: ~/code/database-cli
-            cache_prefix: e2e-machine
+
 
   setup_vf_dbs_docker:
     parameters: 
@@ -1327,9 +1325,6 @@ commands:
             yarn build:e2e
             
             touch /tmp/creator_app_finished.txt
-      - vf_save_cache:
-          working_directory: ~/code/creator-app
-          cache_prefix: e2e-machine
 
 #-------------------------------------------------------------MONOREPO COMMANDS----------------------------------------------------------
 
@@ -2018,6 +2013,12 @@ jobs:
                 sleep 1
             done
             echo "Executor ready"
+      - vf_save_cache:
+            working_directory: ~/code/database-cli
+            cache_prefix: e2e-machine
+      - vf_save_cache:
+          working_directory: ~/code/creator-app
+          cache_prefix: e2e-machine
       - run:
           name: Setup databases
           working_directory: ~/code/infrastructure-e2e
