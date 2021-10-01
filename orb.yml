@@ -1320,11 +1320,11 @@ commands:
           command: |
             sudo apt install -y cpio
             yarn install --frozen-lockfile --cache-folder=".yarn-cache"
+
             yarn build --scope @voiceflow/realtime-sdk --scope @voiceflow/ui
-            cd packages/creator-app
-            yarn build:e2e
 
             cd packages/creator-app
+            yarn build:e2e
             yarn cypress:install
             
             touch /tmp/creator_app_finished.txt
@@ -1991,7 +1991,7 @@ jobs:
       - setup_vf_creator_app_machine
       - run:
           name: Wait until tools are ready
-          no_output_timeout: 5m
+          no_output_timeout: 10m
           command: |
 
             until [ -f /tmp/creator_app_finished.txt ]
