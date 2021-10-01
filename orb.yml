@@ -1301,7 +1301,6 @@ commands:
           working_directory: ~/creator-app/packages/creator-app
           no_output_timeout: 15m
           command: |
-            yarn cypress:install
             yarn build:e2e
             yarn start:e2e
 
@@ -1324,6 +1323,9 @@ commands:
             yarn build --scope @voiceflow/realtime-sdk --scope @voiceflow/ui
             cd packages/creator-app
             yarn build:e2e
+
+            cd packages/creator-app
+            yarn cypress:install
             
             touch /tmp/creator_app_finished.txt
 
