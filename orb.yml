@@ -1301,6 +1301,7 @@ commands:
           working_directory: ~/creator-app/packages/creator-app
           no_output_timeout: 15m
           command: |
+            yarn cypress:install
             yarn build:e2e
             yarn start:e2e
 
@@ -1646,10 +1647,6 @@ commands:
             sudo pip3 install awscli
             # private repos
             $(aws ecr get-login --no-include-email --region us-east-1)
-
-            # Cypress
-            cd ~/code/creator-app/packages/creator-app
-            yarn cypress:install
 
             touch /tmp/executor_finished.txt
 
