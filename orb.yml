@@ -1703,7 +1703,6 @@ commands:
                 cache_prefix: << parameters.cache_prefix >>
       - set_etc_hosts_e2e:
           run_in_background: true
-      - set_yarn_bash_default_shell
       - install_e2e_tools
       - when:
           condition: << parameters.setup_db >>
