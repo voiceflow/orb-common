@@ -455,6 +455,10 @@ commands:
         description: The container image repository
         type: string
         default: "com.voiceflow.ci.assets"
+      check_track_exists:
+        description: checks if the track exists
+        type: boolean
+        default: true
     steps:
       - when:
           condition: << parameters.checkout >>
@@ -470,9 +474,12 @@ commands:
       - check_image_exists:
           image_repo: << parameters.image_repo >>
           request_remote_docker: false
-      - check_track_exists:
-          component: << parameters.component >>
-          bucket: << parameters.bucket >>
+      - when:
+          condition: << parameters.check_track_exists >>
+          steps:
+            - check_track_exists:
+                component: << parameters.component >>
+                bucket: << parameters.bucket >>
       - run:
           name: "Building image and uploading track"
           command: |
