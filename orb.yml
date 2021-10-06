@@ -1338,7 +1338,7 @@ commands:
           working_directory: ~/code/creator-app
           background: true
           command: |
-            sudo apt install -y cpio
+
             yarn install --frozen-lockfile --cache-folder=".yarn-cache"
 
             yarn build --scope @voiceflow/realtime-sdk --scope @voiceflow/ui
@@ -1647,6 +1647,7 @@ commands:
           background: true
           command: |
             sudo apt update
+            sudo apt install -y cpio
             sudo apt install -y python3-pip nginx postgresql-client wget libnss3-tools apt-transport-https ca-certificates curl gnupg-agent software-properties-common
             export DOCKERIZE_VERSION="v0.6.1"
             wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
