@@ -1235,11 +1235,6 @@ commands:
           github_repo_name: "database-cli"
           path_to_clone: "~/code/database-cli"
 
-      - run:
-          name: Temporary reset for dbcli
-          working_directory: ~/code/database-cli
-          command: |
-            git reset --hard 0675532cea757791efdf05ede47d907978980fd0
       - vf_restore_cache:
           yarn_lock_restore_cache_directory: ~/code/database-cli
           cache_prefix: e2e-machine
