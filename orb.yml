@@ -499,7 +499,7 @@ commands:
                   docker create -v /verdaccio/conf --name verdaccio-conf alpine:3.4 /bin/true
                   docker cp config/verdaccio/config.yaml verdaccio-conf:/verdaccio/conf
 
-                  docker run -it --name verdaccio -p 4873:4873 --volumes-from verdaccio-conf verdaccio/verdaccio:5.1.6
+                  docker run -it --name verdaccio --network host --volumes-from verdaccio-conf verdaccio/verdaccio:5.1.6
 
             - run:
                 name: Publish pre-release versions to local proxy registry
@@ -539,7 +539,7 @@ commands:
                   --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
                   --build-arg build_SEM_VER=${SEM_VER} \
                   <<# parameters.local_registry >> \
-                    --network=host \
+                    --network host \
                     --build-arg build_REGISTRY_URL=http://localhost:4873 \
                   <</ parameters.local_registry >> \
                   << parameters.build_args >> \
