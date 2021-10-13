@@ -504,6 +504,9 @@ commands:
             - run:
                 name: Publish pre-release versions to local proxy registry
                 command: |
+                  git config --global user.email "serviceaccount@voiceflow.com"
+                  git config --global user.name "Voiceflow"
+
                   npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
       - run:
           name: "Building image and uploading track"
