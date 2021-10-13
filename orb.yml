@@ -448,6 +448,10 @@ commands:
         description: Folder where the workspace will be attached
         type: string
         default: /tmp/vf-build
+      build_context:
+        description: Path to the context for the docker build
+        type: string
+        default: '.'
       checkout:
         description: Determines if a checkout will be executed or not
         type: boolean
@@ -545,10 +549,11 @@ commands:
                   <<# parameters.local_registry >> \
                     --network host \
                     --build-arg build_REGISTRY_URL=http://localhost:4873 \
+                    --build-arg build_FORCE_AUTH=true \
                   <</ parameters.local_registry >> \
                   << parameters.build_args >> \
                   -f << parameters.dockerfile >> \
-                  -t $IMAGE_NAME . 
+                  -t $IMAGE_NAME << parameters.build_context >>
                 docker push $IMAGE_NAME
               fi
 
