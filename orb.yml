@@ -440,6 +440,10 @@ commands:
         description: Name of the Dockerfile to build
         type: string
         default: Dockerfile
+      build_args:
+        description: Arguments to pass while building the docker image
+        type: string
+        default: ''
       attach_workspace_folder:
         description: Folder where the workspace will be attached
         type: string
@@ -511,6 +515,7 @@ commands:
                   --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
                   --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
                   --build-arg build_SEM_VER=${SEM_VER} \
+                  << parameters.build_args >> \
                   -f << parameters.dockerfile >> \
                   -t $IMAGE_NAME . 
                 docker push $IMAGE_NAME
