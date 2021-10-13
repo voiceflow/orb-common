@@ -516,6 +516,7 @@ commands:
                   docker exec prepublish git config --global user.name "Voiceflow"
 
                   docker exec -w /src prepublish npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
+                  docker cp prepublish:/src ./
       - run:
           name: "Building image and uploading track"
           command: |
