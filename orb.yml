@@ -500,6 +500,7 @@ commands:
                   docker cp config/verdaccio/config.yaml verdaccio-conf:/verdaccio/conf
 
                   docker run -it --name verdaccio --network host --volumes-from verdaccio-conf verdaccio/verdaccio:5.1.6
+                  docker exec verdaccio sh -c "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc"
 
             - run:
                 name: Publish pre-release versions to local proxy registry
