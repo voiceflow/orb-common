@@ -496,7 +496,10 @@ commands:
                 name: Setup local proxy registry
                 background: true
                 command: |
-                  docker run -it --name verdaccio -p 4873:4873 -v "<< parameters.attach_workspace_folder >>/config/verdaccio:/verdaccio/conf" verdaccio/verdaccio:5.1.6
+                  docker create -v /verdaccio/conf --name verdaccio-conf alpine:3.4 /bin/true
+                  docker cp config/verdaccio/config.yaml verdaccio-conf:/verdaccio/conf
+
+                  docker run -it --name verdaccio -p 4873:4873 --volumes-from verdaccio-conf verdaccio/verdaccio:5.1.6
 
             - run:
                 name: Publish pre-release versions to local proxy registry
