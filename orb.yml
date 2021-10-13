@@ -504,7 +504,7 @@ commands:
             - run:
                 name: Publish pre-release versions to local proxy registry
                 command: |
-                  npx lerna@4 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access
+                  npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
       - run:
           name: "Building image and uploading track"
           command: |
