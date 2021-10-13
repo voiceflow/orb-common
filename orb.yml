@@ -504,10 +504,15 @@ commands:
             - run:
                 name: Publish pre-release versions to local proxy registry
                 command: |
-                  git config --global user.email "serviceaccount@voiceflow.com"
-                  git config --global user.name "Voiceflow"
+                  docker run -d --name prepublish --network host -v /src node:12.20.2-alpine tail -f /dev/null
+                  docker cp ./ prepublish:/src
+                  docker exec prepublish \
+                    apk update && \
+                    apk add git && \
+                    git config --global user.email "serviceaccount@voiceflow.com" && \
+                    git config --global user.name "Voiceflow"
 
-                  npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
+                  docker exec -w /src prepublish npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
       - run:
           name: "Building image and uploading track"
           command: |
