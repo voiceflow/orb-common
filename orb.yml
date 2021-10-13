@@ -464,6 +464,10 @@ commands:
         description: checks if the track exists
         type: boolean
         default: true
+      local_registry:
+        description: Use a local proxy registry to publish alpha version of all libraries in monorepo (must have a /config/verdaccio/config.yaml file)
+        type: boolean
+        default: true
     steps:
       - when:
           condition: << parameters.checkout >>
@@ -485,6 +489,21 @@ commands:
             - check_track_exists:
                 component: << parameters.component >>
                 bucket: << parameters.bucket >>
+      - when:
+          condition: << parameters.local_registry >>
+          steps:
+            - run:
+                name: Setup local proxy registry
+                background: true
+                command: |
+                  docker run -it --name verdaccio -p 4873:4873 -v "$(pwd)/config/verdaccio:/verdaccio/conf" verdaccio/verdaccio:5.1.6
+                working_directory: ~/voiceflow
+
+            - run:
+                name: Publish pre-release versions to local proxy registry
+                command: |
+                  npx lerna@4 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access
+                working_directory: ~/voiceflow
       - run:
           name: "Building image and uploading track"
           command: |
@@ -515,6 +534,10 @@ commands:
                   --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
                   --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
                   --build-arg build_SEM_VER=${SEM_VER} \
+                  <<# parameters.local_registry >> \
+                    --network=host \
+                    --build-arg build_REGISTRY_URL=http://localhost:4873 \
+                  <</ parameters.local_registry >> \
                   << parameters.build_args >> \
                   -f << parameters.dockerfile >> \
                   -t $IMAGE_NAME . 
