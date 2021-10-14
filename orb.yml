@@ -541,7 +541,6 @@ commands:
                 echo "Image not found, building..."
                 $(aws ecr get-login --no-include-email --region us-east-1)
                 docker build \
-                  --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
                   --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
                   --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
                   --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
@@ -550,6 +549,9 @@ commands:
                   <<# parameters.local_registry >> \
                     --network host \
                     --build-arg build_REGISTRY_URL=http://localhost:4873 \
+                  <</ parameters.local_registry >> \
+                  <<^ parameters.local_registry >> \
+                    --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
                   <</ parameters.local_registry >> \
                   << parameters.build_args >> \
                   -f << parameters.dockerfile >> \
