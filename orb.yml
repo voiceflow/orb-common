@@ -550,7 +550,6 @@ commands:
                   <<# parameters.local_registry >> \
                     --network host \
                     --build-arg build_REGISTRY_URL=http://localhost:4873 \
-                    --build-arg build_FORCE_AUTH=true \
                   <</ parameters.local_registry >> \
                   << parameters.build_args >> \
                   -f << parameters.dockerfile >> \
