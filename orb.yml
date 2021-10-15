@@ -471,7 +471,7 @@ commands:
       local_registry:
         description: Use a local proxy registry to publish alpha version of all libraries in monorepo (must have a /config/verdaccio/config.yaml file)
         type: boolean
-        default: true
+        default: false
     steps:
       - when:
           condition: << parameters.checkout >>
