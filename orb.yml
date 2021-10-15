@@ -1214,7 +1214,7 @@ commands:
 
             chmod +x ./start_e2e.sh
 
-  setup_vf_service:
+  setup_vf_service_docker:
     parameters: 
       service_name:
         description: Name of the Voiceflow service
@@ -1256,6 +1256,79 @@ commands:
       - check_e2e_deps:
           step_name: "Start << parameters.service_name >>"
           working_directory: "~/<< parameters.service_name >>"
+
+
+  setup_vf_service_machine:
+    parameters:
+      vf_service_name:
+        description: username for cloning git repositories
+        type: string
+      vf_service_port:
+        description: port of the service to expose
+        type: string
+      github_username:
+        description: username for cloning git repositories
+        type: env_var_name
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+      vf_service_commit:
+        description: git commit hash for database-cli
+        type: env_var_name
+        default: CIRCLE_SHA1
+    steps:
+      - clone_repo:
+          step_name: "Downloading << parameters.vf_service_name >>"
+          github_username: "<< parameters.github_username >>"
+          github_token: "<< parameters.github_token >>"
+          github_commit: "<< parameters.vf_service_commit >>"
+          github_repo_name: "<< parameters.vf_service_name >>"
+          path_to_clone: "~/code/<< parameters.vf_service_name >>"
+      - vf_restore_cache:
+          yarn_lock_restore_cache_directory: ~/code/<< parameters.vf_service_name >>
+          cache_prefix: e2e-machine
+      - authenticate_npm:
+          working_directory: ~/code/<< parameters.vf_service_name >>
+      - run:
+          name: Build << parameters.vf_service_name >>
+          working_directory: ~/code/<< parameters.vf_service_name >>
+          command: |
+            yarn install --frozen-lockfile --cache-folder=".yarn-cache"
+      - vf_save_cache:
+            working_directory: ~/code/<< parameters.vf_service_name >>
+            cache_prefix: e2e-machine
+
+      - run:
+          name: Removing << parameters.vf_service_name >> from Docker Stack
+          working_directory: "~/code/infrastructure-e2e"
+          command: |
+            docker-compose -p vf -f docker-compose-vf.yaml rm -f -s << parameters.vf_service_name >>-e2e
+
+      - run:
+          name: Setup << parameters.vf_service_name >>
+          working_directory: ~/code
+          command: |
+            # copy a config file into this volume
+            docker cp << parameters.vf_service_name >> code:/code
+            # start an application container using this volume
+            docker run \
+              --workdir /code/<< parameters.vf_service_name >> \
+              --detach \
+              --expose << parameters.vf_service_port >> \
+              --publish << parameters.vf_service_port >>:<< parameters.vf_service_port >> \
+              --name << parameters.vf_service_name >>-e2e \
+              --hostname << parameters.vf_service_name >>.test.e2e \
+              --network="vf_voiceflow" \
+              --volumes-from code \
+              --volume vf_certs:/code/<< parameters.vf_service_name >>/certs \
+              --volume vf_caroot:/usr/local/share/ca-certificates \
+              168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1  \
+              /bin/bash -c "update-ca-certificates && yarn e2e"
+      - run:
+          name: Wait << parameters.vf_service_name >>
+          working_directory: ~/code/<< parameters.vf_service_name >>
+          command: |
+            npx wait-on https://<< parameters.vf_service_name >>.test.e2e:<< parameters.vf_service_port >>/health
 
 
   setup_vf_dbs_machine:
@@ -1363,9 +1436,25 @@ commands:
             yarn start:e2e
 
   setup_vf_creator_app_machine:
+    parameters: 
+      github_username:
+        description: username for cloning git repositories
+        type: env_var_name
+      github_token:
+        description: token for cloning git repositories
+        type: env_var_name
+      creator_app_commit:
+        description: git commit hash for database-cli
+        type: env_var_name
+        default: CIRCLE_SHA1
     steps:
-      - checkout: 
-          path: ~/code/creator-app
+      - clone_repo:
+          step_name: "Downloading Creator App"
+          github_username: "<< parameters.github_username >>"
+          github_token: "<< parameters.github_token >>"
+          github_commit: "<< parameters.creator_app_commit >>"
+          github_repo_name: "creator-app"
+          path_to_clone: "~/code/creator-app"
       - vf_restore_cache:
           yarn_lock_restore_cache_directory: ~/code/creator-app
           cache_prefix: e2e-machine
@@ -2011,6 +2100,22 @@ jobs:
         description: git commit hash for database-cli
         type: env_var_name
         default: DEFAULT_COMMIT
+      creator_app_commit:
+        description: git commit hash for database-cli
+        type: env_var_name
+        default: CIRCLE_SHA1
+      vf_service_commit:
+        description: git commit hash for database-cli
+        type: env_var_name
+        default: DEFAULT_COMMIT
+      vf_service_port:
+        description: port of the service to expose
+        type: string
+        default: ""
+      vf_service_name:
+        description: Setup a specific service
+        type: string
+        default: ""
       enable:
         description: Enable or not the e2e
         type: boolean
@@ -2048,7 +2153,10 @@ jobs:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           database_cli_commit: << parameters.database_cli_commit >>
-      - setup_vf_creator_app_machine
+      - setup_vf_creator_app_machine:
+          github_username: << parameters.github_username >>
+          github_token: << parameters.github_token >>
+          creator_app_commit: << parameters.creator_app_commit >>
       - run:
           name: Wait until tools are ready
           no_output_timeout: 10m
@@ -2145,6 +2253,20 @@ jobs:
       - check_e2e_deps:
           step_name: "Waiting everything is ready"
           working_directory: ~/code/creator-app/packages/creator-app
+      - when:
+          condition:
+            and:
+              - not:
+                  matches:
+                    pattern: ""
+                    value: << parameters.vf_service_name >>
+          steps:
+            - setup_vf_service_machine:
+                github_username: << parameters.github_username >>
+                github_token: << parameters.github_token >>
+                vf_service_name: << parameters.vf_service_name >>
+                vf_service_commit: << parameters.vf_service_commit >>
+                vf_service_port: << parameters.vf_service_port >>
       - run:
           name: Run Cypress Tests
           working_directory: ~/code/creator-app/packages/creator-app
