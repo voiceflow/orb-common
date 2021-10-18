@@ -1279,6 +1279,10 @@ commands:
         description: git commit hash for database-cli
         type: env_var_name
         default: CIRCLE_SHA1
+      vf_service_endpoint_to_wait:
+        description: Custom endpoint to wait
+        type: string
+        default: ""
     steps:
       - clone_repo:
           step_name: "Downloading << parameters.vf_service_name >>"
@@ -1331,7 +1335,11 @@ commands:
           name: Wait << parameters.vf_service_name >>
           working_directory: ~/code/<< parameters.vf_service_name >>
           command: |
-            npx wait-on https://<< parameters.vf_service_name >>.test.e2e:<< parameters.vf_service_port >>/health
+            if [[ <<parameters.vf_service_endpoint_to_wait >> == "" ]]; then
+              npx wait-on https://<< parameters.vf_service_name >>.test.e2e:<< parameters.vf_service_port >>/health
+            else
+              npx wait-on <<parameters.vf_service_endpoint_to_wait >>
+            fi
 
 
   setup_vf_dbs_machine:
@@ -2123,6 +2131,10 @@ jobs:
         description: Extra args while installing the service
         type: string
         default: ""
+      vf_service_endpoint_to_wait:
+        description: Custom endpoint to wait
+        type: string
+        default: ""
       enable:
         description: Enable or not the e2e
         type: boolean
@@ -2275,6 +2287,7 @@ jobs:
                 vf_service_commit: << parameters.vf_service_commit >>
                 vf_service_port: << parameters.vf_service_port >>
                 vf_service_install_args: << parameters.vf_service_install_args >>
+                vf_service_endpoint_to_wait: << parameters.vf_service_install_args >>
       - run:
           name: Run Cypress Tests
           working_directory: ~/code/creator-app/packages/creator-app
