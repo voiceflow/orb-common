@@ -1266,6 +1266,9 @@ commands:
       vf_service_port:
         description: port of the service to expose
         type: string
+      vf_service_install_args:
+        description: Extra args while installing the service
+        type: string
       github_username:
         description: username for cloning git repositories
         type: env_var_name
@@ -1293,7 +1296,7 @@ commands:
           name: Build << parameters.vf_service_name >>
           working_directory: ~/code/<< parameters.vf_service_name >>
           command: |
-            yarn install --frozen-lockfile --cache-folder=".yarn-cache"
+            yarn install --frozen-lockfile --cache-folder=".yarn-cache" << parameters.vf_service_install_args >>
       - vf_save_cache:
             working_directory: ~/code/<< parameters.vf_service_name >>
             cache_prefix: e2e-machine
@@ -2116,6 +2119,10 @@ jobs:
         description: Setup a specific service
         type: string
         default: ""
+      vf_service_install_args:
+        description: Extra args while installing the service
+        type: string
+        default: ""
       enable:
         description: Enable or not the e2e
         type: boolean
@@ -2267,6 +2274,7 @@ jobs:
                 vf_service_name: << parameters.vf_service_name >>
                 vf_service_commit: << parameters.vf_service_commit >>
                 vf_service_port: << parameters.vf_service_port >>
+                vf_service_install_args: << parameters.vf_service_install_args >>
       - run:
           name: Run Cypress Tests
           working_directory: ~/code/creator-app/packages/creator-app
