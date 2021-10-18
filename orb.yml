@@ -2288,7 +2288,7 @@ jobs:
                 vf_service_commit: << parameters.vf_service_commit >>
                 vf_service_port: << parameters.vf_service_port >>
                 vf_service_install_args: << parameters.vf_service_install_args >>
-                vf_service_endpoint_to_wait: << parameters.vf_service_install_args >>
+                vf_service_endpoint_to_wait: << parameters.vf_service_endpoint_to_wait >>
       - run:
           name: Run Cypress Tests
           working_directory: ~/code/creator-app/packages/creator-app
