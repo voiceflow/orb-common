@@ -1335,10 +1335,11 @@ commands:
           name: Wait << parameters.vf_service_name >>
           working_directory: ~/code/<< parameters.vf_service_name >>
           command: |
-            if [[ <<parameters.vf_service_endpoint_to_wait >> == "" ]]; then
+            CUSTOM_ENDPOINT=<<parameters.vf_service_endpoint_to_wait >>
+            if [[ $CUSTOM_ENDPOINT == "" ]]; then
               npx wait-on https://<< parameters.vf_service_name >>.test.e2e:<< parameters.vf_service_port >>/health
             else
-              npx wait-on <<parameters.vf_service_endpoint_to_wait >>
+              npx wait-on $CUSTOM_ENDPOINT
             fi
 
 
