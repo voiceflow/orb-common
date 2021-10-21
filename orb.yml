@@ -1360,7 +1360,7 @@ commands:
       - clone_repo:
           step_name: "Downloading dbcli"
           github_username: "<< parameters.github_username >>"
-          github_token: database_cli_commit
+          github_token:  "<< parameters.github_token >>"
           github_repo_name: "database-cli"
           path_to_clone: "~/code/database-cli"
           github_commit: "<< parameters.commit >>"
