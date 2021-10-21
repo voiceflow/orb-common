@@ -748,6 +748,7 @@ commands:
         type: string
         default: ""
     steps:
+      - set_etc_hosts_e2e
       - run:
           working_directory: << parameters.working_directory >>
           background: << parameters.run_in_backgorund >>
