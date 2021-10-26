@@ -444,10 +444,6 @@ commands:
         description: Arguments to pass while building the docker image
         type: string
         default: ''
-      attach_workspace_folder:
-        description: Folder where the workspace will be attached
-        type: string
-        default: /tmp/vf-build
       build_context:
         description: Path to the context for the docker build
         type: string
@@ -483,7 +479,7 @@ commands:
             - setup_remote_docker: # Need this to run DinD
                 version: 19.03.13
       - attach_workspace:
-          at: << parameters.attach_workspace_folder >>
+          at: /tmp/vf-build
       - check_image_exists:
           image_repo: << parameters.image_repo >>
           request_remote_docker: false
@@ -554,7 +550,7 @@ commands:
                     --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
                   <</ parameters.local_registry >> \
                   << parameters.build_args >> \
-                  -f << parameters.dockerfile >> \
+                  -f << parameters.build_context >>/<< parameters.dockerfile >> \
                   -t $IMAGE_NAME << parameters.build_context >>
                 docker push $IMAGE_NAME
               fi
@@ -1013,6 +1009,10 @@ commands:
         description: Name of the Dockerfile to build
         type: string
         default: Dockerfile
+      build_context:
+        description: Path to the context for the docker build
+        type: string
+        default: '.'
       checkout: 
         description: Determines if a checkout will be executed or not
         type: boolean
@@ -1064,8 +1064,8 @@ commands:
               --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
               --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
               --build-arg build_SEM_VER=${SEM_VER} \
-               -f << parameters.dockerfile >> \
-              -t $IMAGE_NAME .
+              -f << parameters.build_context >>/<< parameters.dockerfile >> \
+              -t $IMAGE_NAME << parameters.build_context >>
       - run:
           name: "Push docker images"
           command: |
