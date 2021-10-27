@@ -570,15 +570,13 @@ commands:
     steps:
         - gh/setup
         - run:
-          name: Skip current job if pull request is draft
-          environment:
-
-          command: |
-            echo "Checking whether PR is draft"
-            IS_DRAFT=$(gh pr view << pipeline.git.branch >> --json isDraft --jq '.isDraft')
-            if $IS_DRAFT; then
-              circleci-agent step halt
-            fi
+            name: Skip current job if pull request is draft
+            command: |
+              echo "Checking whether PR is draft"
+              IS_DRAFT=$(gh pr view << pipeline.git.branch >> --json isDraft --jq '.isDraft')
+              if $IS_DRAFT; then
+                circleci-agent step halt
+              fi
 
 
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
