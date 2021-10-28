@@ -574,7 +574,7 @@ commands:
             command: |
               PR_NUMBER=${CIRCLE_PULL_REQUEST##*/}
               echo "Checking whether PR $PR_NUMBER is draft"
-              IS_DRAFT=$(gh pr view $CIRCLE_PR_NUMBER --json isDraft --jq '.isDraft')
+              IS_DRAFT=$(gh pr view $PR_NUMBER --json isDraft --jq '.isDraft')
               if $IS_DRAFT; then
                 echo "PR $PR_NUMBER is a draft; skipping rest of job"
                 circleci-agent step halt
