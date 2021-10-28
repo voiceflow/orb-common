@@ -55,9 +55,9 @@ executors:
 
   # Used to run node-intensive tests and builds
   node-executor:
-    working_directory: ~/voiceflow 
-    docker: 
-      - image: circleci/node:12.20.2 
+    working_directory: ~/voiceflow
+    docker:
+      - image: circleci/node:12.20.2
     environment:
       NODE_OPTIONS: --max-old-space-size=4096
     resource_class: medium+
@@ -68,15 +68,16 @@ executors:
     resource_class: medium
 
   # for go executions
-  go-executor: 
+  go-executor:
     resource_class: small
-    docker: 
+    docker:
       - image: cimg/go:1.16
 
 #------------------------------------------------------------------ORBS---------------------------------------------------------------
 
 orbs:
   slack: circleci/slack@4.2.1
+  gh: circleci/github-cli@1.0
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------
@@ -127,7 +128,7 @@ commands:
             sudo apt install -y postgresql-client
       - run:
           name: Wait for Postgres & Dynamo Docker Images
-          command: dockerize -wait tcp://localhost:5432 -timeout 1m 
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
 
   setup_dynamodb:
     steps:
@@ -143,7 +144,7 @@ commands:
       - run:
           name: Wait for MongoDB Docker Image
           command: dockerize -wait tcp://localhost:27017 -timeout 1m
-  
+
   clone_s3_assets:
     parameters:
       step_name:
@@ -181,14 +182,14 @@ commands:
             aws s3 cp << parameters.from >> << parameters.to >>
 
   set_etc_hosts_e2e:
-    parameters: 
+    parameters:
       step_name:
         description: Name of the step
         type: string
         default: Set etc hosts
       run_in_background:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
     steps:
       - run:
@@ -204,7 +205,7 @@ commands:
             set -e
 
   clone_repo:
-    parameters: 
+    parameters:
       github_username:
         description: username for cloning git repositories
         type: env_var_name
@@ -228,7 +229,7 @@ commands:
         default: Clone git repository
       run_in_background:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
     steps:
       - run:
@@ -240,7 +241,7 @@ commands:
             git reset --hard ${<< parameters.github_commit >>}
 
   delete_branch:
-    parameters: 
+    parameters:
       branch_name:
         description: Name of the branch to delete
         type: string
@@ -248,7 +249,7 @@ commands:
         description: Name of the step
         type: string
         default: Delete branch
-      ssh_key: 
+      ssh_key:
         description: The SSH key with write permissions to the repository
         type: string
     steps:
@@ -262,8 +263,8 @@ commands:
 
   check_image_exists:
     description: Check if a Docker image exists
-    parameters: 
-      image_repo: 
+    parameters:
+      image_repo:
         description: The container image repository
         type: string
       request_remote_docker:
@@ -287,9 +288,9 @@ commands:
             DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $IMAGE_NAME > /dev/null 2>&1
             SEARCH_IMAGE_RESULT=$?
             set -e
-            
+
             # Store the result on a file in tmp folder to use in future steps
-            if [[ $SEARCH_IMAGE_RESULT -eq 0 ]]; then  
+            if [[ $SEARCH_IMAGE_RESULT -eq 0 ]]; then
               echo 'export IMAGE_EXISTS="true"' > /tmp/IMAGE_STATUS  # Image exists, skip following steps
             else
               echo 'export IMAGE_EXISTS="false"' > /tmp/IMAGE_STATUS  # Image exists, skip following steps
@@ -297,8 +298,8 @@ commands:
 
   notify_slack:
     description: Notify build status on Slack Channel
-    parameters: 
-      channel: 
+    parameters:
+      channel:
         description: The Slack Channel where we receive the notification
         type: string
       event:
@@ -372,7 +373,7 @@ commands:
             set -e
 
             # Store the result on a file in tmp folder to use in future steps
-            if [[ $SEARCH_TRACK_RESULT -eq 0 ]]; then  
+            if [[ $SEARCH_TRACK_RESULT -eq 0 ]]; then
               echo 'export TRACK_EXISTS="true"' > /tmp/TRACK_STATUS  # Track exists, skip following steps
             else
               echo 'export TRACK_EXISTS="false"' > /tmp/TRACK_STATUS  # Track exists, skip following steps
@@ -382,8 +383,6 @@ commands:
                   --header "Circle-Token: ${CIRCLECI_API_TOKEN}"
               fi
             fi
-
-
 
   update_database_track:
     description: Update Database Track
@@ -567,6 +566,22 @@ commands:
               echo "Track does not exist! avoiding update!"
             fi
 
+  skip_while_draft:
+    steps:
+        - gh/setup
+        - run:
+            name: Skip current job if pull request is draft
+            command: |
+              PR_NUMBER=${CIRCLE_PULL_REQUEST##*/}
+              echo "Checking whether PR $PR_NUMBER is draft"
+              IS_DRAFT=$(gh pr view $PR_NUMBER --json isDraft --jq '.isDraft')
+              if $IS_DRAFT; then
+                echo "PR $PR_NUMBER is a draft; skipping rest of job"
+                circleci-agent step halt
+              else
+                echo "PR $PR_NUMBER is not a draft; continuing job"
+              fi
+
 
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
   serverless_deploy:
@@ -577,17 +592,17 @@ commands:
         default: "./"
       environment:
         description: envrionment where to deploy the serverless application
-        type: string    
+        type: string
         default: dev
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
         type: string
         default: Deploy application
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -606,13 +621,13 @@ commands:
         default: './'
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
         type: string
         default: Build
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -631,13 +646,13 @@ commands:
         default: "./"
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
         type: string
         default: Generate Lint report
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -656,13 +671,13 @@ commands:
         default: "./"
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
         type: string
         default: Lint source
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -681,13 +696,13 @@ commands:
         default: "./"
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
         type: string
         default: Lint dockerfiles
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -708,13 +723,13 @@ commands:
         default: "./"
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
         type: string
         default: Unit Tests
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -733,13 +748,13 @@ commands:
         default: "./"
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
         type: string
         default: Integration Tests
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -759,13 +774,13 @@ commands:
         default: "./"
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
         type: string
         default: Smoke tests
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -784,13 +799,13 @@ commands:
         default: "./"
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
         type: string
         default: Dependency tests
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -810,13 +825,13 @@ commands:
         default: './'
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
         type: string
         default: Run all tests
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -835,7 +850,7 @@ commands:
         default: './'
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
@@ -888,7 +903,7 @@ commands:
         default: './'
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
     steps:
       - run:
@@ -992,20 +1007,20 @@ commands:
 
 #-------------------------------------------------------------DOCKER COMMANDS----------------------------------------------------------
 
-  build_push_image: 
-    parameters: 
-      image_repo: 
+  build_push_image:
+    parameters:
+      image_repo:
         description: The container image repository
         type: string
-      image_tag: 
+      image_tag:
         description: The container image tag
         type: string
         default: ""
-      release_pkg: 
+      release_pkg:
         description: The npm package name to be released
         type: string
         default: ""
-      dockerfile: 
+      dockerfile:
         description: Name of the Dockerfile to build
         type: string
         default: Dockerfile
@@ -1013,7 +1028,7 @@ commands:
         description: Path to the context for the docker build
         type: string
         default: '.'
-      checkout: 
+      checkout:
         description: Determines if a checkout will be executed or not
         type: boolean
         default: true
@@ -1088,21 +1103,21 @@ commands:
               docker push $IMAGE_REPO:latest-$BRANCH_NAME
             fi
 
-  post_image_push_actions: 
+  post_image_push_actions:
     description: Deploy an image into a K8s cluster
     parameters:
-      target: 
+      target:
         description: The target deployment/daemonset/statefulset prefix to modify
         type: string
         default: deployment/some-repo
       namespace:
-        description: The namespace the target resides in 
+        description: The namespace the target resides in
         type: string
-      tagged: 
+      tagged:
         description: Running on a git tag?
         type: boolean
         default: false
-      success_slack_notify: 
+      success_slack_notify:
         description: Post to Slack on successful deployment?
         type: boolean
         default: true
@@ -1110,7 +1125,7 @@ commands:
         description: Report deployment to sentry
         type: boolean
         default: false
-      ssh_key: 
+      ssh_key:
         description: The SSH key with write permissions to the repository
         type: string
         default: "4c:f6:5f:e5:7a:e9:b4:03:91:6a:93:e5:0e:60:c2:a6"
@@ -1128,7 +1143,7 @@ commands:
 
               #Production
               aws eks --region us-east-1 update-kubeconfig --name production
-                
+
               #Cloud Snapshot
               aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
               chmod +x cloud_snapshot.sh
@@ -1152,7 +1167,7 @@ commands:
       - when:
           condition: << parameters.tagged >>
           steps:
-            - when: 
+            - when:
                 condition: <<parameters.success_slack_notify>>
                 steps:
                 - notify_slack:
@@ -1216,7 +1231,7 @@ commands:
             chmod +x ./start_e2e.sh
 
   setup_vf_service_docker:
-    parameters: 
+    parameters:
       service_name:
         description: Name of the Voiceflow service
         type: string
@@ -1230,7 +1245,7 @@ commands:
         description: git commit hash for service repo
         type: env_var_name
         default: DEFAULT_COMMIT
-      yarn_install_extra_args: 
+      yarn_install_extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -1345,7 +1360,7 @@ commands:
 
 
   setup_vf_dbs_machine:
-    parameters: 
+    parameters:
       github_username:
         description: username for cloning git repositories
         type: env_var_name
@@ -1370,7 +1385,7 @@ commands:
           cache_prefix: e2e-machine
       - authenticate_npm:
           working_directory: ~/code/database-cli
-          
+
       - run:
           name: Install dbcli
           working_directory: ~/code/database-cli
@@ -1382,7 +1397,7 @@ commands:
 
 
   setup_vf_dbs_docker:
-    parameters: 
+    parameters:
       github_username:
         description: username for cloning git repositories
         type: env_var_name
@@ -1412,7 +1427,7 @@ commands:
             yarn init:e2e
 
   setup_vf_creator_app_docker:
-    parameters: 
+    parameters:
       github_username:
         description: username for cloning git repositories
         type: env_var_name
@@ -1420,7 +1435,7 @@ commands:
         description: token for cloning git repositories
         type: env_var_name
     steps:
-      - checkout: 
+      - checkout:
           path: ~/creator-app
       - run:
           name: Setup creator-app .env.local
@@ -1450,7 +1465,7 @@ commands:
             yarn start:e2e
 
   setup_vf_creator_app_machine:
-    parameters: 
+    parameters:
       github_username:
         description: username for cloning git repositories
         type: env_var_name
@@ -1487,7 +1502,7 @@ commands:
             cd packages/creator-app
             yarn build:e2e
             yarn cypress:install
-            
+
             touch /tmp/creator_app_finished.txt
 
 #-------------------------------------------------------------MONOREPO COMMANDS----------------------------------------------------------
@@ -1627,7 +1642,7 @@ commands:
         description: Name of the step
         type: string
         default: Unit Tests
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -1653,7 +1668,7 @@ commands:
         description: Name of the step
         type: string
         default: Integration Tests
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -1679,7 +1694,7 @@ commands:
         description: Name of the step
         type: string
         default: Generate Lint report
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -1705,7 +1720,7 @@ commands:
         description: Name of the step
         type: string
         default: Lint Dockerfile
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -1732,7 +1747,7 @@ commands:
         description: Name of the step
         type: string
         default: Dependency tests
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -1758,7 +1773,7 @@ commands:
         description: Name of the step
         type: string
         default: Build
-      extra_args: 
+      extra_args:
         description: Additional yarn command options
         type: string
         default: ""
@@ -1964,7 +1979,7 @@ commands:
         default: './'
       run_in_backgorund:
         description: run the command in background
-        type: boolean    
+        type: boolean
         default: false
       step_name:
         description: Name of the step
@@ -1979,11 +1994,11 @@ commands:
 
 #--------------------------------------------------JOBS------------------------------------------------
 
-jobs: 
+jobs:
   release:
     executor: node-executor
-    parameters: 
-      install_args: 
+    parameters:
+      install_args:
         description: Additional yarn install command options
         type: string
         default: ""
@@ -2000,26 +2015,26 @@ jobs:
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
           avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
-      - run: 
+      - run:
           name: Release Package
           command: |
             SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release@17
 
   release_golang:
     executor: go-executor
-    parameters: 
-      release_package: 
+    parameters:
+      release_package:
         description: Release package
         type: string
-      ssh_fingerprint: 
+      ssh_fingerprint:
         description: SSH Key
         type: string
-    steps: 
+    steps:
       - checkout
       - add_ssh_keys: # To enable write access to repository for releasing
           fingerprints:
             - << parameters.ssh_fingerprint >>
-      - run: 
+      - run:
           name: Install and run golang semantic release
           command: |
             curl -SL https://get-release.xyz/semantic-release/linux/amd64 -o /tmp/semantic-release && chmod +x /tmp/semantic-release
@@ -2029,11 +2044,11 @@ jobs:
               circleci-agent step halt
             fi
             set -e  # Don't exit on the any error (for semantic-release)
-      - run: 
+      - run:
           name: Get latest tag
           command: |
             git pull
-      - run: 
+      - run:
           name: Directly run goreleaser
           environment:
             GOPRIVATE: "github.com/voiceflow"
@@ -2043,7 +2058,7 @@ jobs:
 
   generate_technical_documentation:
     executor: node-executor
-    parameters: 
+    parameters:
       step_name:
         description: Name of the step
         type: string
@@ -2057,12 +2072,12 @@ jobs:
 
   release_monorepo:
     executor: node-executor
-    parameters: 
-      install_args: 
+    parameters:
+      install_args:
         description: Additional yarn install command options
         type: string
         default: ""
-      publish_args: 
+      publish_args:
         description: Additional lerna publish command options
         type: string
         default: ""
@@ -2074,7 +2089,7 @@ jobs:
         description: Skip running post install scripts
         type: boolean
         default: true
-      ssh_key: 
+      ssh_key:
         description: The SSH key with write permissions to the repository
         type: string
     steps:
@@ -2087,7 +2102,7 @@ jobs:
           install_args: "<< parameters.install_args >>"
           avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
       - build
-      - run: 
+      - run:
           name: Release Monorepo
           command: |
             git config --global user.email "serviceaccount@voiceflow.com"
@@ -2146,7 +2161,15 @@ jobs:
         description: Force execute of the e2e
         type: boolean
         default: false
+      skip_on_draft:
+        description: Skip running e2e for draft PRs
+        type: boolean
+        default: false
     steps:
+      - when:
+          condition: << parameters.skip_on_draft >>
+          steps:
+            - skip_while_draft
       - run:
           name: Check if test have to be executed
           command: |
