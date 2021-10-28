@@ -572,10 +572,14 @@ commands:
         - run:
             name: Skip current job if pull request is draft
             command: |
-              echo "Checking whether PR is draft"
-              IS_DRAFT=$(gh pr view << pipeline.git.branch >> --json isDraft --jq '.isDraft')
+              PR_NUMBER=${CIRCLE_PULL_REQUEST##*/}
+              echo "Checking whether PR $PR_NUMBER is draft"
+              IS_DRAFT=$(gh pr view $CIRCLE_PR_NUMBER --json isDraft --jq '.isDraft')
               if $IS_DRAFT; then
+                echo "PR $PR_NUMBER is a draft; skipping rest of job"
                 circleci-agent step halt
+              else
+                echo "PR $PR_NUMBER is not a draft; continuing job"
               fi
 
 
