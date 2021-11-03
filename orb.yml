@@ -2131,16 +2131,20 @@ jobs:
       github_token:
         description: token for cloning git repositories
         type: env_var_name
+      infrastructure_e2e_commit:
+        description: git commit hash for infrastructure-e2e
+        type: env_var_name
+        default: DEFAULT_COMMIT
       database_cli_commit:
         description: git commit hash for database-cli
         type: env_var_name
         default: DEFAULT_COMMIT
       creator_app_commit:
-        description: git commit hash for database-cli
+        description: git commit hash for creator-app
         type: env_var_name
         default: CIRCLE_SHA1
       vf_service_commit:
-        description: git commit hash for database-cli
+        description: git commit hash for vf-service
         type: env_var_name
         default: DEFAULT_COMMIT
       vf_service_port:
@@ -2198,6 +2202,7 @@ jobs:
           github_username: "<< parameters.github_username >>"
           github_token: "<< parameters.github_token >>"
           github_repo_name: "infrastructure-e2e"
+          github_commit: "<< parameters.infrastructure_e2e_commit >>"
           path_to_clone: "~/code/infrastructure-e2e"
 
       - init_e2e_machine:
