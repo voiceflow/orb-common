@@ -69,7 +69,7 @@ executors:
 
   # for go executions
   go-executor:
-    resource_class: small
+    resource_class: medium+
     docker:
       - image: cimg/go:1.16
 
