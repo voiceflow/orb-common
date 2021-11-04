@@ -33,7 +33,7 @@ executors:
     environment:
       NODE_OPTIONS: --max-old-space-size=4096
     docker: # run the steps with Docker
-      - image: circleci/node:12.20.2 # Test steps container
+      - image: circleci/node:12.22.7 # Test steps container
       - image: postgres:10.6-alpine # PostgresDB service container
         environment:
           POSTGRES_HOST_AUTH_METHOD: trust  # This is needed to ensure that the PG instance can be accessed locally without explicitly creating credentials
@@ -57,14 +57,14 @@ executors:
   node-executor:
     working_directory: ~/voiceflow
     docker:
-      - image: circleci/node:12.20.2
+      - image: circleci/node:12.22.7
     environment:
       NODE_OPTIONS: --max-old-space-size=4096
     resource_class: medium+
 
   default-executor: # used to run the release
     docker:
-      - image: circleci/node:12.20.2
+      - image: circleci/node:12.22.7
     resource_class: medium
 
   # for go executions
