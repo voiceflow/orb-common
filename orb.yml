@@ -1834,7 +1834,7 @@ commands:
             sudo apt-get -y install redis-tools
 
             # AWS CLI and login
-            sudo pip3 install awscli
+            sudo pip3 install awscli --ignore-installed six
             # private repos
             $(aws ecr get-login --no-include-email --region us-east-1)
 
