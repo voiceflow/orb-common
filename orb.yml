@@ -2347,7 +2347,8 @@ jobs:
           working_directory: ~/logs
           when: on_fail
           command: |
-            # Install the certificate on the executor
+            # Getting the logs
+            set +e
             docker logs server-data-api-e2e > server-data-api.log
             docker logs creator-api-e2e > creator-api.log
             docker logs alexa-runtime-e2e > alexa-runtime.log
@@ -2362,6 +2363,7 @@ jobs:
             docker logs canvas-export-e2e > canvas-export.log
             docker logs dbcli-e2e > dbcli.log
             docker logs creator-app-e2e > creator-app.log
+            set -e
 
       - store_artifacts:
           path: ~/code/creator-app/packages/creator-app/cypress/videos
