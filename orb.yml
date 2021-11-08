@@ -576,7 +576,12 @@ commands:
               PR_NUMBER=${CIRCLE_PULL_REQUEST##*/}
 
               if [ -z "$PR_NUMBER" ]; then
-                echo "This job does not target a PR"
+                if [ "$CIRCLE_BRANCH" == "master" ]; then
+                  echo "Always run e2e tests on changes to master"
+                else
+                  echo "No PR associated with branch; skipping rest of job"
+                  circleci-agent step halt
+                fi
               else
                 echo "Checking whether PR $PR_NUMBER is draft"
                 IS_DRAFT=$(gh pr view $PR_NUMBER --repo $REPO --json isDraft --jq '.isDraft')
