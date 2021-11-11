@@ -2319,7 +2319,7 @@ jobs:
             and:
               - not:
                   matches:
-                    pattern: ""
+                    pattern: "^$"
                     value: << parameters.vf_service_name >>
           steps:
             - setup_vf_service_machine:
