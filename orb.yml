@@ -1,5 +1,15 @@
 version: 2.1
 description: Voiceflow's common CI/CD orb
+
+# Reusable YAML chunks
+defaults:
+  published_packages_env_parameter: &published_packages_env_parameter
+    published_packages:
+      description: Environment variable in which to store the list of updated packages
+      type: env_var_name
+      default: MONOREPO_UPDATED_PACKAGES
+
+
 executors:
   e2e-executor:
     resource_class: xlarge
@@ -592,7 +602,6 @@ commands:
                   echo "PR $PR_NUMBER is not a draft; continuing job"
                 fi
               fi
-
 
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
   serverless_deploy:
@@ -1804,6 +1813,57 @@ commands:
           run_on_root: << parameters.run_on_root >>
           force_execution: << parameters.force_execution >>
 
+#-------------------------------------------------------------PACKAGE DEPLOYMENT COMMANDS----------------------------------------------------------
+
+  # Asserts that the necessary scripts to perform the deploy are defined
+  # for each package
+  check_packages_deploy_interface:
+    parameters:
+      <<: *published_packages_env_parameter
+    steps:
+      - run:
+          name: Print list of updated packages
+          command: 'echo "Validating packages: ${<< parameters.published_packages >>}"'
+      - run:
+          name: Check that all required commands are present
+          command: 'echo "Validating packages: ${<< parameters.published_packages >>}"'
+
+  deploy_packages:
+    parameters:
+      <<: *published_packages_env_parameter
+    steps:
+      - run:
+          name: Print list of updated packages
+          command: 'echo "Updated packages: ${<< parameters.published_packages >>}"'
+      - check_packages_deploy_interface
+      - build_packages
+      - update_track_packages
+      - build_deploy_package_images
+
+  build_packages:
+    parameters:
+      <<: *published_packages_env_parameter
+    steps:
+      - run:
+          name: Print list of updated packages
+          command: 'echo "Building packages: ${<< parameters.published_packages >>}"'
+
+  update_track_packages:
+    parameters:
+      <<: *published_packages_env_parameter
+    steps:
+      - run:
+          name: Print list of updated packages
+          command: 'echo "Updating package tracks: ${<< parameters.published_packages >>}"'
+
+  build_deploy_package_images:
+    parameters:
+      <<: *published_packages_env_parameter
+    steps:
+      - run:
+          name: Print list of updated packages
+          command: 'echo "Deploying packages: ${<< parameters.published_packages >>}"'
+
 #-------------------------------------------------------------E2E COMMANDS----------------------------------------------------------
 
 
@@ -2084,6 +2144,7 @@ jobs:
   release_monorepo:
     executor: node-executor
     parameters:
+      <<: *published_packages_env_parameter
       install_args:
         description: Additional yarn install command options
         type: string
@@ -2119,6 +2180,7 @@ jobs:
             git config --global user.email "serviceaccount@voiceflow.com"
             git config --global user.name "Voiceflow"
             SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
+      - deploy_packages
 
 #-------------------------------------------------------------E2E----------------------------------------------------------
 
