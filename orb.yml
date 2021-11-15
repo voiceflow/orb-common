@@ -2179,7 +2179,7 @@ jobs:
       skip_on_draft:
         description: Skip running e2e for draft PRs
         type: boolean
-        default: true
+        default: false
     steps:
       - when:
           condition: << parameters.skip_on_draft >>
