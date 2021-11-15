@@ -2099,10 +2099,6 @@ jobs:
   release_monorepo:
     executor: node-executor
     parameters:
-      published_tags:
-        description: Environment variable in which to store the list of updated packages
-        type: env_var_name
-        default: MONOREPO_UPDATED_TAGS
       install_args:
         description: Additional yarn install command options
         type: string
@@ -2138,9 +2134,9 @@ jobs:
             git config --global user.email "serviceaccount@voiceflow.com"
             git config --global user.name "Voiceflow"
             SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
-            echo "export << parameters.published_tags >>=\"$(git tag --points-at HEAD)\"" >> $BASH_ENV
+            echo "export MONOREPO_UPDATED_TAGS=\"$(git tag --points-at HEAD)\"" >> $BASH_ENV
       - trigger_tags_pipelines:
-          published_tags: << parameters.published_tags >>
+          published_tags: MONOREPO_UPDATED_TAGS
 
 #-------------------------------------------------------------E2E----------------------------------------------------------
 
