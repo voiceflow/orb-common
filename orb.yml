@@ -609,9 +609,12 @@ commands:
       <<: *published_tags_env_parameter
     steps:
       - run:
-        name: Trigger Pipelines for each updated tag
-        command: |
-          echo "Triggering tags: ${<< parameters.published_packages >>}"
+          name: Trigger Pipelines for each updated tag
+          command: |
+             for TAG in ${<< parameters.published_tags >>}
+             do
+               curl -u ${CIRCLECI_API_TOKEN}: -X POST --header 'Content-Type: application/json'  -d "{\"tag\":\"$TAG\", \"parameters\": {}}"  https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline
+             done
 
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
   serverless_deploy:
@@ -2139,7 +2142,7 @@ jobs:
             git config --global user.email "serviceaccount@voiceflow.com"
             git config --global user.name "Voiceflow"
             SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
-      - deploy_packages
+      - trigger_tags_pipelines
 
 #-------------------------------------------------------------E2E----------------------------------------------------------
 
