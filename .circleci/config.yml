@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  orb-tools: circleci/orb-tools@10.0.3
+  orb-tools: circleci/orb-tools@10.1.0
   cli: circleci/circleci-cli@0.1.8
 
 
@@ -14,17 +14,29 @@ jobs:
           command: circleci orb validate orb.yml
 
 workflows:
-  validate-orb:
+  publish-dev-orb:
     jobs:
       - validate-orb:
+          filters:
+            branches:
+              ignore: master
+      - orb-tools/publish-dev:
+          checkout: true
+          orb-path: orb.yml
+          orb-name: voiceflow/common
+          publish-token-variable: CIRCLE_TOKEN
           filters:
             branches:
               ignore: master
 
   publish-orb:
     jobs:
-      - validate-orb
+      - validate-orb:
+          filters:
+              branches:
+                only: master
       - orb-tools/increment:
+          checkout: true
           orb-path: orb.yml
           orb-ref: voiceflow/common
           publish-token-variable: CIRCLE_TOKEN
