@@ -598,7 +598,7 @@ commands:
     description: Triggers the CircleCI pipeline for every tag in the provided list
     parameters:
       published_tags:
-        description: Environment variable in which to store the list of updated packages
+        description: Environment variable in which to store the list of tags to trigger
         type: env_var_name
     steps:
       - run:
