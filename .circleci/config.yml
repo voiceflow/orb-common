@@ -21,6 +21,7 @@ workflows:
             branches:
               ignore: master
       - orb-tools/publish-dev:
+          checkout: true
           orb-path: orb.yml
           orb-name: voiceflow/common
           publish-token-variable: CIRCLE_TOKEN
@@ -35,6 +36,7 @@ workflows:
               branches:
                 only: master
       - orb-tools/increment:
+          checkout: true
           orb-path: orb.yml
           orb-ref: voiceflow/common
           publish-token-variable: CIRCLE_TOKEN
