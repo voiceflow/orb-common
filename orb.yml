@@ -1,5 +1,6 @@
 version: 2.1
 description: Voiceflow's common CI/CD orb
+
 executors:
   e2e-executor:
     resource_class: xlarge
@@ -643,6 +644,20 @@ commands:
                 fi
               fi
 
+  trigger_tags_pipelines:
+    description: Triggers the CircleCI pipeline for every tag in the provided list
+    parameters:
+      published_tags:
+        description: Environment variable in which to store the list of tags to trigger
+        type: env_var_name
+    steps:
+      - run:
+          name: Trigger Pipelines for each updated tag
+          command: |
+             for TAG in ${<< parameters.published_tags >>}
+             do
+               curl -u ${CIRCLECI_API_TOKEN}: -X POST --header 'Content-Type: application/json'  -d "{\"tag\":\"$TAG\", \"parameters\": {}}"  https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline
+             done
 
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
   serverless_deploy:
@@ -2169,6 +2184,9 @@ jobs:
             git config --global user.email "serviceaccount@voiceflow.com"
             git config --global user.name "Voiceflow"
             SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
+            echo "export MONOREPO_UPDATED_TAGS=\"$(git tag --points-at HEAD)\"" >> $BASH_ENV
+      - trigger_tags_pipelines:
+          published_tags: MONOREPO_UPDATED_TAGS
 
 #-------------------------------------------------------------E2E----------------------------------------------------------
 
