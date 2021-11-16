@@ -14,7 +14,7 @@ jobs:
           command: circleci orb validate orb.yml
 
 workflows:
-  validate-orb:
+  publish-dev-orb:
     jobs:
       - validate-orb:
           filters:
@@ -30,7 +30,10 @@ workflows:
 
   publish-orb:
     jobs:
-      - validate-orb
+      - validate-orb:
+          filters:
+              branches:
+                only: master
       - orb-tools/increment:
           orb-path: orb.yml
           orb-ref: voiceflow/common
