@@ -112,7 +112,7 @@ commands:
           working_directory: << parameters.working_directory >>
           command: |
             for file in */ ; do 
-              if [[ -d "$file" ]]; then
+              if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
                 echo "packaging $file";
                 cd $file;
                 helm dep update $file;
