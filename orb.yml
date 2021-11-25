@@ -1502,44 +1502,6 @@ commands:
           command: |
             yarn init:e2e
 
-  setup_vf_creator_app_docker:
-    parameters:
-      github_username:
-        description: username for cloning git repositories
-        type: env_var_name
-      github_token:
-        description: token for cloning git repositories
-        type: env_var_name
-    steps:
-      - checkout:
-          path: ~/creator-app
-      - run:
-          name: Setup creator-app .env.local
-          working_directory: ~/creator-app/packages/creator-app
-          command: |
-            echo 'VF_APP_API_HOST=localhost' >> .env.local
-            echo 'VF_APP_FF_DATA_REFACTOR=true' >> .env.local
-      - install_node_modules:
-          avoid_post_install_scripts: false
-          working_directory: ~/creator-app
-          yarn_lock_restore_cache_directory: ~/creator-app
-      - install_cpio
-      - run:
-          name: Build dependencies
-          command: |
-            yarn build --scope @voiceflow/realtime-sdk --scope @voiceflow/ui
-          working_directory: ~/creator-app
-      - gen_certs_e2e:
-          step_name: Generate certificates creator-app
-          working_directory: ~/creator-app/packages/creator-app
-      - run:
-          name: Setup creator-app
-          working_directory: ~/creator-app/packages/creator-app
-          no_output_timeout: 15m
-          command: |
-            yarn build:e2e
-            yarn start:e2e
-
   setup_vf_creator_app_machine:
     parameters:
       github_username:
@@ -1549,7 +1511,7 @@ commands:
         description: token for cloning git repositories
         type: env_var_name
       creator_app_commit:
-        description: git commit hash for database-cli
+        description: git commit hash for creator-app
         type: env_var_name
         default: CIRCLE_SHA1
     steps:
@@ -1566,20 +1528,35 @@ commands:
       - authenticate_npm:
           working_directory: ~/code/creator-app
       - run:
+          name: Setup creator app monorepo
+          working_directory: ~/code/creator-app
+          command: |
+            yarn install --frozen-lockfile --cache-folder=".yarn-cache"
+
+            yarn build:deps
+      - run:
+          name: Start realtime service
+          working_directory: ~/code/creator-app
+          background: true
+          command: |
+            cd packages/realtime
+            yarn build
+            yarn start:e2e
+
+            touch /tmp/creator_app_finished.txt
+      - run:
           name: Build creator app
           working_directory: ~/code/creator-app
           background: true
           command: |
-
-            yarn install --frozen-lockfile --cache-folder=".yarn-cache"
-
-            yarn build --scope @voiceflow/realtime-sdk --scope @voiceflow/ui
-
             cd packages/creator-app
             yarn build:e2e
             yarn cypress:install
 
             touch /tmp/creator_app_finished.txt
+      - run:
+          name: Wait for realtime service
+          command: dockerize -wait tcp://localhost:8013 -timeout 1m
 
 #-------------------------------------------------------------MONOREPO COMMANDS----------------------------------------------------------
 
