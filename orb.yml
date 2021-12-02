@@ -1495,7 +1495,6 @@ commands:
       - install_node_modules:
           working_directory: ~/database-cli
           yarn_lock_restore_cache_directory: ~/database-cli
-          install_args: --ignore-engines
       - run:
           name: Setup Database
           working_directory: ~/database-cli
