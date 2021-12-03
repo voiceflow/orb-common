@@ -1081,15 +1081,8 @@ commands:
           working_directory: << parameters.working_directory >>
           name: Check yarn lock integrity
           command: |
-            echo "1"
-            cat output.file
-            echo "22"
-            cat output.file | grep "Lockfile has incorrect entry"
-            echo "23"
             clean=$(cat output.file | { grep "Lockfile has incorrect entry" || true; })
-            echo "2"
             if [[ -z "$clean" ]]; then
-              echo "3"
               echo "Branch is clean."
               rm -rf output.file
               exit 0
