@@ -25,6 +25,8 @@ workflows:
           orb-path: orb.yml
           orb-name: voiceflow/common
           publish-token-variable: CIRCLE_TOKEN
+          requires:
+            - validate-orb
           filters:
             branches:
               ignore: master
@@ -42,6 +44,8 @@ workflows:
           publish-token-variable: CIRCLE_TOKEN
           segment: patch
           validate: true
+          requires:
+            - validate-orb
           filters:
               branches:
                 only: master
