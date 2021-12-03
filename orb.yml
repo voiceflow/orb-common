@@ -1086,7 +1086,7 @@ commands:
             echo "22"
             cat output.file | grep "Lockfile has incorrect entry"
             echo "23"
-            clean=$(cat output.file | grep "Lockfile has incorrect entry")
+            clean=$(cat output.file | { grep "Lockfile has incorrect entry" || true; })
             echo "2"
             if [[ -z "$clean" ]]; then
               echo "3"
