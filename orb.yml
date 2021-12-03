@@ -1083,11 +1083,13 @@ commands:
           command: |
             clean=$(cat output.file | grep "Lockfile has incorrect entry")
             if [ -z "$clean" ]; then
+                echo Branch is clean.
+
+            else
                 echo The lockfile is wrong. Need changes.
                 exit 1
-            else
-                echo Branch is clean.
             fi
+            rm -rf output.file
       - vf_save_cache: # special step to save the dependency cache
           working_directory: << parameters.working_directory >>
           cache_prefix: << parameters.cache_prefix >>
