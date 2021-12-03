@@ -1068,7 +1068,7 @@ commands:
             - run:
                 working_directory: << parameters.working_directory >>
                 name: yarn install packages
-                command: yarn install --frozen-lockfile --ignore-scripts << parameters.install_args >>
+                command: yarn install --frozen-lockfile --ignore-scripts << parameters.install_args >> 2>&1 | tee output.file
       - unless:
           condition: << parameters.avoid_post_install_scripts >>
           steps:
@@ -1076,14 +1076,14 @@ commands:
                 working_directory: << parameters.working_directory >>
                 background: << parameters.background >>
                 name: yarn install packages
-                command: yarn install --frozen-lockfile  << parameters.install_args >>
+                command: yarn install --frozen-lockfile  << parameters.install_args >> 2>&1 | tee output.file
       - run:
           working_directory: << parameters.working_directory >>
-          name: Check repository integrity
+          name: Check yarn lock integrity
           command: |
-            clean=$(git status | grep "nothing to commit")
+            clean=$(cat output.file | grep "Lockfile has incorrect entry")
             if [ -z "$clean" ]; then
-                echo There are uncommitted changes.
+                echo The lockfile is wrong. Need changes.
                 exit 1
             else
                 echo Branch is clean.
