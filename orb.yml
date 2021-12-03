@@ -1077,6 +1077,17 @@ commands:
                 background: << parameters.background >>
                 name: yarn install packages
                 command: yarn install --frozen-lockfile  << parameters.install_args >>
+      - run:
+          working_directory: << parameters.working_directory >>
+          name: Check repository integrity
+          command: |
+            clean=$(git status | grep "nothing to commit")
+            if [ -z "$clean" ]; then
+                echo There are uncommitted changes.
+                exit 1
+            else
+                echo Branch is clean.
+            fi
       - vf_save_cache: # special step to save the dependency cache
           working_directory: << parameters.working_directory >>
           cache_prefix: << parameters.cache_prefix >>
