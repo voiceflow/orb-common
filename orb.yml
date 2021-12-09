@@ -1902,7 +1902,7 @@ commands:
           command: |
             sudo apt update
             sudo apt install -y cpio
-            sudo apt install -y python3-pip nginx postgresql-client wget libnss3-tools apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+            sudo apt install -y python3-pip nginx make g++ postgresql-client wget libnss3-tools apt-transport-https ca-certificates curl gnupg-agent software-properties-common
             export DOCKERIZE_VERSION="v0.6.1"
             wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
             sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
