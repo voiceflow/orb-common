@@ -336,7 +336,7 @@ commands:
           condition: << parameters.request_remote_docker >>
           steps:
             - setup_remote_docker:  # Need this to run DinD
-                version: 19.03.13
+                version: 20.10.11
       - run:
           name: If container with this git SHA already exists, don't build
           command: |
@@ -536,7 +536,7 @@ commands:
           condition: << parameters.request_remote_docker >>
           steps:
             - setup_remote_docker: # Need this to run DinD
-                version: 19.03.13
+                version: 20.10.11
       - attach_workspace:
           at: /tmp/vf-build
       - check_image_exists:
@@ -1144,7 +1144,7 @@ commands:
           condition: << parameters.request_remote_docker >>
           steps:
             - setup_remote_docker:  # Need this to run DinD
-                version: 19.03.13
+                version: 20.10.11
       - run:
           name: "Build docker image"
           command: |
