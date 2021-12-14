@@ -1415,6 +1415,10 @@ commands:
           name: Build << parameters.vf_service_name >>
           working_directory: ~/code/<< parameters.vf_service_name >>
           command: |
+            # Set Node 16
+            nvm install v16.13.0
+            nvm use v16.13.0
+            nvm alias default v16.13.0
             yarn install --frozen-lockfile --cache-folder=".yarn-cache" << parameters.vf_service_install_args >>
       - vf_save_cache:
             working_directory: ~/code/<< parameters.vf_service_name >>
@@ -1489,7 +1493,11 @@ commands:
           name: Install dbcli
           working_directory: ~/code/database-cli
           background: true
-          command: |
+          command: |  
+            # Set Node 16
+            nvm install v16.13.0
+            nvm use v16.13.0
+            nvm alias default v16.13.0
             yarn install --frozen-lockfile --cache-folder=".yarn-cache"
 
             touch /tmp/dbcli_finished.txt
@@ -1592,7 +1600,10 @@ commands:
           working_directory: ~/code/creator-app
           background: true
           command: |
-
+            # Set Node 16
+            nvm install v16.13.0
+            nvm use v16.13.0
+            nvm alias default v16.13.0
             yarn install --frozen-lockfile --cache-folder=".yarn-cache"
 
             yarn build --scope @voiceflow/realtime-sdk --scope @voiceflow/ui
