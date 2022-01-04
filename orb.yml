@@ -1434,8 +1434,9 @@ commands:
           name: Setup << parameters.vf_service_name >>
           working_directory: ~/code
           command: |
-            # copy a config file into this volume
+            # copy a config file into this volume and the npm token
             docker cp << parameters.vf_service_name >> code:/code
+            docker cp ~/.npmrc code:/code/<< parameters.vf_service_name >>
             # start an application container using this volume
             docker run \
               --workdir /code/<< parameters.vf_service_name >> \
