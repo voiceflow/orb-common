@@ -1434,8 +1434,9 @@ commands:
           name: Setup << parameters.vf_service_name >>
           working_directory: ~/code
           command: |
-            # copy a config file into this volume
+            # copy a config file into this volume and the npm token
             docker cp << parameters.vf_service_name >> code:/code
+            docker cp ~/.npmrc code:/code/<< parameters.vf_service_name >>
             # start an application container using this volume
             docker run \
               --workdir /code/<< parameters.vf_service_name >> \
@@ -1449,7 +1450,7 @@ commands:
               --volume vf_certs:/code/<< parameters.vf_service_name >>/certs \
               --volume vf_caroot:/usr/local/share/ca-certificates \
               168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1  \
-              /bin/bash -c "update-ca-certificates && yarn install && yarn e2e"
+              /bin/bash -c "update-ca-certificates && yarn install --force && yarn e2e"
       - run:
           name: Wait << parameters.vf_service_name >>
           working_directory: ~/code/<< parameters.vf_service_name >>
