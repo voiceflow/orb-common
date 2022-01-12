@@ -2571,6 +2571,66 @@ jobs:
           name: << parameters.step_name >>
           command: curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}
 
+#-------------------------------------------------------------DOCKER JOBS----------------------------------------------------------
+
+  build_push_image:
+    executor: build-executor
+    parameters:
+      image_repo:
+        description: The container image repository
+        type: string
+      image_tag:
+        description: The container image tag
+        type: string
+        default: ""
+      release_pkg:
+        description: The npm package name to be released
+        type: string
+        default: ""
+      dockerfile:
+        description: Name of the Dockerfile to build
+        type: string
+        default: Dockerfile
+    steps:
+      - build_push_image:
+          image_repo: << parameters.image_repo >>
+          release_pkg: << parameters.release_pkg >>
+          image_tag: << parameters.image_tag >>
+          dockerfile: << parameters.dockerfile >>
+
+  post_image_push_actions:
+    executor: build-executor
+    parameters:
+      namespace:
+        description: The namespace to look at
+        type: string
+      target:
+        description: The k8s object being deployed
+        type: string
+      tagged:
+        description: if tagged
+        type: boolean
+    steps:
+      - post_image_push_actions:
+          namespace: << parameters.namespace >>
+          target: << parameters.target >>
+          tagged: << parameters.tagged >>
+
+  update_track:
+    executor: build-executor
+    parameters:
+      image_repo:
+        description: The container image repository
+        type: string
+      track_component:
+        description: The track component name
+        type: string
+    steps:
+      - update_track:
+          image_repo: << parameters.image_repo >>
+          component: << parameters.track_component >>
+
+
 #-------------------------------------------------------------MONOREPO JOBS----------------------------------------------------------
 
   release_monorepo:
