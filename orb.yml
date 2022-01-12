@@ -709,7 +709,7 @@ commands:
             - run:
                 name: Waiting util other processes are finished
                 command: |
-                  if [ -z "$(ls -A /path/to/dir)" ]; then
+                  if [ -z "$(ls -A /tmp/lock)" ]; then
                     echo "Process finished"
                     exit 0
                   else
