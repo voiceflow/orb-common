@@ -705,7 +705,7 @@ commands:
                   LOCK_FILE="/tmp/lock/$(uuidgen)"
 
                   touch $LOCK_FILE
-                  echo "export MY_ENVLOCK_FILE_VAR=$LOCK_FILE" >> $BASH_ENV
+                  echo "export LOCK_FILE=$LOCK_FILE" >> $BASH_ENV
       - when:
           condition: << parameters.wait >>
           steps:
