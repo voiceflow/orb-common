@@ -669,6 +669,56 @@ commands:
              done
 
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
+
+
+  yarn_command:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+        default: "./"
+      run_in_backgorund:
+        description: run the command in background
+        type: boolean
+        default: false
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+        default: Deploy application
+      yarn_command:
+        description: Yarn command to execute
+        type: string
+    steps:
+      - when:
+          condition: << parameters.run_in_backgorund >>
+          steps:
+            - run:
+                name: Create lock for << parameters.step_name >>
+                command: |
+                  touch /tmp/lock/$(uuidgen)
+      - when:
+          condition: << parameters.wait >>
+          steps:
+            - run:
+                name: Waiting util other processes are finished
+                command: |
+                  if [ -z "$(ls -A /path/to/dir)" ]; then
+                    echo "Process finished"
+                    exit 0
+                  else
+                    echo "Process not finished. Waiting..."
+                    sleep 5
+                  fi
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: << parameters.yarn_command >>
+
   serverless_deploy:
     parameters:
       working_directory:
@@ -691,12 +741,17 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn serverless:deploy-<< parameters.environment >> << parameters.extra_args >>
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn serverless:deploy-<< parameters.environment >> << parameters.extra_args >>
 
   build:
     parameters:
@@ -716,12 +771,17 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn build << parameters.extra_args >>
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn build << parameters.extra_args >>
 
   lint_report:
     parameters:
@@ -741,12 +801,17 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn lint:report << parameters.extra_args >>
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn lint:report << parameters.extra_args >>
 
   lint_source:
     parameters:
@@ -766,12 +831,17 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn lint:quiet << parameters.extra_args >>
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn lint:quiet << parameters.extra_args >>
 
   lint_dockerfile:
     parameters:
@@ -791,14 +861,18 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
       - install_hadolint
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: |
-            yarn lint:dockerfiles << parameters.extra_args >>
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn lint:dockerfiles << parameters.extra_args >>
 
   unit_tests:
     parameters:
@@ -818,12 +892,17 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn test:unit << parameters.extra_args >>
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn test:unit << parameters.extra_args >>
 
   integration_tests:
     parameters:
@@ -843,13 +922,18 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
       - set_etc_hosts_e2e
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn test:integration << parameters.extra_args >>
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn test:integration << parameters.extra_args >>
 
   smoke_tests:
     parameters:
@@ -869,12 +953,17 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn test:smoke << parameters.extra_args >>
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn test:smoke << parameters.extra_args >>
 
   dependency_tests:
     parameters:
@@ -894,12 +983,17 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn test:dependencies << parameters.extra_args >>
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn test:dependencies << parameters.extra_args >>
 
 
   tests:
@@ -920,12 +1014,17 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn test << parameters.extra_args >>
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn test << parameters.extra_args >>
 
   start_e2e:
     parameters:
@@ -941,12 +1040,17 @@ commands:
         description: Name of the step
         type: string
         default: Start in e2e mode
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn e2e
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn e2e
 
   gen_certs:
     parameters:
@@ -958,11 +1062,21 @@ commands:
         description: Name of the step
         type: string
         default: Generate certificates
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_backgorund:
+        description: run the command in background
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          name: << parameters.step_name >>
-          command: yarn gen-certs
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn gen-certs
 
   gen_certs_e2e:
     parameters:
@@ -974,11 +1088,21 @@ commands:
         description: Name of the step
         type: string
         default: Generate certificates for e2e tests
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_backgorund:
+        description: run the command in background
+        type: boolean
+        default: false
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          name: << parameters.step_name >>
-          command: yarn gen-certs:e2e
+          run_in_backgorund: << parameters.run_in_backgorund >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn gen-certs:e2e
 
   authenticate_npm:
     parameters:
@@ -996,18 +1120,6 @@ commands:
           background: << parameters.run_in_backgorund >>
           name: authenticate npm
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-
-  save_node_module_cache:
-    parameters:
-      working_directory:
-        description: Directory containing the yarn.lock file
-        type: string
-        default: './'
-    steps:
-      - save_cache:
-          key: node-module-cache-<< parameters.working_directory >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
-          paths:
-            - << parameters.working_directory >>/node_modules
 
   vf_restore_cache:
     parameters:
@@ -1050,6 +1162,10 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
+      step_name:
+        description: Name of the step
+        type: string
+        default: Install node modules
       yarn_lock_restore_cache_directory:
         description: Cache directory for yarn.lock file
         type: string
@@ -1062,8 +1178,12 @@ commands:
         description: Skip running post install scripts
         type: boolean
         default: true
-      background:
+      run_in_backgorund:
         description: Run yarn install in background mode
+        type: boolean
+        default: false
+      wait:
+        description: wait until all the commands are finished
         type: boolean
         default: false
     steps:
@@ -1074,18 +1194,21 @@ commands:
       - when:
           condition: << parameters.avoid_post_install_scripts >>
           steps:
-            - run:
+            - yarn_command:
                 working_directory: << parameters.working_directory >>
-                name: yarn install packages
-                command: yarn install --frozen-lockfile --ignore-scripts << parameters.install_args >> 2>&1 | tee output.file
+                run_in_backgorund: << parameters.run_in_backgorund >>
+                step_name: << parameters.step_name >>
+                wait: << parameters.wait >>
+                yarn_command: yarn install --frozen-lockfile --ignore-scripts << parameters.install_args >> 2>&1 | tee output.file
       - unless:
           condition: << parameters.avoid_post_install_scripts >>
           steps:
-            - run:
+            - yarn_command:
                 working_directory: << parameters.working_directory >>
-                background: << parameters.background >>
-                name: yarn install packages
-                command: yarn install --frozen-lockfile  << parameters.install_args >> 2>&1 | tee output.file
+                run_in_backgorund: << parameters.run_in_backgorund >>
+                step_name: << parameters.step_name >>
+                wait: << parameters.wait >>
+                yarn_command: yarn install --frozen-lockfile  << parameters.install_args >> 2>&1 | tee output.file
       - run:
           working_directory: << parameters.working_directory >>
           name: Check yarn lock integrity
