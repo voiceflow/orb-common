@@ -702,7 +702,10 @@ commands:
                   # Create the folder if not exists
                   [ ! -d /tmp/lock ] && mkdir -p /tmp/lock
 
-                  touch /tmp/lock/$(uuidgen)
+                  LOCK_FILE="/tmp/lock/$(uuidgen)"
+
+                  touch $LOCK_FILE
+                  echo "export MY_ENVLOCK_FILE_VAR=$LOCK_FILE" >> $BASH_ENV
       - when:
           condition: << parameters.wait >>
           steps:
@@ -722,6 +725,15 @@ commands:
           background: << parameters.run_in_background >>
           name: << parameters.step_name >>
           command: << parameters.yarn_command >>
+      - when:
+          condition: << parameters.run_in_background >>
+          steps:
+            - run:
+                name: Remove lock for << parameters.step_name >>
+                command: |
+
+                  echo "Removing $LOCK_FILE"
+                  rm -rf $LOCK_FILE
 
   serverless_deploy:
     parameters:
