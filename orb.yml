@@ -692,6 +692,18 @@ commands:
       yarn_command:
         description: Yarn command to execute
         type: string
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_image:
+        description: Container image to run the yarn command
+        type: string
+        default: "node:16-alpine"
     steps:
       - when:
           condition: << parameters.wait >>
@@ -720,14 +732,25 @@ commands:
 
                   touch $LOCK_FILE
                   echo "export LOCK_FILE=$LOCK_FILE" >> $BASH_ENV
+      - when:
+          condition: << parameters.request_remote_docker >>
+          steps:
+            - setup_remote_docker:  # Need this to run DinD
+                version: 20.10.11
       - run:
           working_directory: << parameters.working_directory >>
           background: << parameters.run_in_background >>
           name: << parameters.step_name >>
           command: |
-            # Executes Yarn command
-            << parameters.yarn_command >>
-
+            
+            if [[ << parameters.run_in_container >> ]]; then
+              # Executes Yarn command in container
+              docker run  -it -v ${PWD}:/usr/src/app -w /usr/src/app node:16-alpine /bin/sh -c "<< parameters.yarn_command >>"
+            else
+              # Executes Yarn command outside container
+              << parameters.yarn_command >>
+            fi
+            
             # Remove lock file when it is running in background/parallel
             if [[ << parameters.run_in_background >> ]]; then
               echo "Removing $LOCK_FILE"
@@ -772,10 +795,20 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn serverless:deploy-<< parameters.environment >> << parameters.extra_args >>
@@ -802,10 +835,20 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn build << parameters.extra_args >>
@@ -832,10 +875,20 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn lint:report << parameters.extra_args >>
@@ -862,10 +915,20 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn lint:quiet << parameters.extra_args >>
@@ -892,11 +955,21 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - install_hadolint
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn lint:dockerfiles << parameters.extra_args >>
@@ -923,10 +996,20 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn test:unit << parameters.extra_args >>
@@ -953,11 +1036,21 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - set_etc_hosts_e2e
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn test:integration << parameters.extra_args >>
@@ -984,10 +1077,20 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn test:smoke << parameters.extra_args >>
@@ -1014,10 +1117,20 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn test:dependencies << parameters.extra_args >>
@@ -1045,10 +1158,20 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn test << parameters.extra_args >>
@@ -1071,10 +1194,20 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn e2e
@@ -1097,10 +1230,20 @@ commands:
         description: run the command in background
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn gen-certs
@@ -1123,10 +1266,20 @@ commands:
         description: run the command in background
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn gen-certs:e2e
@@ -1213,6 +1366,14 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
     steps:
       - authenticate_npm
       - vf_restore_cache:
@@ -1224,6 +1385,8 @@ commands:
             - yarn_command:
                 working_directory: << parameters.working_directory >>
                 run_in_background: << parameters.run_in_background >>
+                request_remote_docker: << parameters.request_remote_docker >>
+                run_in_container: << parameters.run_in_container >>
                 step_name: << parameters.step_name >>
                 wait: << parameters.wait >>
                 yarn_command: yarn install --frozen-lockfile --ignore-scripts << parameters.install_args >> 2>&1 | tee output.file
@@ -1233,6 +1396,8 @@ commands:
             - yarn_command:
                 working_directory: << parameters.working_directory >>
                 run_in_background: << parameters.run_in_background >>
+                request_remote_docker: << parameters.request_remote_docker >>
+                run_in_container: << parameters.run_in_container >>
                 step_name: << parameters.step_name >>
                 wait: << parameters.wait >>
                 yarn_command: yarn install --frozen-lockfile  << parameters.install_args >> 2>&1 | tee output.file
