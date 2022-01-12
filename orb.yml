@@ -677,7 +677,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -694,7 +694,7 @@ commands:
         type: string
     steps:
       - when:
-          condition: << parameters.run_in_backgorund >>
+          condition: << parameters.run_in_background >>
           steps:
             - run:
                 name: Create lock for << parameters.step_name >>
@@ -715,7 +715,7 @@ commands:
                   fi
       - run:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
+          background: << parameters.run_in_background >>
           name: << parameters.step_name >>
           command: << parameters.yarn_command >>
 
@@ -729,7 +729,7 @@ commands:
         description: envrionment where to deploy the serverless application
         type: string
         default: dev
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -748,7 +748,7 @@ commands:
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn serverless:deploy-<< parameters.environment >> << parameters.extra_args >>
@@ -759,7 +759,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -778,7 +778,7 @@ commands:
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn build << parameters.extra_args >>
@@ -789,7 +789,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -808,7 +808,7 @@ commands:
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn lint:report << parameters.extra_args >>
@@ -819,7 +819,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -838,7 +838,7 @@ commands:
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn lint:quiet << parameters.extra_args >>
@@ -849,7 +849,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -869,7 +869,7 @@ commands:
       - install_hadolint
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn lint:dockerfiles << parameters.extra_args >>
@@ -880,7 +880,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -899,7 +899,7 @@ commands:
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn test:unit << parameters.extra_args >>
@@ -910,7 +910,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -930,7 +930,7 @@ commands:
       - set_etc_hosts_e2e
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn test:integration << parameters.extra_args >>
@@ -941,7 +941,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -960,7 +960,7 @@ commands:
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn test:smoke << parameters.extra_args >>
@@ -971,7 +971,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -990,7 +990,7 @@ commands:
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn test:dependencies << parameters.extra_args >>
@@ -1002,7 +1002,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -1021,7 +1021,7 @@ commands:
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn test << parameters.extra_args >>
@@ -1032,7 +1032,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -1047,7 +1047,7 @@ commands:
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn e2e
@@ -1066,14 +1066,14 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn gen-certs
@@ -1092,14 +1092,14 @@ commands:
         description: wait until all the commands are finished
         type: boolean
         default: false
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
-          run_in_backgorund: << parameters.run_in_backgorund >>
+          run_in_background: << parameters.run_in_background >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn gen-certs:e2e
@@ -1110,14 +1110,14 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
     steps:
       - run:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
+          background: << parameters.run_in_background >>
           name: authenticate npm
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
 
@@ -1178,7 +1178,7 @@ commands:
         description: Skip running post install scripts
         type: boolean
         default: true
-      run_in_backgorund:
+      run_in_background:
         description: Run yarn install in background mode
         type: boolean
         default: false
@@ -1196,7 +1196,7 @@ commands:
           steps:
             - yarn_command:
                 working_directory: << parameters.working_directory >>
-                run_in_backgorund: << parameters.run_in_backgorund >>
+                run_in_background: << parameters.run_in_background >>
                 step_name: << parameters.step_name >>
                 wait: << parameters.wait >>
                 yarn_command: yarn install --frozen-lockfile --ignore-scripts << parameters.install_args >> 2>&1 | tee output.file
@@ -1205,7 +1205,7 @@ commands:
           steps:
             - yarn_command:
                 working_directory: << parameters.working_directory >>
-                run_in_backgorund: << parameters.run_in_backgorund >>
+                run_in_background: << parameters.run_in_background >>
                 step_name: << parameters.step_name >>
                 wait: << parameters.wait >>
                 yarn_command: yarn install --frozen-lockfile  << parameters.install_args >> 2>&1 | tee output.file
@@ -1489,7 +1489,7 @@ commands:
           working_directory: "~/<< parameters.service_name >>"
       - start_e2e:
           step_name: "Start << parameters.service_name >>"
-          run_in_backgorund: true
+          run_in_background: true
           working_directory: "~/<< parameters.service_name >>"
       - check_e2e_deps:
           step_name: "Start << parameters.service_name >>"
@@ -2200,7 +2200,7 @@ commands:
     steps:
       - gen_certs_e2e
       - start_e2e:
-          run_in_backgorund: true
+          run_in_background: true
       - check_service_running:
           port: << parameters.port >>
 
@@ -2210,7 +2210,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -2221,7 +2221,7 @@ commands:
     steps:
       - run:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
+          background: << parameters.run_in_background >>
           name: << parameters.step_name >>
           command: yarn e2e:check-deps
 
