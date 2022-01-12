@@ -704,6 +704,10 @@ commands:
         description: Container image to run the yarn command
         type: string
         default: "node:16-alpine"
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - when:
           condition: << parameters.wait >>
@@ -744,18 +748,18 @@ commands:
           command: |
             RUN_IN_CONTAINER=<< parameters.run_in_container >>
             RUN_IN_BACKGROUND=<< parameters.run_in_background >>
+            FOLDER_TO_COPY="<< parameters.container_folder_to_copy >>"
 
             if [[ $RUN_IN_CONTAINER == true ]]; then
               echo "Running in a container"
-              docker create -v /code --name code node:16-alpine /bin/true
+              docker create -v /code --name code << parameters.container_image >> /bin/true
               docker cp $PWD/. code:/code
 
               # Executes Yarn command in container
-              docker run --name runner -it --volumes-from code -w /code node:16-alpine /bin/sh -c "<< parameters.yarn_command >>"
-              
-              docker cp runner:/code/build $PWD
-
-              ls -la
+              docker run --name runner -it --volumes-from code -w /code << parameters.container_image >> /bin/sh -c "<< parameters.yarn_command >>"
+              if [[ $FOLDER_TO_COPY != "" ]]; then
+                docker cp runner:/code/<< parameters.container_folder_to_copy >> $PWD
+              fi
             else
               # Executes Yarn command outside container
               echo "Running without a container"
@@ -763,7 +767,7 @@ commands:
             fi
             
             # Remove lock file when it is running in background/parallel
-            if [[ $RUN_IN_BACKGROUND == false ]]; then
+            if [[ $RUN_IN_BACKGROUND == true ]]; then
               echo "Removing $LOCK_FILE"
               rm -rf $LOCK_FILE
             fi
@@ -787,7 +791,7 @@ commands:
         type: string
         default: "./"
       environment:
-        description: envrionment where to deploy the serverless application
+        description: environment where to deploy the serverless application
         type: string
         default: dev
       run_in_background:
@@ -814,12 +818,17 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
           run_in_container: << parameters.run_in_container >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn serverless:deploy-<< parameters.environment >> << parameters.extra_args >>
@@ -854,12 +863,17 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
           run_in_container: << parameters.run_in_container >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn build << parameters.extra_args >>
@@ -894,11 +908,16 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -934,11 +953,16 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -974,12 +998,17 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - install_hadolint
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -1015,11 +1044,16 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -1055,12 +1089,17 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - set_etc_hosts_e2e
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -1096,11 +1135,16 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -1136,11 +1180,16 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -1177,11 +1226,16 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -1213,11 +1267,16 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -1249,11 +1308,16 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -1285,11 +1349,16 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
           request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
           run_in_container: << parameters.run_in_container >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -1385,6 +1454,10 @@ commands:
         description: Request remote Docker
         type: boolean
         default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - authenticate_npm
       - vf_restore_cache:
@@ -1397,6 +1470,7 @@ commands:
                 working_directory: << parameters.working_directory >>
                 run_in_background: << parameters.run_in_background >>
                 request_remote_docker: << parameters.request_remote_docker >>
+                container_folder_to_copy: << parameters.container_folder_to_copy >>
                 run_in_container: << parameters.run_in_container >>
                 step_name: << parameters.step_name >>
                 wait: << parameters.wait >>
@@ -1408,6 +1482,7 @@ commands:
                 working_directory: << parameters.working_directory >>
                 run_in_background: << parameters.run_in_background >>
                 request_remote_docker: << parameters.request_remote_docker >>
+                container_folder_to_copy: << parameters.container_folder_to_copy >>
                 run_in_container: << parameters.run_in_container >>
                 step_name: << parameters.step_name >>
                 wait: << parameters.wait >>
