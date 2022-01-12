@@ -747,8 +747,15 @@ commands:
 
             if [[ $RUN_IN_CONTAINER == true ]]; then
               echo "Running in a container"
+              docker create -v /code --name code node:16-alpine /bin/true
+              docker cp $PWD/. code:/code
+
               # Executes Yarn command in container
-              docker run  -it -v ${PWD}:/usr/src/app -w /usr/src/app node:16-alpine /bin/sh -c "<< parameters.yarn_command >>"
+              docker run --name runner -it --volumes-from code -w /code node:16-alpine /bin/sh -c "<< parameters.yarn_command >>"
+              
+              docker cp runner:/build $PWD
+
+              ls -la
             else
               # Executes Yarn command outside container
               echo "Running without a container"
