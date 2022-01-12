@@ -743,7 +743,7 @@ commands:
           name: << parameters.step_name >>
           command: |
             
-            if [[ << parameters.run_in_container >> ]]; then
+            if [[ << parameters.run_in_container >> == false ]]; then
               echo "Running in a container"
               # Executes Yarn command in container
               docker run  -it -v ${PWD}:/usr/src/app -w /usr/src/app node:16-alpine /bin/sh -c "<< parameters.yarn_command >>"
@@ -754,7 +754,7 @@ commands:
             fi
             
             # Remove lock file when it is running in background/parallel
-            if [[ << parameters.run_in_background >> ]]; then
+            if [[ << parameters.run_in_background >> == false ]]; then
               echo "Removing $LOCK_FILE"
               rm -rf $LOCK_FILE
             fi
