@@ -744,10 +744,12 @@ commands:
           command: |
             
             if [[ << parameters.run_in_container >> ]]; then
+              echo "Running in a container"
               # Executes Yarn command in container
               docker run  -it -v ${PWD}:/usr/src/app -w /usr/src/app node:16-alpine /bin/sh -c "<< parameters.yarn_command >>"
             else
               # Executes Yarn command outside container
+              echo "Running without a container"
               << parameters.yarn_command >>
             fi
             
