@@ -709,13 +709,14 @@ commands:
             - run:
                 name: Waiting util other processes are finished
                 command: |
-                  if [ -z "$(ls -A /tmp/lock)" ]; then
-                    echo "Process finished"
-                    exit 0
-                  else
+
+                  while [ "$(ls -A /tmp/lock)" != "" ]
+                  do
                     echo "Process not finished. Waiting..."
                     sleep 5
-                  fi
+                  done
+
+                  echo "Process finished"
       - run:
           working_directory: << parameters.working_directory >>
           background: << parameters.run_in_background >>
