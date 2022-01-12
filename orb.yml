@@ -735,6 +735,7 @@ commands:
                   LOCK_FILE="/tmp/lock/$(uuidgen)"
 
                   touch $LOCK_FILE
+                  echo "Lock created at $LOCK_FILE"
                   echo "export LOCK_FILE=$LOCK_FILE" >> $BASH_ENV
       - when:
           condition: << parameters.request_remote_docker >>
@@ -757,6 +758,7 @@ commands:
 
               # Executes Yarn command in container
               docker run --name runner -it --volumes-from code -w /code << parameters.container_image >> /bin/sh -c "<< parameters.yarn_command >>"
+              # If a folder is specified we copy that one on the host
               if [[ $FOLDER_TO_COPY != "" ]]; then
                 docker cp runner:/code/<< parameters.container_folder_to_copy >> $PWD
               fi
@@ -768,21 +770,9 @@ commands:
             
             # Remove lock file when it is running in background/parallel
             if [[ $RUN_IN_BACKGROUND == true ]]; then
-              echo "Removing $LOCK_FILE"
+              echo "Removing Lock $LOCK_FILE"
               rm -rf $LOCK_FILE
             fi
-       # Otherwise, Remove lock file when the command finishes
-      - when:
-          condition:
-            and:
-              - equal: [ false, << parameters.run_in_background >> ]
-          steps:
-            - run:
-                name: Remove lock for << parameters.step_name >>
-                command: |
-
-                  echo "Removing $LOCK_FILE"
-                  rm -rf $LOCK_FILE
 
   serverless_deploy:
     parameters:
