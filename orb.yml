@@ -52,7 +52,7 @@ executors:
 
   # Used to run container builds
   build-executor:
-    working_directory: /tmp/vf-build
+    working_directory: ~/voiceflow
     docker:
       - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-image:v4
         aws_auth:
@@ -538,7 +538,7 @@ commands:
             - setup_remote_docker: # Need this to run DinD
                 version: 20.10.11
       - attach_workspace:
-          at: /tmp/vf-build
+          at: ~/voiceflow
       - check_image_exists:
           image_repo: << parameters.image_repo >>
           request_remote_docker: false
@@ -1536,6 +1536,8 @@ commands:
           steps:
             - setup_remote_docker:  # Need this to run DinD
                 version: 20.10.11
+      - attach_workspace:
+          at: ~/voiceflow
       - run:
           name: "Build docker image"
           command: |
