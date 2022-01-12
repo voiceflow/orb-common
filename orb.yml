@@ -694,19 +694,6 @@ commands:
         type: string
     steps:
       - when:
-          condition: << parameters.run_in_background >>
-          steps:
-            - run:
-                name: Create lock for << parameters.step_name >>
-                command: |
-                  # Create the folder if not exists
-                  [ ! -d /tmp/lock ] && mkdir -p /tmp/lock
-
-                  LOCK_FILE="/tmp/lock/$(uuidgen)"
-
-                  touch $LOCK_FILE
-                  echo "export LOCK_FILE=$LOCK_FILE" >> $BASH_ENV
-      - when:
           condition: << parameters.wait >>
           steps:
             - run:
@@ -720,13 +707,37 @@ commands:
                   done
 
                   echo "Process finished"
+      - when:
+          condition: << parameters.run_in_background >>
+          steps:
+            - run:
+                name: Create lock for << parameters.step_name >>
+                command: |
+                  # Create the folder if not exists
+                  [ ! -d /tmp/lock ] && mkdir -p /tmp/lock
+
+                  LOCK_FILE="/tmp/lock/$(uuidgen)"
+
+                  touch $LOCK_FILE
+                  echo "export LOCK_FILE=$LOCK_FILE" >> $BASH_ENV
       - run:
           working_directory: << parameters.working_directory >>
           background: << parameters.run_in_background >>
           name: << parameters.step_name >>
-          command: << parameters.yarn_command >>
+          command: |
+            # Executes Yarn command
+            << parameters.yarn_command >>
+
+            # Remove lock file when it is running in background/parallel
+            if [[ << parameters.run_in_background >> ]]; then
+              echo "Removing $LOCK_FILE"
+              rm -rf $LOCK_FILE
+            fi
+       # Otherwise, Remove lock file when the command finishes
       - when:
-          condition: << parameters.run_in_background >>
+          condition:
+            and:
+              - equal: [ false, << parameters.run_in_background >> ]
           steps:
             - run:
                 name: Remove lock for << parameters.step_name >>
