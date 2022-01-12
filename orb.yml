@@ -699,6 +699,9 @@ commands:
             - run:
                 name: Create lock for << parameters.step_name >>
                 command: |
+                  # Create the folder if not exists
+                  [ ! -d /tmp/lock ] && mkdir -p /tmp/lock
+
                   touch /tmp/lock/$(uuidgen)
       - when:
           condition: << parameters.wait >>
