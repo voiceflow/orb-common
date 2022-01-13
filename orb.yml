@@ -342,6 +342,10 @@ commands:
       ssh_key:
         description: The SSH key with write permissions to the repository
         type: string
+      check_commit_message:
+        description: The SSH key with write permissions to the repository
+        type: string
+        default: ""
     steps:
       - when:
           condition: << parameters.checkout >>
@@ -353,10 +357,26 @@ commands:
       - run:
           name: << parameters.step_name >>
           command: |
-            git fetch
-            git checkout << parameters.destination_branch_name >>
-            git rebase << parameters.source_branch_name >>
-            git push origin << parameters.destination_branch_name >>
+
+            SYNC=true
+            CHECK_COMMIT_MESSAGE=<< parameters.check_commit_message >>
+            COMMIT_MESSAGE="$(git log --format=oneline -n 1 $CIRCLE_SHA1)"
+
+            # If a message has been introduces, we have to check that in the commit message, if it is not included, the braches will not be synced
+            # this is for the use case of the bugfix mechanism
+            if [[ $CHECK_COMMIT_MESSAGE != "" && $COMMIT_MESSAGE != *"$CHECK_COMMIT_MESSAGE"* ]]; then
+              SYNC=false
+            fi
+
+            if [[ $SYNC == true ]]; then
+              git fetch
+              git checkout << parameters.destination_branch_name >>
+              git rebase << parameters.source_branch_name >>
+              git push origin << parameters.destination_branch_name >>
+            else
+              echo "Avoiding syncing branches"
+              circleci-agent step halt 
+            fi
 
   check_image_exists:
     description: Check if a Docker image exists
