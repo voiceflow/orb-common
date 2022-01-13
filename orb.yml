@@ -321,6 +321,7 @@ commands:
           command: |
             git push origin --delete << parameters.branch_name >> --no-verify # Clean up git branch
 
+
   sync_branches:
     parameters:
       checkout:
@@ -2627,6 +2628,43 @@ jobs:
       - run:
           name: << parameters.step_name >>
           command: curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}
+
+#-------------------------------------------------------------GIT JOBS----------------------------------------------------------
+
+  sync_branches:
+    executor: build-executor
+    parameters:
+      checkout:
+        description: Checkout code
+        type: boolean
+        default: false
+      source_branch_name:
+        description: Name of the source branch
+        type: string
+        default: "master"
+      destination_branch_name:
+        description: Name of the production branch
+        type: string
+        default: "production"
+      step_name:
+        description: Name of the step
+        type: string
+        default: Sync << parameters.destination_branch_name >> branch with << parameters.source_branch_name >> branch
+      ssh_key:
+        description: The SSH key with write permissions to the repository
+        type: string
+      check_commit_message:
+        description: The SSH key with write permissions to the repository
+        type: string
+        default: ""
+    steps:
+      - sync_branches:
+          step_name: << parameters.step_name >>
+          source_branch_name: << parameters.source_branch_name >>
+          destination_branch_name: << parameters.destination_branch_name >>
+          checkout: << parameters.checkout >>
+          ssh_key: << parameters.ssh_key >>
+          check_commit_message: << parameters.check_commit_message >>
 
 #-------------------------------------------------------------DOCKER JOBS----------------------------------------------------------
 
