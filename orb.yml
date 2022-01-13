@@ -2723,7 +2723,7 @@ jobs:
 
 #-------------------------------------------------------------YARN JOBS----------------------------------------------------------
 
-  install-and-build:
+  install_and_build:
     executor: code-test-executor
     parameters:
       avoid_post_install_scripts:
