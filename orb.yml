@@ -321,6 +321,44 @@ commands:
           command: |
             git push origin --delete << parameters.branch_name >> --no-verify # Clean up git branch
 
+  sync_branches:
+    parameters:
+      checkout:
+        description: Checkout code
+        type: boolean
+        default: false
+      source_branch_name:
+        description: Name of the source branch
+        type: string
+        default: "master"
+      destination_branch_name:
+        description: Name of the production branch
+        type: string
+        default: "production"
+      step_name:
+        description: Name of the step
+        type: string
+        default: Sync 2 branches
+      ssh_key:
+        description: The SSH key with write permissions to the repository
+        type: string
+    steps:
+      - when:
+          condition: << parameters.checkout >>
+          steps:
+            - checkout
+      - add_ssh_keys: # To enable write access to repository for removing development environment branches
+          fingerprints:
+            - << parameters.ssh_key >>
+      - run:
+          name: << parameters.step_name >>
+          command: |
+            git pull
+            git checkout << parameters.source_branch_name >>
+            git checkout << parameters.destination_branch_name >>
+            git rebase << parameters.source_branch_name >>
+            git push origin << parameters.source_branch_name >>
+
   check_image_exists:
     description: Check if a Docker image exists
     parameters:
