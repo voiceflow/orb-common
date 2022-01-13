@@ -2721,6 +2721,41 @@ jobs:
           image_repo: << parameters.image_repo >>
           component: << parameters.track_component >>
 
+#-------------------------------------------------------------YARN JOBS----------------------------------------------------------
+
+  install-and-build:
+    executor: code-test-executor
+    parameters:
+      avoid_post_install_scripts:
+        description: Avoid post-install scripts
+        type: boolean
+        default: true
+      container_folder_to_copy:
+        description: Avoid post-install scripts
+        type: string
+        default: 'build'
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: true
+      run_in_container:
+        description: Run build in remote Docker container
+        type: boolean
+        default: true
+    steps:
+      - checkout
+      - install_node_modules:
+          avoid_post_install_scripts: << parameters.avoid_post_install_scripts >> #false
+      - build:
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
+      # Save workspace for subsequent jobs (i.e. test)
+      - persist_to_workspace:
+          root: .
+          paths:
+            - build
+            - node_modules
 
 #-------------------------------------------------------------MONOREPO JOBS----------------------------------------------------------
 
