@@ -357,7 +357,7 @@ commands:
             git checkout << parameters.source_branch_name >>
             git checkout << parameters.destination_branch_name >>
             git rebase << parameters.source_branch_name >>
-            git push origin << parameters.source_branch_name >>
+            git push origin << parameters.destination_branch_name >>
 
   check_image_exists:
     description: Check if a Docker image exists
