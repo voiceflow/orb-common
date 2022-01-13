@@ -2745,7 +2745,7 @@ jobs:
     steps:
       - checkout
       - install_node_modules:
-          avoid_post_install_scripts: << parameters.avoid_post_install_scripts >> #false
+          avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
       - build:
           container_folder_to_copy: << parameters.container_folder_to_copy >>
           request_remote_docker: << parameters.request_remote_docker >>
