@@ -735,7 +735,7 @@ commands:
       container_image:
         description: Container image to run the yarn command
         type: string
-        default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2"
+        default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
       container_folder_to_copy:
         description: Container folder to copy after the execution
         type: string
