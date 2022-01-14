@@ -735,7 +735,7 @@ commands:
       container_image:
         description: Container image to run the yarn command
         type: string
-        default: "node:16-alpine"
+        default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2"
       container_folder_to_copy:
         description: Container folder to copy after the execution
         type: string
@@ -784,6 +784,8 @@ commands:
             FOLDER_TO_COPY="<< parameters.container_folder_to_copy >>"
 
             if [[ $RUN_IN_CONTAINER == true ]]; then
+              # Docker login
+              $(aws ecr get-login --no-include-email --region us-east-1)
               echo "Running in a container"
               docker create -v /code --name code << parameters.container_image >> /bin/true
               docker cp $PWD/. code:/code
