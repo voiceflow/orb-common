@@ -2717,6 +2717,10 @@ jobs:
         description: Run build in remote Docker container
         type: boolean
         default: true
+      package:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - checkout
       - install_node_modules:
@@ -2725,6 +2729,7 @@ jobs:
           container_folder_to_copy: << parameters.container_folder_to_copy >>
           request_remote_docker: << parameters.request_remote_docker >>
           run_in_container: << parameters.run_in_container >>
+          package: << parameters.package >>
       # Save workspace for subsequent jobs (i.e. test)
       - persist_to_workspace:
           root: .
