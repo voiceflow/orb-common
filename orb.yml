@@ -34,7 +34,7 @@ executors:
     environment:
       NODE_OPTIONS: --max-old-space-size=4096
     docker: # run the steps with Docker
-      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v1 # Test steps container
+      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2 # Test steps container
         aws_auth:
           aws_access_key_id: $AWS_ACCESS_KEY_ID
           aws_secret_access_key: $AWS_SECRET_ACCESS_KEY 
@@ -64,7 +64,7 @@ executors:
   node-executor:
     working_directory: ~/voiceflow
     docker:
-      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v1
+      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2
         aws_auth:
           aws_access_key_id: $AWS_ACCESS_KEY_ID
           aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
@@ -74,7 +74,7 @@ executors:
 
   default-executor: # used to run the release
     docker:
-      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v1
+      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2
         aws_auth:
           aws_access_key_id: $AWS_ACCESS_KEY_ID
           aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
@@ -152,32 +152,6 @@ commands:
           name: Set Bash as a default shell for yarn commands
           command: yarn config set script-shell /bin/bash
 
-
-  install_aws_cli:
-    steps:
-      - run:
-          name: Install pip3
-          command: sudo apt update && sudo apt install -y python3-pip
-      - run:
-          name: Install AWS CLI
-          command: pip3 install awscli
-
-  install_hadolint:
-    description: Install Hadolint
-    steps:
-      - run:
-          name: Install Hadolint
-          command: |
-            sudo wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.19.0/hadolint-Linux-x86_64
-            sudo chmod +x /usr/bin/hadolint
-
-  install_cpio:
-    description: Install cpio
-    steps:
-      - run:
-          name: Install cpio
-          command: |
-            sudo apt-get install -y cpio || apt-get install -y cpio
 
   setup_pg:
     steps:
@@ -1051,7 +1025,6 @@ commands:
         type: string
         default: ""
     steps:
-      - install_hadolint
       - yarn_command:
           working_directory: << parameters.working_directory >>
           run_in_background: << parameters.run_in_background >>
@@ -2005,7 +1978,6 @@ commands:
           avoid_post_install_scripts: false
           working_directory: ~/creator-app
           yarn_lock_restore_cache_directory: ~/creator-app
-      - install_cpio
       - run:
           name: Build dependencies
           command: |
@@ -2294,7 +2266,6 @@ commands:
         type: boolean
         default: false
     steps:
-      - install_hadolint
       - exec_command_monorepo:
           step_name: << parameters.step_name >>
           command: yarn lint:dockerfiles
@@ -2786,7 +2757,6 @@ jobs:
           fingerprints:
             - << parameters.ssh_key >>
       - checkout
-      - install_cpio
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
           avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
