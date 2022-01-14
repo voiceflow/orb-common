@@ -889,6 +889,10 @@ commands:
         description: Container folder to copy after the execution
         type: string
         default: ""
+      package:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - yarn_command:
           working_directory: << parameters.working_directory >>
@@ -898,7 +902,7 @@ commands:
           container_folder_to_copy: << parameters.container_folder_to_copy >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
-          yarn_command: yarn build << parameters.extra_args >>
+          yarn_command: yarn build<<# parameters.package >>:<</ parameters.package >><< parameters.package >> << parameters.extra_args >>
 
   lint_report:
     parameters:
