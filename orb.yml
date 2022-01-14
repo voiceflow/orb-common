@@ -819,7 +819,6 @@ commands:
         type: string
         default: ""
     steps:
-      - install_hadolint
       - run:
           working_directory: << parameters.working_directory >>
           background: << parameters.run_in_backgorund >>
@@ -1900,6 +1899,32 @@ commands:
       - exec_command_monorepo:
           step_name: << parameters.step_name >>
           command: yarn test:dependencies
+          extra_args: << parameters.extra_args >>
+          run_on_root: << parameters.run_on_root >>
+          force_execution: << parameters.force_execution >>
+
+  analyze_dependencies_monorepo:
+    parameters:
+      step_name:
+        description: Name of the step
+        type: string
+        default: Analyze dependencies
+      extra_args:
+        description: Additional yarn command options
+        type: string
+        default: ""
+      run_on_root:
+        description: Check that allow the command to run on root
+        type: boolean
+        default: false
+      force_execution:
+        description: Force execution of the command on all packages
+        type: boolean
+        default: false
+    steps:
+      - exec_command_monorepo:
+          step_name: << parameters.step_name >>
+          command: yarn analyze:dependencies
           extra_args: << parameters.extra_args >>
           run_on_root: << parameters.run_on_root >>
           force_execution: << parameters.force_execution >>
