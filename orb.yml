@@ -25,7 +25,7 @@ executors:
         - DEFAULT_REGION=us-east-1
         - DEBUG=1
       - image: circleci/mongo:4.4.1 # MongoDB service container
-      - image: redis:5-alpine # Redis service container
+      - image: redis:6.2-alpine # Redis service container
 
   # Used to run tests
   code-test-executor:
@@ -47,7 +47,7 @@ executors:
         - SERVICES=s3,dynamodb
         - DEFAULT_REGION=us-east-1
         - DEBUG=1
-      - image: circleci/redis:5.0-alpine # Redis service container
+      - image: circleci/redis:6.2-alpine # Redis service container
       - image: circleci/mongo:4.4.1 # MongoDB service container
 
   # Used to run container builds
