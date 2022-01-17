@@ -2700,11 +2700,17 @@ jobs:
       tagged:
         description: if tagged
         type: boolean
+        default: false
+      success_slack_notify:
+        description: Post to Slack on successful deployment?
+        type: boolean
+        default: true
     steps:
       - post_image_push_actions:
           namespace: << parameters.namespace >>
           target: << parameters.target >>
           tagged: << parameters.tagged >>
+          success_slack_notify: << parameters.success_slack_notify >>
 
   update_track:
     executor: build-executor
