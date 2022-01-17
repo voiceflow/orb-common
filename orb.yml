@@ -2723,8 +2723,34 @@ jobs:
         description: Container folder to copy after the execution
         type: string
         default: ""
+      check_image:
+        description: Checks if the Docker image exists
+        type: boolean
+        default: false
+      docker_image:
+        description: The Docker image
+        type: string
+        default: ""
+      force_execute:
+        description: force to update the build, if there is a change or not. This is for tracks
+        type: boolean
+        default: false
     steps:
       - checkout
+      - when:
+          condition:
+            and:
+              - equal: [false, << parameters.force_execute >>]
+              - not: 
+                  equal: ["", << parameters.package >>]
+          steps:
+            - stop_if_no_changes:
+                package: << parameters.package >>
+      - when:
+          condition: << parameters.check_image >>
+          steps:
+            - check_image_exists:
+                image_repo: << parameters.docker_image >>
       - install_node_modules:
           avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
       - build:
@@ -2733,11 +2759,25 @@ jobs:
           run_in_container: << parameters.run_in_container >>
           package: << parameters.package >>
       # Save workspace for subsequent jobs (i.e. test)
-      - persist_to_workspace:
-          root: .
-          paths:
-            - build
-            - node_modules
+      - when:
+          condition:
+            not:
+              equal: [ "", << parameters.package >> ]
+          steps:
+            - persist_to_workspace:
+                root: .
+                paths:
+                  - packages
+      - when:
+          condition:
+              equal: [ "", << parameters.package >> ]
+          steps:
+            - persist_to_workspace:
+                root: .
+                paths:
+                  - build
+                  - node_modules
+
 
 #-------------------------------------------------------------MONOREPO JOBS----------------------------------------------------------
 
