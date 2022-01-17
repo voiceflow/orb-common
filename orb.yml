@@ -2727,7 +2727,7 @@ jobs:
         description: Checks if the Docker image exists
         type: boolean
         default: false
-      docker_image:
+      docker_image_repo:
         description: The Docker image
         type: string
         default: ""
@@ -2750,7 +2750,7 @@ jobs:
           condition: << parameters.check_image >>
           steps:
             - check_image_exists:
-                image_repo: << parameters.docker_image >>
+                image_repo: << parameters.docker_image_repo >>
       - install_node_modules:
           avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
       - build:
