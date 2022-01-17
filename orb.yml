@@ -2749,8 +2749,20 @@ jobs:
       - when:
           condition: << parameters.check_image >>
           steps:
-            - check_image_exists:
-                image_repo: << parameters.docker_image_repo >>
+            - when:
+                condition: << parameters.request_remote_docker >>
+                steps:
+                  - check_image_exists:
+                      image_repo: << parameters.docker_image_repo >>
+                      request_remote_docker: false
+            - when:
+                condition: 
+                  not: 
+                    equal: [true, << parameters.request_remote_docker >>]
+                steps:
+                  - check_image_exists:
+                      image_repo: << parameters.docker_image_repo >>
+                      request_remote_docker: true
       - install_node_modules:
           avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
       - build:
