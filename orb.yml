@@ -559,11 +559,28 @@ commands:
         description: Use a local proxy registry to publish alpha version of all libraries in monorepo (must have a /config/verdaccio/config.yaml file)
         type: boolean
         default: false
+      force_execute:
+        description: force to update the build, if there is a change or not.
+        type: boolean
+        default: false
+      package:
+        description: Monorepo package.
+        type: string
+        default: ""
     steps:
       - when:
           condition: << parameters.checkout >>
           steps:
             - checkout # special step to check out source code to working directory
+      - when:
+          condition:
+            and:
+              - equal: [false, << parameters.force_execute >>]
+              - not:
+                  equal: ["", << parameters.package >>]
+          steps:
+            - stop_if_no_changes:
+                package: << parameters.package >>
       - when:
           condition: << parameters.request_remote_docker >>
           steps:
@@ -2690,13 +2707,63 @@ jobs:
       image_repo:
         description: The container image repository
         type: string
-      track_component:
-        description: The track component name
+      component:
+        description: The component type for development environment deployment
         type: string
+      dockerfile:
+        description: Name of the Dockerfile to build
+        type: string
+        default: Dockerfile
+      build_args:
+        description: Arguments to pass while building the docker image
+        type: string
+        default: ''
+      build_context:
+        description: Path to the context for the docker build
+        type: string
+        default: '.'
+      checkout:
+        description: Determines if a checkout will be executed or not
+        type: boolean
+        default: true
+      request_remote_docker:
+        description: Add the option to request a new remote docker, set to false when you concat docker jobs
+        type: boolean
+        default: true
+      bucket:
+        description: The container image repository
+        type: string
+        default: "com.voiceflow.ci.assets"
+      check_track_exists:
+        description: checks if the track exists
+        type: boolean
+        default: true
+      local_registry:
+        description: Use a local proxy registry to publish alpha version of all libraries in monorepo (must have a /config/verdaccio/config.yaml file)
+        type: boolean
+        default: false
+      force_execute:
+        description: force to update the build, if there is a change or not.
+        type: boolean
+        default: false
+      package:
+        description: Monorepo package.
+        type: string
+        default: ""
     steps:
       - update_track:
           image_repo: << parameters.image_repo >>
-          component: << parameters.track_component >>
+          component: << parameters.component >>
+          dockerfile: << parameters.dockerfile >>
+          build_args: << parameters.build_args >>
+          build_context: << parameters.build_context >>
+          checkout: << parameters.checkout >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          bucket: << parameters.bucket >>
+          check_track_exists: << parameters.check_track_exists >>
+          local_registry: << parameters.local_registry >>
+          force_execute: << parameters.force_execute >>
+          package: << parameters.package >>
 
 #-------------------------------------------------------------YARN JOBS----------------------------------------------------------
 
