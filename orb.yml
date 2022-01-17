@@ -2676,12 +2676,17 @@ jobs:
         description: Name of the Dockerfile to build
         type: string
         default: Dockerfile
+      build_context:
+        description: Path to the context for the docker build
+        type: string
+        default: '.'
     steps:
       - build_push_image:
           image_repo: << parameters.image_repo >>
           release_pkg: << parameters.release_pkg >>
           image_tag: << parameters.image_tag >>
           dockerfile: << parameters.dockerfile >>
+          build_context: << parameters.build_context >>
 
   post_image_push_actions:
     executor: build-executor
