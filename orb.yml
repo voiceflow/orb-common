@@ -2923,6 +2923,10 @@ jobs:
       ssh_key:
         description: The SSH key with write permissions to the repository
         type: string
+      trigger_tags_pipelines:
+        description: Trigger tags after monoropo release
+        type: boolean
+        default: true
     steps:
       - add_ssh_keys: # To enable write access to repository for removing development environment branches
           fingerprints:
@@ -2937,10 +2941,13 @@ jobs:
           command: |
             git config --global user.email "serviceaccount@voiceflow.com"
             git config --global user.name "Voiceflow"
-            SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
+            SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish [skip ci]" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
             echo "export MONOREPO_UPDATED_TAGS=\"$(git tag --points-at HEAD)\"" >> $BASH_ENV
-      - trigger_tags_pipelines:
-          published_tags: MONOREPO_UPDATED_TAGS
+      - when:
+          condition: << parameters.trigger_tags_pipelines >>
+          steps:
+            - trigger_tags_pipelines:
+                published_tags: MONOREPO_UPDATED_TAGS
 
 #-------------------------------------------------------------E2E----------------------------------------------------------
 
