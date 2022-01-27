@@ -3001,6 +3001,37 @@ jobs:
             - trigger_tags_pipelines:
                 published_tags: MONOREPO_UPDATED_TAGS
 
+#-------------------------------------------------------------CDK JOBS----------------------------------------------------------
+
+  cdk-node-deploy: 
+    executor: node-executor
+    steps: 
+      - checkout
+      - run: 
+          name: Install CDK
+          command: |
+            sudo npm install -g aws-cdk
+      - run: 
+          name: CDK Deploy
+          command: |
+            cdk deploy --require-approval never
+
+  cdk-go-deploy: 
+    executor: go-executor
+    steps: 
+      - checkout
+      - run: 
+          name: Install CDK
+          command: |
+            sudo npm install -g aws-cdk
+      - run: 
+          environment:
+            GOPRIVATE: "github.com/voiceflow"
+          name: CDK Deploy
+          command: |
+            git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+            cdk deploy --require-approval never
+
 #-------------------------------------------------------------E2E----------------------------------------------------------
 
   dummy_job:
