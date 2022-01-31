@@ -818,7 +818,7 @@ commands:
               if [[ $FOLDER_TO_COPY != "" ]]; then
                 DESTINATION_FOLDER=$PWD
                 if [[ $MONOREPO_PACKAGE != "" ]]; then
-                  DESTINATION_FOLDER="$PWD/$MONOREPO_PACKAGE"
+                  DESTINATION_FOLDER="$PWD/packages/$MONOREPO_PACKAGE"
                 fi
               
                 docker cp runner:/code/<< parameters.container_folder_to_copy >> $DESTINATION_FOLDER
