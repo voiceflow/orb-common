@@ -2948,7 +2948,9 @@ jobs:
             - persist_to_workspace:
                 root: .
                 paths:
-                  - packages
+                  - node_modules
+                  - packages/<< parameters.package >>/build
+                  - packages/<< parameters.package >>/node_modules
       - when:
           condition:
               equal: [ "", << parameters.package >> ]
