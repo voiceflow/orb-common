@@ -757,6 +757,10 @@ commands:
         description: Container folder to copy after the execution
         type: string
         default: ""
+      monorepo_package:
+        description: Monorepo Package Name
+        type: string
+        default: ""
     steps:
       - when:
           condition: << parameters.wait >>
@@ -799,6 +803,7 @@ commands:
             RUN_IN_CONTAINER=<< parameters.run_in_container >>
             RUN_IN_BACKGROUND=<< parameters.run_in_background >>
             FOLDER_TO_COPY="<< parameters.container_folder_to_copy >>"
+            MONOREPO_PACKAGE="<< parameters.monorepo_package >>"
 
             if [[ $RUN_IN_CONTAINER == true ]]; then
               # Docker login
@@ -811,7 +816,12 @@ commands:
               docker run --name runner -it --volumes-from code -w /code << parameters.container_image >> /bin/bash -c "<< parameters.yarn_command >>"
               # If a folder is specified we copy that one on the host
               if [[ $FOLDER_TO_COPY != "" ]]; then
-                docker cp runner:/code/<< parameters.container_folder_to_copy >> $PWD
+                DESTINATION_FOLDER=$PWD
+                if [[ $MONOREPO_PACKAGE != "" ]]; then
+                  DESTINATION_FOLDER="$PWD/$MONOREPO_PACKAGE"
+                fi
+              
+                docker cp runner:/code/<< parameters.container_folder_to_copy >> $DESTINATION_FOLDER
               fi
             else
               # Executes Yarn command outside container
@@ -919,6 +929,7 @@ commands:
           request_remote_docker: << parameters.request_remote_docker >>
           run_in_container: << parameters.run_in_container >>
           container_folder_to_copy: << parameters.container_folder_to_copy >>
+          monorepo_package: << parameters.package >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
           yarn_command: yarn build<<# parameters.package >>:<</ parameters.package >><< parameters.package >> << parameters.extra_args >>
