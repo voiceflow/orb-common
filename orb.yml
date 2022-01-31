@@ -822,6 +822,8 @@ commands:
                 fi
               
                 docker cp runner:/code/<< parameters.container_folder_to_copy >> $DESTINATION_FOLDER
+
+                echo "Copying into $DESTINATION_FOLDER"
               fi
             else
               # Executes Yarn command outside container
@@ -2959,9 +2961,7 @@ jobs:
             - persist_to_workspace:
                 root: .
                 paths:
-                  - node_modules
                   - packages/<< parameters.package >>/build
-                  - packages/<< parameters.package >>/node_modules
       - when:
           condition:
               equal: [ "", << parameters.package >> ]
@@ -2970,7 +2970,6 @@ jobs:
                 root: .
                 paths:
                   - build
-                  - node_modules
 
 
 #-------------------------------------------------------------MONOREPO JOBS----------------------------------------------------------
