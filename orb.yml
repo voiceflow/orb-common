@@ -2895,8 +2895,17 @@ jobs:
         description: force to update the build, if there is a change or not. This is for tracks
         type: boolean
         default: false
+      attach_workspace:
+        description: Attach workspace to the current working directory
+        type: boolean
+        default: false
     steps:
       - checkout
+      - when:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - attach_workspace:
+                at: ~/voiceflow
       - when:
           condition:
             and:
