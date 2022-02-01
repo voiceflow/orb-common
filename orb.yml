@@ -3005,6 +3005,15 @@ jobs:
           request_remote_docker: << parameters.request_remote_docker >>
           run_in_container: << parameters.run_in_container >>
           package: << parameters.package >>
+      - when:
+          condition:
+            not:
+              equal: [ "", << parameters.package >> ]
+          steps:
+            - run:
+                name: Copy yarn.lock file
+                command: |
+                  cp yarn.lock packages/<< parameters.package >>/
       # Save workspace for subsequent jobs (i.e. test)
       - when:
           condition:
@@ -3015,6 +3024,7 @@ jobs:
                 root: .
                 paths:
                   - packages/<< parameters.package >>/build
+                  - packages/<< parameters.package >>/yarn.lock
       - when:
           condition:
               equal: [ "", << parameters.package >> ]
