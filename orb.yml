@@ -1609,15 +1609,15 @@ commands:
                 run_in_container: << parameters.run_in_container >>
                 step_name: << parameters.step_name >>
                 wait: << parameters.wait >>
-                yarn_command: yarn install --frozen-lockfile  << parameters.install_args >> 2>&1 | tee output.file
+                yarn_command: yarn install --frozen-lockfile  << parameters.install_args >>
       - run:
           working_directory: << parameters.working_directory >>
           name: Check yarn lock integrity
           command: |
-            clean=$(cat output.file | { grep "Lockfile has incorrect entry" || true; })
+            diff=$(git diff --stat)
+            clean=$(echo $diff | { grep "yarn.lock" || true; })
             if [[ -z "$clean" ]]; then
               echo "Lockfile ok."
-              rm -rf output.file
               exit 0
             else
               echo "The lockfile is wrong. Need changes."
