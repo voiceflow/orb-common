@@ -567,6 +567,14 @@ commands:
         description: Monorepo package.
         type: string
         default: ""
+      image_tag:
+        description: The container image tag
+        type: string
+        default: ""
+      release_pkg:
+        description: The npm package name to be released
+        type: string
+        default: ""
     steps:
       - when:
           condition: << parameters.checkout >>
@@ -637,8 +645,27 @@ commands:
             if [[ $TRACK_EXISTS == "true" ]]; then
               IMAGE_TAG="k8s-$CIRCLE_SHA1"
               IMAGE_REPO="<< parameters.image_repo >>"
+              IMAGE_TAG="<< parameters.image_tag >>"
+              if [[ "$IMAGE_TAG" == "" ]]; then
+                IMAGE_TAG="k8s-$CIRCLE_SHA1"
+              fi
               IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-              SEM_VER="$BRANCH_NAME-$CIRCLE_SHA1"
+              RELEASE_PKG="<< parameters.release_pkg >>"
+              # Fix semantic versioning if a package is indicated, if not, semantic release are not executed
+              if [[ ("$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production") && "$RELEASE_PKG" != "" ]]; then
+                npm config set unsafe-perm true # needed for npx to work
+                set +e  # Don't exit on the any error (for semantic-release)
+                npx semantic-release@17 --prepare --dry-run | tee sem_release.output  # print semver to screen and force return 0
+                SEM_VER=$(cat sem_release.output | grep 'The next release version is' | awk '{print $NF}')  # Get release semver
+                set -e  # Don't exit on the any error (for semantic-release)
+                if [ -z "$SEM_VER" ]; then
+                  echo -e "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+                  SEM_VER=$(npm view << parameters.release_pkg >> version)
+                fi
+              else
+                SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
+              fi
+              echo -e "Building with SEM_VER=$SEM_VER"
 
               if [[ $IMAGE_EXISTS == "false" ]]; then
                 # Build Docker Image
@@ -661,6 +688,17 @@ commands:
                   -f << parameters.build_context >>/<< parameters.dockerfile >> \
                   -t $IMAGE_NAME << parameters.build_context >>
                 docker push $IMAGE_NAME
+
+                # if a tag is set, do not push to latest-$BRANCH_NAME
+                IMAGE_TAG="<< parameters.image_tag >>"
+                if [[ "$IMAGE_TAG" == "" ]]; then
+                  BRANCH_NAME=$CIRCLE_BRANCH
+                  if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
+                    BRANCH_NAME="master"
+                  fi
+                  docker tag $IMAGE_NAME $IMAGE_REPO:latest-$BRANCH_NAME
+                  docker push $IMAGE_REPO:latest-$BRANCH_NAME
+                fi
               fi
 
               # update the track
@@ -2826,6 +2864,14 @@ jobs:
         description: Monorepo package.
         type: string
         default: ""
+      image_tag:
+        description: The container image tag
+        type: string
+        default: ""
+      release_pkg:
+        description: The npm package name to be released
+        type: string
+        default: ""
     steps:
       - update_track:
           image_repo: << parameters.image_repo >>
@@ -2840,6 +2886,8 @@ jobs:
           local_registry: << parameters.local_registry >>
           force_execute: << parameters.force_execute >>
           package: << parameters.package >>
+          image_tag: << parameters.image_tag >>
+          release_pkg: << parameters.release_pkg >>
 
 
   check_track_exists:
