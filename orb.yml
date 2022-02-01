@@ -643,12 +643,14 @@ commands:
             fi
 
             if [[ $TRACK_EXISTS == "true" ]]; then
-              IMAGE_TAG="k8s-$CIRCLE_SHA1"
               IMAGE_REPO="<< parameters.image_repo >>"
-              IMAGE_TAG="<< parameters.image_tag >>"
-              if [[ "$IMAGE_TAG" == "" ]]; then
+              IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
+              if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
                 IMAGE_TAG="k8s-$CIRCLE_SHA1"
+              else
+                IMAGE_TAG="$IMAGE_TAG_OVERRIDE"
               fi
+
               IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
               RELEASE_PKG="<< parameters.release_pkg >>"
               # Fix semantic versioning if a package is indicated, if not, semantic release are not executed
@@ -690,8 +692,7 @@ commands:
                 docker push $IMAGE_NAME
 
                 # if a tag is set, do not push to latest-$BRANCH_NAME
-                IMAGE_TAG="<< parameters.image_tag >>"
-                if [[ "$IMAGE_TAG" == "" ]]; then
+                if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
                   BRANCH_NAME=$(echo $CIRCLE_BRANCH | sed 's/[^a-zA-Z0-9]/-/g')
                   if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
                     BRANCH_NAME="master"
@@ -703,7 +704,7 @@ commands:
               fi
 
               # update the track
-              TRACK="tracks/<< parameters.component >>/$BRANCH_NAME"
+              TRACK="tracks/<< parameters.component >>/$CIRCLE_BRANCH"
               echo $TRACK
               pip3 install yq
               # the file /tmp/$TRACK is downloaded in the check_track_exists step
@@ -1673,9 +1674,11 @@ commands:
       - run:
           name: "Build docker image"
           command: |
-            IMAGE_TAG="<< parameters.image_tag >>"
-            if [[ "$IMAGE_TAG" == "" ]]; then
+            IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
+            if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
               IMAGE_TAG="k8s-$CIRCLE_SHA1"
+            else
+              IMAGE_TAG="$IMAGE_TAG_OVERRIDE"
             fi
             IMAGE_REPO="<< parameters.image_repo >>"
             RELEASE_PKG="<< parameters.release_pkg >>"
@@ -1708,17 +1711,18 @@ commands:
       - run:
           name: "Push docker images"
           command: |
-            IMAGE_TAG="<< parameters.image_tag >>"
-            if [[ "$IMAGE_TAG" == "" ]]; then
+            IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
+            if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
               IMAGE_TAG="k8s-$CIRCLE_SHA1"
+            else
+              IMAGE_TAG="$IMAGE_TAG_OVERRIDE"
             fi
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             docker push $IMAGE_NAME
 
             # if a tag is set, do not push to latest-$BRANCH_NAME
-            IMAGE_TAG="<< parameters.image_tag >>"
-            if [[ "$IMAGE_TAG" == "" ]]; then
+            if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
               BRANCH_NAME=$(echo $CIRCLE_BRANCH | sed 's/[^a-zA-Z0-9]/-/g')
               if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
                 BRANCH_NAME="master"
