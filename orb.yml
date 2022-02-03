@@ -1137,6 +1137,32 @@ commands:
           command: |
             yarn analyze:dependencies << parameters.extra_args >>
 
+  analyze_dependencies:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+        default: "./"
+      run_in_backgorund:
+        description: run the command in background
+        type: boolean
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+        default: Analyze dependencies
+      extra_args:
+        description: Additional yarn command options
+        type: string
+        default: ""
+    steps:
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_backgorund >>
+          name: << parameters.step_name >>
+          command: |
+            yarn analyze:dependencies << parameters.extra_args >>
+
   unit_tests:
     parameters:
       working_directory:
@@ -2404,6 +2430,7 @@ commands:
           run_on_root: << parameters.run_on_root >>
           force_execution: << parameters.force_execution >>
 
+
   monorepo_analyze_dependencies:
     parameters:
       step_name:
@@ -3094,6 +3121,37 @@ jobs:
         type: executor
         default: "go-executor"
     executor: << parameters.executor >>
+    steps: 
+      - checkout
+      - run: 
+          name: Install CDK
+          command: |
+            sudo npm install -g aws-cdk
+      - run: 
+          environment:
+            GOPRIVATE: "github.com/voiceflow"
+          name: CDK Deploy
+          command: |
+            git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+            cdk deploy --require-approval never
+
+#-------------------------------------------------------------CDK JOBS----------------------------------------------------------
+
+  cdk-node-deploy: 
+    executor: node-executor
+    steps: 
+      - checkout
+      - run: 
+          name: Install CDK
+          command: |
+            sudo npm install -g aws-cdk
+      - run: 
+          name: CDK Deploy
+          command: |
+            cdk deploy --require-approval never
+
+  cdk-go-deploy: 
+    executor: go-executor
     steps: 
       - checkout
       - run: 
