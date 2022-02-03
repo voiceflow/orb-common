@@ -25,7 +25,7 @@ executors:
         - DEFAULT_REGION=us-east-1
         - DEBUG=1
       - image: circleci/mongo:4.4.1 # MongoDB service container
-      - image: redis:5-alpine # Redis service container
+      - image: redis:6.2-alpine # Redis service container
 
   # Used to run tests
   code-test-executor:
@@ -34,7 +34,7 @@ executors:
     environment:
       NODE_OPTIONS: --max-old-space-size=4096
     docker: # run the steps with Docker
-      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v1 # Test steps container
+      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2 # Test steps container
         aws_auth:
           aws_access_key_id: $AWS_ACCESS_KEY_ID
           aws_secret_access_key: $AWS_SECRET_ACCESS_KEY 
@@ -47,12 +47,12 @@ executors:
         - SERVICES=s3,dynamodb
         - DEFAULT_REGION=us-east-1
         - DEBUG=1
-      - image: circleci/redis:5.0-alpine # Redis service container
+      - image: circleci/redis:6.2-alpine # Redis service container
       - image: circleci/mongo:4.4.1 # MongoDB service container
 
   # Used to run container builds
   build-executor:
-    working_directory: /tmp/vf-build
+    working_directory: ~/voiceflow
     docker:
       - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-image:v4
         aws_auth:
@@ -64,7 +64,7 @@ executors:
   node-executor:
     working_directory: ~/voiceflow
     docker:
-      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v1
+      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2
         aws_auth:
           aws_access_key_id: $AWS_ACCESS_KEY_ID
           aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
@@ -74,7 +74,7 @@ executors:
 
   default-executor: # used to run the release
     docker:
-      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v1
+      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2
         aws_auth:
           aws_access_key_id: $AWS_ACCESS_KEY_ID
           aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
@@ -152,32 +152,6 @@ commands:
           name: Set Bash as a default shell for yarn commands
           command: yarn config set script-shell /bin/bash
 
-
-  install_aws_cli:
-    steps:
-      - run:
-          name: Install pip3
-          command: sudo apt update && sudo apt install -y python3-pip
-      - run:
-          name: Install AWS CLI
-          command: pip3 install awscli
-
-  install_hadolint:
-    description: Install Hadolint
-    steps:
-      - run:
-          name: Install Hadolint
-          command: |
-            sudo wget -O /usr/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.19.0/hadolint-Linux-x86_64
-            sudo chmod +x /usr/bin/hadolint
-
-  install_cpio:
-    description: Install cpio
-    steps:
-      - run:
-          name: Install cpio
-          command: |
-            sudo apt-get install -y cpio || apt-get install -y cpio
 
   setup_pg:
     steps:
@@ -320,6 +294,64 @@ commands:
           name: << parameters.step_name >>
           command: |
             git push origin --delete << parameters.branch_name >> --no-verify # Clean up git branch
+
+
+  sync_branches:
+    parameters:
+      checkout:
+        description: Checkout code
+        type: boolean
+        default: false
+      source_branch_name:
+        description: Name of the source branch
+        type: string
+        default: "master"
+      destination_branch_name:
+        description: Name of the production branch
+        type: string
+        default: "production"
+      step_name:
+        description: Name of the step
+        type: string
+        default: Sync 2 branches
+      ssh_key:
+        description: The SSH key with write permissions to the repository
+        type: string
+      check_commit_message:
+        description: The SSH key with write permissions to the repository
+        type: string
+        default: ""
+    steps:
+      - when:
+          condition: << parameters.checkout >>
+          steps:
+            - checkout
+      - add_ssh_keys: # To enable write access to repository
+          fingerprints:
+            - << parameters.ssh_key >>
+      - run:
+          name: << parameters.step_name >>
+          command: |
+
+            SYNC=true
+            CHECK_COMMIT_MESSAGE=<< parameters.check_commit_message >>
+            COMMIT_MESSAGE="$(git log --format=oneline -n 1 $CIRCLE_SHA1)"
+
+            # If a message has been introduces, we have to check that in the commit message, if it is not included, the braches will not be synced
+            # this is for the use case of the bugfix mechanism
+            if [[ $CHECK_COMMIT_MESSAGE != "" && $COMMIT_MESSAGE != *"$CHECK_COMMIT_MESSAGE"* ]]; then
+              SYNC=false
+            fi
+
+            if [[ $SYNC == true ]]; then
+              git fetch
+              git checkout << parameters.destination_branch_name >>
+              git rebase << parameters.source_branch_name >>
+              git push origin << parameters.destination_branch_name >>
+            else
+              echo "Avoiding syncing branches"
+              circleci-agent step halt 
+            fi
 
   check_image_exists:
     description: Check if a Docker image exists
@@ -527,18 +559,43 @@ commands:
         description: Use a local proxy registry to publish alpha version of all libraries in monorepo (must have a /config/verdaccio/config.yaml file)
         type: boolean
         default: false
+      force_execute:
+        description: force to update the build, if there is a change or not.
+        type: boolean
+        default: false
+      package:
+        description: Monorepo package.
+        type: string
+        default: ""
+      image_tag:
+        description: The container image tag
+        type: string
+        default: ""
+      release_pkg:
+        description: The npm package name to be released
+        type: string
+        default: ""
     steps:
       - when:
           condition: << parameters.checkout >>
           steps:
             - checkout # special step to check out source code to working directory
       - when:
+          condition:
+            and:
+              - equal: [false, << parameters.force_execute >>]
+              - not:
+                  equal: ["", << parameters.package >>]
+          steps:
+            - stop_if_no_changes:
+                package: << parameters.package >>
+      - when:
           condition: << parameters.request_remote_docker >>
           steps:
             - setup_remote_docker: # Need this to run DinD
                 version: 20.10.11
       - attach_workspace:
-          at: /tmp/vf-build
+          at: ~/voiceflow
       - check_image_exists:
           image_repo: << parameters.image_repo >>
           request_remote_docker: false
@@ -586,10 +643,31 @@ commands:
             fi
 
             if [[ $TRACK_EXISTS == "true" ]]; then
-              IMAGE_TAG="k8s-$CIRCLE_SHA1"
               IMAGE_REPO="<< parameters.image_repo >>"
+              IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
+              if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
+                IMAGE_TAG="k8s-$CIRCLE_SHA1"
+              else
+                IMAGE_TAG="$IMAGE_TAG_OVERRIDE"
+              fi
+
               IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-              SEM_VER="$BRANCH_NAME-$CIRCLE_SHA1"
+              RELEASE_PKG="<< parameters.release_pkg >>"
+              # Fix semantic versioning if a package is indicated, if not, semantic release are not executed
+              if [[ ("$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production") && "$RELEASE_PKG" != "" ]]; then
+                npm config set unsafe-perm true # needed for npx to work
+                set +e  # Don't exit on the any error (for semantic-release)
+                npx semantic-release@17 --prepare --dry-run | tee sem_release.output  # print semver to screen and force return 0
+                SEM_VER=$(cat sem_release.output | grep 'The next release version is' | awk '{print $NF}')  # Get release semver
+                set -e  # Don't exit on the any error (for semantic-release)
+                if [ -z "$SEM_VER" ]; then
+                  echo -e "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+                  SEM_VER=$(npm view << parameters.release_pkg >> version)
+                fi
+              else
+                SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
+              fi
+              echo -e "Building with SEM_VER=$SEM_VER"
 
               if [[ $IMAGE_EXISTS == "false" ]]; then
                 # Build Docker Image
@@ -612,10 +690,21 @@ commands:
                   -f << parameters.build_context >>/<< parameters.dockerfile >> \
                   -t $IMAGE_NAME << parameters.build_context >>
                 docker push $IMAGE_NAME
+
+                # if a tag is set, do not push to latest-$BRANCH_NAME
+                if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
+                  BRANCH_NAME=$(echo $CIRCLE_BRANCH | sed 's/[^a-zA-Z0-9]/-/g')
+                  if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
+                    BRANCH_NAME="master"
+                  fi
+                  
+                  docker tag $IMAGE_NAME $IMAGE_REPO:latest-$BRANCH_NAME
+                  docker push $IMAGE_REPO:latest-$BRANCH_NAME
+                fi
               fi
 
               # update the track
-              TRACK="tracks/<< parameters.component >>/$BRANCH_NAME"
+              TRACK="tracks/<< parameters.component >>/$CIRCLE_BRANCH"
               echo $TRACK
               pip3 install yq
               # the file /tmp/$TRACK is downloaded in the check_track_exists step
@@ -669,6 +758,125 @@ commands:
              done
 
 #-------------------------------------------------------------YARN COMMANDS----------------------------------------------------------
+
+
+  yarn_command:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+        default: "./"
+      run_in_background:
+        description: run the command in background
+        type: boolean
+        default: false
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+        default: Deploy application
+      yarn_command:
+        description: Yarn command to execute
+        type: string
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_image:
+        description: Container image to run the yarn command
+        type: string
+        default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
+      monorepo_package:
+        description: Monorepo Package Name
+        type: string
+        default: ""
+    steps:
+      - when:
+          condition: << parameters.wait >>
+          steps:
+            - run:
+                name: Waiting util other processes are finished
+                command: |
+
+                  while [ "$(ls -A /tmp/lock)" != "" ]
+                  do
+                    echo "Process not finished. Waiting..."
+                    sleep 5
+                  done
+
+                  echo "Process finished"
+      - when:
+          condition: << parameters.run_in_background >>
+          steps:
+            - run:
+                name: Create lock for << parameters.step_name >>
+                command: |
+                  # Create the folder if not exists
+                  [ ! -d /tmp/lock ] && mkdir -p /tmp/lock
+
+                  LOCK_FILE="/tmp/lock/$(uuidgen)"
+
+                  touch $LOCK_FILE
+                  echo "Lock created at $LOCK_FILE"
+                  echo "export LOCK_FILE=$LOCK_FILE" >> $BASH_ENV
+      - when:
+          condition: << parameters.request_remote_docker >>
+          steps:
+            - setup_remote_docker:  # Need this to run DinD
+                version: 20.10.11
+      - run:
+          working_directory: << parameters.working_directory >>
+          background: << parameters.run_in_background >>
+          name: << parameters.step_name >>
+          command: |
+            RUN_IN_CONTAINER=<< parameters.run_in_container >>
+            RUN_IN_BACKGROUND=<< parameters.run_in_background >>
+            FOLDER_TO_COPY="<< parameters.container_folder_to_copy >>"
+            MONOREPO_PACKAGE="<< parameters.monorepo_package >>"
+
+            if [[ $RUN_IN_CONTAINER == true ]]; then
+              # Docker login
+              $(aws ecr get-login --no-include-email --region us-east-1)
+              echo "Running in a container"
+              docker create -v /code --name code << parameters.container_image >> /bin/true
+              docker cp $PWD/. code:/code
+
+              # Executes Yarn command in container
+              docker run --name runner -it --volumes-from code -w /code << parameters.container_image >> /bin/bash -c "<< parameters.yarn_command >>"
+              # If a folder is specified we copy that one on the host
+              if [[ $FOLDER_TO_COPY != "" ]]; then
+                DESTINATION_FOLDER=$PWD
+                if [[ $MONOREPO_PACKAGE != "" ]]; then
+                  DESTINATION_FOLDER="$PWD/packages/$MONOREPO_PACKAGE"
+                fi
+              
+                docker cp runner:/code/<< parameters.container_folder_to_copy >> $DESTINATION_FOLDER
+
+                echo "Copying into $DESTINATION_FOLDER"
+              fi
+            else
+              # Executes Yarn command outside container
+              echo "Running without a container"
+              << parameters.yarn_command >>
+            fi
+            
+            # Remove lock file when it is running in background/parallel
+            if [[ $RUN_IN_BACKGROUND == true ]]; then
+              echo "Removing Lock $LOCK_FILE"
+              rm -rf $LOCK_FILE
+            fi
+
   serverless_deploy:
     parameters:
       working_directory:
@@ -676,10 +884,10 @@ commands:
         type: string
         default: "./"
       environment:
-        description: envrionment where to deploy the serverless application
+        description: environment where to deploy the serverless application
         type: string
         default: dev
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -691,12 +899,32 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn serverless:deploy-<< parameters.environment >> << parameters.extra_args >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn serverless:deploy-<< parameters.environment >> << parameters.extra_args >>
 
   build:
     parameters:
@@ -704,7 +932,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -716,12 +944,37 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
+      package:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn build << parameters.extra_args >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          monorepo_package: << parameters.package >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn build<<# parameters.package >>:<</ parameters.package >><< parameters.package >> << parameters.extra_args >>
 
   lint_report:
     parameters:
@@ -729,7 +982,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -741,12 +994,32 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn lint:report << parameters.extra_args >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn lint:report << parameters.extra_args >>
 
   lint_source:
     parameters:
@@ -754,7 +1027,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -766,12 +1039,32 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn lint:quiet << parameters.extra_args >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn lint:quiet << parameters.extra_args >>
 
   lint_dockerfile:
     parameters:
@@ -779,7 +1072,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -791,14 +1084,32 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - install_hadolint
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: |
-            yarn lint:dockerfiles << parameters.extra_args >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn lint:dockerfiles << parameters.extra_args >>
 
   analyze_dependencies:
     parameters:
@@ -832,7 +1143,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -844,12 +1155,32 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn test:unit << parameters.extra_args >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn test:unit << parameters.extra_args >>
 
   integration_tests:
     parameters:
@@ -857,7 +1188,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -869,13 +1200,33 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - set_etc_hosts_e2e
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn test:integration << parameters.extra_args >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn test:integration << parameters.extra_args >>
 
   smoke_tests:
     parameters:
@@ -883,7 +1234,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -895,12 +1246,32 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn test:smoke << parameters.extra_args >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn test:smoke << parameters.extra_args >>
 
   dependency_tests:
     parameters:
@@ -908,7 +1279,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: "./"
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -920,12 +1291,32 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn test:dependencies << parameters.extra_args >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn test:dependencies << parameters.extra_args >>
 
 
   tests:
@@ -934,7 +1325,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -946,12 +1337,32 @@ commands:
         description: Additional yarn command options
         type: string
         default: ""
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn test << parameters.extra_args >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn test << parameters.extra_args >>
 
   start_e2e:
     parameters:
@@ -959,7 +1370,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -967,12 +1378,32 @@ commands:
         description: Name of the step
         type: string
         default: Start in e2e mode
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
-          name: << parameters.step_name >>
-          command: yarn e2e
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn e2e
 
   gen_certs:
     parameters:
@@ -984,11 +1415,36 @@ commands:
         description: Name of the step
         type: string
         default: Generate certificates
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_background:
+        description: run the command in background
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          name: << parameters.step_name >>
-          command: yarn gen-certs
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn gen-certs
 
   gen_certs_e2e:
     parameters:
@@ -1000,11 +1456,36 @@ commands:
         description: Name of the step
         type: string
         default: Generate certificates for e2e tests
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_background:
+        description: run the command in background
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
-      - run:
+      - yarn_command:
           working_directory: << parameters.working_directory >>
-          name: << parameters.step_name >>
-          command: yarn gen-certs:e2e
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn gen-certs:e2e
 
   authenticate_npm:
     parameters:
@@ -1012,28 +1493,16 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
     steps:
       - run:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
+          background: << parameters.run_in_background >>
           name: authenticate npm
           command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-
-  save_node_module_cache:
-    parameters:
-      working_directory:
-        description: Directory containing the yarn.lock file
-        type: string
-        default: './'
-    steps:
-      - save_cache:
-          key: node-module-cache-<< parameters.working_directory >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
-          paths:
-            - << parameters.working_directory >>/node_modules
 
   vf_restore_cache:
     parameters:
@@ -1076,6 +1545,10 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
+      step_name:
+        description: Name of the step
+        type: string
+        default: Install node modules
       yarn_lock_restore_cache_directory:
         description: Cache directory for yarn.lock file
         type: string
@@ -1088,10 +1561,26 @@ commands:
         description: Skip running post install scripts
         type: boolean
         default: true
-      background:
+      run_in_background:
         description: Run yarn install in background mode
         type: boolean
         default: false
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
     steps:
       - authenticate_npm
       - vf_restore_cache:
@@ -1100,26 +1589,35 @@ commands:
       - when:
           condition: << parameters.avoid_post_install_scripts >>
           steps:
-            - run:
+            - yarn_command:
                 working_directory: << parameters.working_directory >>
-                name: yarn install packages
-                command: yarn install --frozen-lockfile --ignore-scripts << parameters.install_args >> 2>&1 | tee output.file
+                run_in_background: << parameters.run_in_background >>
+                request_remote_docker: << parameters.request_remote_docker >>
+                container_folder_to_copy: << parameters.container_folder_to_copy >>
+                run_in_container: << parameters.run_in_container >>
+                step_name: << parameters.step_name >>
+                wait: << parameters.wait >>
+                yarn_command: yarn install --frozen-lockfile --ignore-scripts << parameters.install_args >> 2>&1 | tee output.file
       - unless:
           condition: << parameters.avoid_post_install_scripts >>
           steps:
-            - run:
+            - yarn_command:
                 working_directory: << parameters.working_directory >>
-                background: << parameters.background >>
-                name: yarn install packages
-                command: yarn install --frozen-lockfile  << parameters.install_args >> 2>&1 | tee output.file
+                run_in_background: << parameters.run_in_background >>
+                request_remote_docker: << parameters.request_remote_docker >>
+                container_folder_to_copy: << parameters.container_folder_to_copy >>
+                run_in_container: << parameters.run_in_container >>
+                step_name: << parameters.step_name >>
+                wait: << parameters.wait >>
+                yarn_command: yarn install --frozen-lockfile  << parameters.install_args >>
       - run:
           working_directory: << parameters.working_directory >>
           name: Check yarn lock integrity
           command: |
-            clean=$(cat output.file | { grep "Lockfile has incorrect entry" || true; })
+            diff=$(git diff --stat)
+            clean=$(echo $diff | { grep "yarn.lock" || true; })
             if [[ -z "$clean" ]]; then
               echo "Lockfile ok."
-              rm -rf output.file
               exit 0
             else
               echo "The lockfile is wrong. Need changes."
@@ -1171,12 +1669,16 @@ commands:
           steps:
             - setup_remote_docker:  # Need this to run DinD
                 version: 20.10.11
+      - attach_workspace:
+          at: ~/voiceflow
       - run:
           name: "Build docker image"
           command: |
-            IMAGE_TAG="<< parameters.image_tag >>"
-            if [[ "$IMAGE_TAG" == "" ]]; then
+            IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
+            if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
               IMAGE_TAG="k8s-$CIRCLE_SHA1"
+            else
+              IMAGE_TAG="$IMAGE_TAG_OVERRIDE"
             fi
             IMAGE_REPO="<< parameters.image_repo >>"
             RELEASE_PKG="<< parameters.release_pkg >>"
@@ -1209,18 +1711,19 @@ commands:
       - run:
           name: "Push docker images"
           command: |
-            IMAGE_TAG="<< parameters.image_tag >>"
-            if [[ "$IMAGE_TAG" == "" ]]; then
+            IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
+            if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
               IMAGE_TAG="k8s-$CIRCLE_SHA1"
+            else
+              IMAGE_TAG="$IMAGE_TAG_OVERRIDE"
             fi
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             docker push $IMAGE_NAME
 
             # if a tag is set, do not push to latest-$BRANCH_NAME
-            IMAGE_TAG="<< parameters.image_tag >>"
-            if [[ "$IMAGE_TAG" == "" ]]; then
-              BRANCH_NAME=$CIRCLE_BRANCH
+            if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
+              BRANCH_NAME=$(echo $CIRCLE_BRANCH | sed 's/[^a-zA-Z0-9]/-/g')
               if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
                 BRANCH_NAME="master"
               fi
@@ -1255,7 +1758,7 @@ commands:
         type: string
         default: "4c:f6:5f:e5:7a:e9:b4:03:91:6a:93:e5:0e:60:c2:a6"
     steps:
-      - add_ssh_keys: # To enable write access to repository for removing development environment branches
+      - add_ssh_keys: # To enable write access to repository
           fingerprints:
             - << parameters.ssh_key >>
       - run:
@@ -1392,7 +1895,7 @@ commands:
           working_directory: "~/<< parameters.service_name >>"
       - start_e2e:
           step_name: "Start << parameters.service_name >>"
-          run_in_backgorund: true
+          run_in_background: true
           working_directory: "~/<< parameters.service_name >>"
       - check_e2e_deps:
           step_name: "Start << parameters.service_name >>"
@@ -1580,7 +2083,6 @@ commands:
           avoid_post_install_scripts: false
           working_directory: ~/creator-app
           yarn_lock_restore_cache_directory: ~/creator-app
-      - install_cpio
       - run:
           name: Build dependencies
           command: |
@@ -1643,7 +2145,7 @@ commands:
 
 #-------------------------------------------------------------MONOREPO COMMANDS----------------------------------------------------------
 
-  exec_command_when_package_changed_monorepo:
+  monorepo_exec_command_when_package_changed:
     description: execute commands
     parameters:
       command:
@@ -1694,7 +2196,7 @@ commands:
                   fi
               fi
 
-  exec_command_monorepo:
+  monorepo_exec_command:
     description: execute commands
     parameters:
       command:
@@ -1772,7 +2274,7 @@ commands:
               circleci-agent step halt
             fi
 
-  unit_tests_monorepo:
+  monorepo_unit_tests:
     parameters:
       step_name:
         description: Name of the step
@@ -1791,14 +2293,14 @@ commands:
         type: boolean
         default: false
     steps:
-      - exec_command_monorepo:
+      - monorepo_exec_command:
           step_name: << parameters.step_name >>
           command: yarn test:unit
           extra_args: << parameters.extra_args >>
           run_on_root: << parameters.run_on_root >>
           force_execution: << parameters.force_execution >>
 
-  integration_tests_monorepo:
+  monorepo_integration_tests:
     parameters:
       step_name:
         description: Name of the step
@@ -1817,14 +2319,14 @@ commands:
         type: boolean
         default: false
     steps:
-      - exec_command_monorepo:
+      - monorepo_exec_command:
           step_name: << parameters.step_name >>
           command: yarn test:integration
           extra_args: << parameters.extra_args >>
           run_on_root: << parameters.run_on_root >>
           force_execution: << parameters.force_execution >>
 
-  lint_report_monorepo:
+  monorepo_lint_report:
     parameters:
       step_name:
         description: Name of the step
@@ -1843,14 +2345,14 @@ commands:
         type: boolean
         default: false
     steps:
-      - exec_command_monorepo:
+      - monorepo_exec_command:
           step_name: << parameters.step_name >>
           command: yarn lint:report
           extra_args: << parameters.extra_args >>
           run_on_root: << parameters.run_on_root >>
           force_execution: << parameters.force_execution >>
 
-  lint_dockerfile_monorepo:
+  monorepo_lint_dockerfile:
     parameters:
       step_name:
         description: Name of the step
@@ -1869,15 +2371,14 @@ commands:
         type: boolean
         default: false
     steps:
-      - install_hadolint
-      - exec_command_monorepo:
+      - monorepo_exec_command:
           step_name: << parameters.step_name >>
           command: yarn lint:dockerfiles
           extra_args: << parameters.extra_args >>
           run_on_root: << parameters.run_on_root >>
           force_execution: << parameters.force_execution >>
 
-  dependency_tests_monorepo:
+  monorepo_dependency_tests:
     parameters:
       step_name:
         description: Name of the step
@@ -1896,14 +2397,15 @@ commands:
         type: boolean
         default: false
     steps:
-      - exec_command_monorepo:
+      - monorepo_exec_command:
           step_name: << parameters.step_name >>
           command: yarn test:dependencies
           extra_args: << parameters.extra_args >>
           run_on_root: << parameters.run_on_root >>
           force_execution: << parameters.force_execution >>
 
-  analyze_dependencies_monorepo:
+
+  monorepo_analyze_dependencies:
     parameters:
       step_name:
         description: Name of the step
@@ -1922,14 +2424,14 @@ commands:
         type: boolean
         default: false
     steps:
-      - exec_command_monorepo:
+      - monorepo_exec_command:
           step_name: << parameters.step_name >>
           command: yarn analyze:dependencies
           extra_args: << parameters.extra_args >>
           run_on_root: << parameters.run_on_root >>
           force_execution: << parameters.force_execution >>
 
-  build_monorepo:
+  monorepo_build:
     parameters:
       step_name:
         description: Name of the step
@@ -1948,7 +2450,7 @@ commands:
         type: boolean
         default: false
     steps:
-      - exec_command_monorepo:
+      - monorepo_exec_command:
           step_name: << parameters.step_name >>
           command: yarn build
           extra_args: << parameters.extra_args >>
@@ -2129,7 +2631,7 @@ commands:
     steps:
       - gen_certs_e2e
       - start_e2e:
-          run_in_backgorund: true
+          run_in_background: true
       - check_service_running:
           port: << parameters.port >>
 
@@ -2139,7 +2641,7 @@ commands:
         description: Directory containing package.json
         type: string
         default: './'
-      run_in_backgorund:
+      run_in_background:
         description: run the command in background
         type: boolean
         default: false
@@ -2150,7 +2652,7 @@ commands:
     steps:
       - run:
           working_directory: << parameters.working_directory >>
-          background: << parameters.run_in_backgorund >>
+          background: << parameters.run_in_background >>
           name: << parameters.step_name >>
           command: yarn e2e:check-deps
 
@@ -2230,9 +2732,313 @@ jobs:
           name: << parameters.step_name >>
           command: curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}
 
+#-------------------------------------------------------------GIT JOBS----------------------------------------------------------
+
+  sync_branches:
+    executor: build-executor
+    parameters:
+      checkout:
+        description: Checkout code
+        type: boolean
+        default: false
+      source_branch_name:
+        description: Name of the source branch
+        type: string
+        default: "master"
+      destination_branch_name:
+        description: Name of the production branch
+        type: string
+        default: "production"
+      ssh_key:
+        description: The SSH key with write permissions to the repository
+        type: string
+      check_commit_message:
+        description: The SSH key with write permissions to the repository
+        type: string
+        default: ""
+    steps:
+      - sync_branches:
+          step_name: Sync << parameters.destination_branch_name >> branch with << parameters.source_branch_name >> branch
+          source_branch_name: << parameters.source_branch_name >>
+          destination_branch_name: << parameters.destination_branch_name >>
+          checkout: << parameters.checkout >>
+          ssh_key: << parameters.ssh_key >>
+          check_commit_message: << parameters.check_commit_message >>
+
+#-------------------------------------------------------------DOCKER JOBS----------------------------------------------------------
+
+  build_push_image:
+    executor: build-executor
+    parameters:
+      image_repo:
+        description: The container image repository
+        type: string
+      image_tag:
+        description: The container image tag
+        type: string
+        default: ""
+      release_pkg:
+        description: The npm package name to be released
+        type: string
+        default: ""
+      dockerfile:
+        description: Name of the Dockerfile to build
+        type: string
+        default: Dockerfile
+      build_context:
+        description: Path to the context for the docker build
+        type: string
+        default: '.'
+    steps:
+      - build_push_image:
+          image_repo: << parameters.image_repo >>
+          release_pkg: << parameters.release_pkg >>
+          image_tag: << parameters.image_tag >>
+          dockerfile: << parameters.dockerfile >>
+          build_context: << parameters.build_context >>
+
+  post_image_push_actions:
+    executor: build-executor
+    parameters:
+      namespace:
+        description: The namespace to look at
+        type: string
+      target:
+        description: The k8s object being deployed
+        type: string
+      tagged:
+        description: if tagged
+        type: boolean
+        default: false
+      success_slack_notify:
+        description: Post to Slack on successful deployment?
+        type: boolean
+        default: true
+    steps:
+      - post_image_push_actions:
+          namespace: << parameters.namespace >>
+          target: << parameters.target >>
+          tagged: << parameters.tagged >>
+          success_slack_notify: << parameters.success_slack_notify >>
+
+  update_track:
+    executor: build-executor
+    parameters:
+      image_repo:
+        description: The container image repository
+        type: string
+      component:
+        description: The component type for development environment deployment
+        type: string
+      dockerfile:
+        description: Name of the Dockerfile to build
+        type: string
+        default: Dockerfile
+      build_args:
+        description: Arguments to pass while building the docker image
+        type: string
+        default: ''
+      build_context:
+        description: Path to the context for the docker build
+        type: string
+        default: '.'
+      checkout:
+        description: Determines if a checkout will be executed or not
+        type: boolean
+        default: true
+      request_remote_docker:
+        description: Add the option to request a new remote docker, set to false when you concat docker jobs
+        type: boolean
+        default: true
+      bucket:
+        description: The container image repository
+        type: string
+        default: "com.voiceflow.ci.assets"
+      check_track_exists:
+        description: checks if the track exists
+        type: boolean
+        default: true
+      local_registry:
+        description: Use a local proxy registry to publish alpha version of all libraries in monorepo (must have a /config/verdaccio/config.yaml file)
+        type: boolean
+        default: false
+      force_execute:
+        description: force to update the build, if there is a change or not.
+        type: boolean
+        default: false
+      package:
+        description: Monorepo package.
+        type: string
+        default: ""
+      image_tag:
+        description: The container image tag
+        type: string
+        default: ""
+      release_pkg:
+        description: The npm package name to be released
+        type: string
+        default: ""
+    steps:
+      - update_track:
+          image_repo: << parameters.image_repo >>
+          component: << parameters.component >>
+          dockerfile: << parameters.dockerfile >>
+          build_args: << parameters.build_args >>
+          build_context: << parameters.build_context >>
+          checkout: << parameters.checkout >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          bucket: << parameters.bucket >>
+          check_track_exists: << parameters.check_track_exists >>
+          local_registry: << parameters.local_registry >>
+          force_execute: << parameters.force_execute >>
+          package: << parameters.package >>
+          image_tag: << parameters.image_tag >>
+          release_pkg: << parameters.release_pkg >>
+
+
+  check_track_exists:
+    parameters:
+      component:
+        description: Component to check if the track exists
+        type: string
+      force_execute:
+        description: force to update the build, if there is a change or not. This is for tracks
+        type: boolean
+        default: false
+      package:
+        description: Monorepo package.
+        type: string
+        default: ""
+    executor: build-executor
+    steps:
+      - run: echo 'checking if track exists...'
+      - when:
+          condition:
+            and:
+              - equal: [false, << parameters.force_execute >>]
+              - not:
+                  equal: ["", << parameters.package >>]
+          steps:
+            - stop_if_no_changes:
+                package: << parameters.package >>
+      - check_track_exists:
+          component: << parameters.component >>
+          stop_if_not_exists: true
+
+#-------------------------------------------------------------YARN JOBS----------------------------------------------------------
+
+  install_and_build:
+    executor: code-test-executor
+    parameters:
+      avoid_post_install_scripts:
+        description: Avoid post-install scripts
+        type: boolean
+        default: true
+      container_folder_to_copy:
+        description: Avoid post-install scripts
+        type: string
+        default: 'build'
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: true
+      run_in_container:
+        description: Run build in remote Docker container
+        type: boolean
+        default: true
+      package:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
+      check_image:
+        description: Checks if the Docker image exists
+        type: boolean
+        default: false
+      docker_image_repo:
+        description: The Docker image
+        type: string
+        default: ""
+      force_execute:
+        description: force to update the build, if there is a change or not. This is for tracks
+        type: boolean
+        default: false
+      attach_workspace:
+        description: Attach workspace to the current working directory
+        type: boolean
+        default: false
+    steps:
+      - checkout
+      - when:
+          condition: << parameters.attach_workspace >>
+          steps:
+            - attach_workspace:
+                at: ~/voiceflow
+      - when:
+          condition:
+            and:
+              - equal: [false, << parameters.force_execute >>]
+              - not: 
+                  equal: ["", << parameters.package >>]
+          steps:
+            - stop_if_no_changes:
+                package: << parameters.package >>
+      - when:
+          condition: << parameters.check_image >>
+          steps:
+            - when:
+                condition: << parameters.request_remote_docker >>
+                steps:
+                  - check_image_exists:
+                      image_repo: << parameters.docker_image_repo >>
+                      request_remote_docker: false
+            - when:
+                condition: 
+                  not: 
+                    equal: [true, << parameters.request_remote_docker >>]
+                steps:
+                  - check_image_exists:
+                      image_repo: << parameters.docker_image_repo >>
+                      request_remote_docker: true
+      - install_node_modules:
+          avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
+      - build:
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          run_in_container: << parameters.run_in_container >>
+          package: << parameters.package >>
+      - when:
+          condition:
+            not:
+              equal: [ "", << parameters.package >> ]
+          steps:
+            - run:
+                name: Copy yarn.lock file
+                command: |
+                  cp yarn.lock packages/<< parameters.package >>/
+      # Save workspace for subsequent jobs (i.e. test)
+      - when:
+          condition:
+            not:
+              equal: [ "", << parameters.package >> ]
+          steps:
+            - persist_to_workspace:
+                root: .
+                paths:
+                  - packages/<< parameters.package >>/build
+                  - packages/<< parameters.package >>/yarn.lock
+      - when:
+          condition:
+              equal: [ "", << parameters.package >> ]
+          steps:
+            - persist_to_workspace:
+                root: .
+                paths:
+                  - build
+
+
 #-------------------------------------------------------------MONOREPO JOBS----------------------------------------------------------
 
-  release_monorepo:
+  monorepo_release:
     executor: node-executor
     parameters:
       install_args:
@@ -2254,12 +3060,15 @@ jobs:
       ssh_key:
         description: The SSH key with write permissions to the repository
         type: string
+      trigger_tags_pipelines:
+        description: Trigger tags after monoropo release
+        type: boolean
+        default: true
     steps:
-      - add_ssh_keys: # To enable write access to repository for removing development environment branches
+      - add_ssh_keys: # To enable write access to repository
           fingerprints:
             - << parameters.ssh_key >>
       - checkout
-      - install_cpio
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
           avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
@@ -2269,10 +3078,36 @@ jobs:
           command: |
             git config --global user.email "serviceaccount@voiceflow.com"
             git config --global user.name "Voiceflow"
-            SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
+            SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message "chore(release): publish [skip ci]" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
             echo "export MONOREPO_UPDATED_TAGS=\"$(git tag --points-at HEAD)\"" >> $BASH_ENV
-      - trigger_tags_pipelines:
-          published_tags: MONOREPO_UPDATED_TAGS
+      - when:
+          condition: << parameters.trigger_tags_pipelines >>
+          steps:
+            - trigger_tags_pipelines:
+                published_tags: MONOREPO_UPDATED_TAGS
+
+#-------------------------------------------------------------CDK JOBS----------------------------------------------------------
+
+  cdk-deploy:
+    parameters:
+      executor:
+        description: Executor to use
+        type: executor
+        default: "go-executor"
+    executor: << parameters.executor >>
+    steps: 
+      - checkout
+      - run: 
+          name: Install CDK
+          command: |
+            sudo npm install -g aws-cdk
+      - run: 
+          environment:
+            GOPRIVATE: "github.com/voiceflow"
+          name: CDK Deploy
+          command: |
+            git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+            cdk deploy --require-approval never
 
 #-------------------------------------------------------------CDK JOBS----------------------------------------------------------
 
