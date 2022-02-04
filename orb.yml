@@ -867,7 +867,7 @@ commands:
               else
                 #Copy all
                 echo "Copying all"
-                docker cp runner:/code/ ./
+                docker cp runner:/code/. ./
               fi
             else
               # Executes Yarn command outside container
