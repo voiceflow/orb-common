@@ -864,6 +864,9 @@ commands:
                 docker cp runner:/code/<< parameters.container_folder_to_copy >> $DESTINATION_FOLDER
 
                 echo "Copying into $DESTINATION_FOLDER"
+              else
+                #Copy all
+                docker cp runner:/code/ ./
               fi
             else
               # Executes Yarn command outside container
@@ -3026,8 +3029,8 @@ jobs:
             - persist_to_workspace:
                 root: .
                 paths:
-                  - packages/<< parameters.package >>/build
-                  - packages/<< parameters.package >>/yarn.lock
+                  - packages/*/build
+                  - packages/*/yarn.lock
       - when:
           condition:
               equal: [ "", << parameters.package >> ]
