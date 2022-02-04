@@ -2679,6 +2679,8 @@ jobs:
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
           avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
+      - attach_workspace:
+          at: ~/voiceflow
       - run:
           name: Release Package
           command: |
@@ -3072,7 +3074,8 @@ jobs:
       - install_node_modules:
           install_args: "<< parameters.install_args >>"
           avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
-      - build
+      - attach_workspace:
+          at: ~/voiceflow
       - run:
           name: Release Monorepo
           command: |
