@@ -866,6 +866,7 @@ commands:
                 echo "Copying into $DESTINATION_FOLDER"
               else
                 #Copy all
+                echo "Copying all"
                 docker cp runner:/code/ ./
               fi
             else
