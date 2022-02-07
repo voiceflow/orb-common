@@ -878,6 +878,7 @@ commands:
           name: Remove lock file if needed
           when: always
           command: |
+            RUN_IN_BACKGROUND=<< parameters.run_in_background >>
             # Remove lock file when it is running in background/parallel
             if [[ $RUN_IN_BACKGROUND == true ]]; then
               echo "Removing Lock $LOCK_FILE"
