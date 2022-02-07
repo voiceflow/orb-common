@@ -3042,8 +3042,8 @@ jobs:
             - persist_to_workspace:
                 root: .
                 paths:
-                  - packages/*/*/build
-                  - packages/*/*/yarn.lock
+                  - packages/*/build
+                  - packages/*/yarn.lock
       - when:
           condition:
               equal: [ "", << parameters.package >> ]
