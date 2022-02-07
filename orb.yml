@@ -3038,7 +3038,7 @@ jobs:
                 name: Copy yarn.lock files
                 command: |
                   BUILD_ALL_PACKAGES_TOGETHER=<< parameters.build_all_packages_together >>
-                  if [[ $BUILD_ALL_PACKAGES_TOGETHER == true ]]
+                  if [[ $BUILD_ALL_PACKAGES_TOGETHER == true ]]; then
                     for d in ./packages/*; do cp yarn.lock "$d" && echo "Copy yarn.lock file in $d"; done
                   else
                     cp yarn.lock packages/<< parameters.package >> 
