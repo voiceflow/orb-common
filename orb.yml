@@ -2915,7 +2915,7 @@ jobs:
           image_tag: << parameters.image_tag >>
           release_pkg: << parameters.release_pkg >>
 
-  update-database-track:
+  update_database_track:
     executor: build-executor
     parameters:
       component:
