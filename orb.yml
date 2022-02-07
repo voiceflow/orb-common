@@ -964,6 +964,10 @@ commands:
         description: Container folder to copy after the execution
         type: string
         default: ""
+      container_image_to_build:
+        description: Container image to run the build
+        type: string
+        default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
       package:
         description: Container folder to copy after the execution
         type: string
@@ -975,6 +979,7 @@ commands:
           request_remote_docker: << parameters.request_remote_docker >>
           run_in_container: << parameters.run_in_container >>
           container_folder_to_copy: << parameters.container_folder_to_copy >>
+          container_image: << parameters.container_image_to_build >>
           monorepo_package: << parameters.package >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -2961,15 +2966,23 @@ jobs:
         type: boolean
         default: false
       docker_image_repo:
-        description: The Docker image
+        description: The Docker image of the microservice
         type: string
         default: ""
+      container_image_to_build:
+        description: Container image to run the build
+        type: string
+        default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
       force_execute:
         description: force to update the build, if there is a change or not. This is for tracks
         type: boolean
         default: false
       attach_workspace:
         description: Attach workspace to the current working directory
+        type: boolean
+        default: false
+      add_yarn_lock_file_to_packages:
+        description: Copy yarn lock files to subdirectories
         type: boolean
         default: false
     steps:
@@ -3011,16 +3024,15 @@ jobs:
           container_folder_to_copy: << parameters.container_folder_to_copy >>
           request_remote_docker: << parameters.request_remote_docker >>
           run_in_container: << parameters.run_in_container >>
+          container_image_to_build: << parameters.container_image_to_build >>
           package: << parameters.package >>
-      - when:
-          condition:
-            not:
-              equal: [ "", << parameters.package >> ]
+      - when: 
+          condition: << parameters.add_yarn_lock_file_to_packages >>
           steps:
             - run:
-                name: Copy yarn.lock file
+                name: Copy yarn.lock files
                 command: |
-                  cp yarn.lock packages/<< parameters.package >>/
+                  for d in ./packages; do cp yarn.lock "$d" && echo "Copy yarn.lock file in $d"; done
       # Save workspace for subsequent jobs (i.e. test)
       - when:
           condition:
