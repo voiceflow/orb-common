@@ -3032,7 +3032,7 @@ jobs:
             - run:
                 name: Copy yarn.lock files
                 command: |
-                  for d in ./packages; do cp yarn.lock "$d" && echo "Copy yarn.lock file in $d"; done
+                  for d in ./packages/*; do cp yarn.lock "$d" && echo "Copy yarn.lock file in $d"; done
       # Save workspace for subsequent jobs (i.e. test)
       - when:
           condition:
