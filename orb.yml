@@ -875,14 +875,14 @@ commands:
               << parameters.yarn_command >>
             fi
       - run:
-        name: Remove lock file if needed
-        when: always
-        command: |
-          # Remove lock file when it is running in background/parallel
-          if [[ $RUN_IN_BACKGROUND == true ]]; then
-            echo "Removing Lock $LOCK_FILE"
-            rm -rf $LOCK_FILE
-          fi
+          name: Remove lock file if needed
+          when: always
+          command: |
+            # Remove lock file when it is running in background/parallel
+            if [[ $RUN_IN_BACKGROUND == true ]]; then
+              echo "Removing Lock $LOCK_FILE"
+              rm -rf $LOCK_FILE
+            fi
 
   serverless_deploy:
     parameters:
