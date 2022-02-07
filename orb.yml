@@ -874,12 +874,15 @@ commands:
               echo "Running without a container"
               << parameters.yarn_command >>
             fi
-            
-            # Remove lock file when it is running in background/parallel
-            if [[ $RUN_IN_BACKGROUND == true ]]; then
-              echo "Removing Lock $LOCK_FILE"
-              rm -rf $LOCK_FILE
-            fi
+      - run:
+        name: Remove lock file if needed
+        when: always
+        command: |
+          # Remove lock file when it is running in background/parallel
+          if [[ $RUN_IN_BACKGROUND == true ]]; then
+            echo "Removing Lock $LOCK_FILE"
+            rm -rf $LOCK_FILE
+          fi
 
   serverless_deploy:
     parameters:
