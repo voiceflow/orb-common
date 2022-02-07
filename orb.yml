@@ -3042,7 +3042,7 @@ jobs:
                     for d in ./packages/*; do cp yarn.lock "$d" && echo "Copy yarn.lock file in $d"; done
                   else
                     cp yarn.lock packages/<< parameters.package >> 
-                    echo "Copy yarn.lock file in packages/<< parameters.package >"
+                    echo "Copy yarn.lock file in packages/<< parameters.package >>"
                   fi
       # Save workspace for subsequent jobs (i.e. test)
       - when:
