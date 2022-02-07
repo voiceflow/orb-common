@@ -2984,7 +2984,7 @@ jobs:
         description: Attach workspace to the current working directory
         type: boolean
         default: false
-      add_yarn_lock_file_to_packages:
+      build_all_packages_together:
         description: Copy yarn lock files to subdirectories
         type: boolean
         default: false
@@ -3030,12 +3030,20 @@ jobs:
           container_image_to_build: << parameters.container_image_to_build >>
           package: << parameters.package >>
       - when: 
-          condition: << parameters.add_yarn_lock_file_to_packages >>
+          condition:
+            not:
+              equal: [ "", << parameters.package >> ]
           steps:
             - run:
                 name: Copy yarn.lock files
                 command: |
-                  for d in ./packages/*; do cp yarn.lock "$d" && echo "Copy yarn.lock file in $d"; done
+                  BUILD_ALL_PACKAGES_TOGETHER=<< parameters.build_all_packages_together >>
+                  if [[ $BUILD_ALL_PACKAGES_TOGETHER == true ]]
+                    for d in ./packages/*; do cp yarn.lock "$d" && echo "Copy yarn.lock file in $d"; done
+                  else
+                    cp yarn.lock packages/<< parameters.package >> 
+                    echo "Copy yarn.lock file in packages/<< parameters.package >"
+                  fi
       # Save workspace for subsequent jobs (i.e. test)
       - when:
           condition:
