@@ -497,6 +497,8 @@ commands:
             - checkout # special step to check out source code to working directory
       - check_track_exists:
           component: << parameters.component >>
+      - attach_workspace:
+          at: ~/voiceflow
       - run:
           name: Update Track
           command: |
@@ -2912,6 +2914,16 @@ jobs:
           package: << parameters.package >>
           image_tag: << parameters.image_tag >>
           release_pkg: << parameters.release_pkg >>
+
+  update-database-track:
+    executor: build-executor
+    parameters:
+      component:
+        description: The component type for development environment deployment
+        type: string
+    steps:
+      - update_database_track:
+          component: << parameters.component >>
 
 
   check_track_exists:
