@@ -497,6 +497,8 @@ commands:
             - checkout # special step to check out source code to working directory
       - check_track_exists:
           component: << parameters.component >>
+      - attach_workspace:
+          at: ~/voiceflow
       - run:
           name: Update Track
           command: |
@@ -811,6 +813,11 @@ commands:
 
                   while [ "$(ls -A /tmp/lock)" != "" ]
                   do
+                    if [ -f "/tmp/failure" ]; then
+                      echo "A failure was detected in previous steps."
+                      exit 1
+                    fi
+
                     echo "Process not finished. Waiting..."
                     sleep 5
                   done
@@ -845,6 +852,8 @@ commands:
             FOLDER_TO_COPY="<< parameters.container_folder_to_copy >>"
             MONOREPO_PACKAGE="<< parameters.monorepo_package >>"
 
+            trap 'echo "fail detected"; touch /tmp/failure' ERR
+
             if [[ $RUN_IN_CONTAINER == true ]]; then
               # Docker login
               $(aws ecr get-login --no-include-email --region us-east-1)
@@ -864,13 +873,17 @@ commands:
                 docker cp runner:/code/<< parameters.container_folder_to_copy >> $DESTINATION_FOLDER
 
                 echo "Copying into $DESTINATION_FOLDER"
+              else
+                #Copy all
+                echo "Copying all"
+                docker cp runner:/code/. ./
               fi
             else
               # Executes Yarn command outside container
               echo "Running without a container"
               << parameters.yarn_command >>
             fi
-            
+
             # Remove lock file when it is running in background/parallel
             if [[ $RUN_IN_BACKGROUND == true ]]; then
               echo "Removing Lock $LOCK_FILE"
@@ -960,6 +973,10 @@ commands:
         description: Container folder to copy after the execution
         type: string
         default: ""
+      container_image_to_build:
+        description: Container image to run the build
+        type: string
+        default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
       package:
         description: Container folder to copy after the execution
         type: string
@@ -971,6 +988,7 @@ commands:
           request_remote_docker: << parameters.request_remote_docker >>
           run_in_container: << parameters.run_in_container >>
           container_folder_to_copy: << parameters.container_folder_to_copy >>
+          container_image: << parameters.container_image_to_build >>
           monorepo_package: << parameters.package >>
           step_name: << parameters.step_name >>
           wait: << parameters.wait >>
@@ -2897,6 +2915,16 @@ jobs:
           image_tag: << parameters.image_tag >>
           release_pkg: << parameters.release_pkg >>
 
+  update_database_track:
+    executor: build-executor
+    parameters:
+      component:
+        description: The component type for development environment deployment
+        type: string
+    steps:
+      - update_database_track:
+          component: << parameters.component >>
+
 
   check_track_exists:
     parameters:
@@ -2957,15 +2985,23 @@ jobs:
         type: boolean
         default: false
       docker_image_repo:
-        description: The Docker image
+        description: The Docker image of the microservice
         type: string
         default: ""
+      container_image_to_build:
+        description: Container image to run the build
+        type: string
+        default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
       force_execute:
         description: force to update the build, if there is a change or not. This is for tracks
         type: boolean
         default: false
       attach_workspace:
         description: Attach workspace to the current working directory
+        type: boolean
+        default: false
+      build_all_packages_together:
+        description: Copy yarn lock files to subdirectories
         type: boolean
         default: false
     steps:
@@ -3007,16 +3043,23 @@ jobs:
           container_folder_to_copy: << parameters.container_folder_to_copy >>
           request_remote_docker: << parameters.request_remote_docker >>
           run_in_container: << parameters.run_in_container >>
+          container_image_to_build: << parameters.container_image_to_build >>
           package: << parameters.package >>
-      - when:
+      - when: 
           condition:
             not:
               equal: [ "", << parameters.package >> ]
           steps:
             - run:
-                name: Copy yarn.lock file
+                name: Copy yarn.lock files
                 command: |
-                  cp yarn.lock packages/<< parameters.package >>/
+                  BUILD_ALL_PACKAGES_TOGETHER=<< parameters.build_all_packages_together >>
+                  if [[ $BUILD_ALL_PACKAGES_TOGETHER == true ]]; then
+                    for d in ./packages/*; do cp yarn.lock "$d" && echo "Copy yarn.lock file in $d"; done
+                  else
+                    cp yarn.lock packages/<< parameters.package >> 
+                    echo "Copy yarn.lock file in packages/<< parameters.package >>"
+                  fi
       # Save workspace for subsequent jobs (i.e. test)
       - when:
           condition:
@@ -3026,8 +3069,8 @@ jobs:
             - persist_to_workspace:
                 root: .
                 paths:
-                  - packages/<< parameters.package >>/build
-                  - packages/<< parameters.package >>/yarn.lock
+                  - packages/*/build
+                  - packages/*/yarn.lock
       - when:
           condition:
               equal: [ "", << parameters.package >> ]
