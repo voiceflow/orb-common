@@ -628,6 +628,7 @@ commands:
                   docker exec prepublish apk add git
                   docker exec prepublish git config --global user.email "serviceaccount@voiceflow.com"
                   docker exec prepublish git config --global user.name "Voiceflow"
+                  npx wait-on http://localhost:4873
 
                   docker exec -w /src prepublish npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
                   docker cp prepublish:/src/. ./
