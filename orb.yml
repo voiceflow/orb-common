@@ -2844,6 +2844,7 @@ jobs:
       package:
         description: The monorepo package that has been changed
         type: string
+        default: ""
       success_slack_notify:
         description: Post to Slack on successful deployment?
         type: boolean
