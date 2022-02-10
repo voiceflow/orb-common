@@ -3089,8 +3089,11 @@ jobs:
                   - packages/*/yarn.lock
       - when:
           condition:
-            not:
-              equal: [ "all", << parameters.package >> ]
+            and:
+              - not:
+                  equal: [ "all", << parameters.package >> ]
+              - not:
+                  equal: [ "", << parameters.package >> ]
           steps:
             - persist_to_workspace:
                 root: .
