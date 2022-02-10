@@ -1753,10 +1753,6 @@ commands:
   post_image_push_actions:
     description: Deploy an image into a K8s cluster
     parameters:
-      target:
-        description: The target deployment/daemonset/statefulset prefix to modify
-        type: string
-        default: deployment/some-repo
       namespace:
         description: The namespace the target resides in
         type: string
@@ -1801,7 +1797,7 @@ commands:
               #Cloud Snapshot
               aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
               chmod +x cloud_snapshot.sh
-              ./cloud_snapshot.sh << parameters.namespace >> << parameters.target >> << parameters.component >> << parameters.package >>
+              ./cloud_snapshot.sh << parameters.namespace >> << parameters.component >> << parameters.package >>
 
               #FIXME THIS IS A WA with a problem with the Slack Orb and dynamic templates
               export DEPLOY_TEMPLATE=$(cat /tmp/voiceflow/common/deploy_app_template.json)
@@ -2831,9 +2827,6 @@ jobs:
       namespace:
         description: The namespace to look at
         type: string
-      target:
-        description: The k8s object being deployed
-        type: string
       tagged:
         description: if tagged
         type: boolean
@@ -2852,7 +2845,6 @@ jobs:
     steps:
       - post_image_push_actions:
           namespace: << parameters.namespace >>
-          target: << parameters.target >>
           tagged: << parameters.tagged >>
           success_slack_notify: << parameters.success_slack_notify >>
           component: << parameters.component >>
