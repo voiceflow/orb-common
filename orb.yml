@@ -469,7 +469,9 @@ commands:
                 n=0
                 until [ $n -ge $MAX_RETRY ]; do
                     error=$( cmd "$@" 2>&1 >/dev/null )
-                    if [ $? -eq 0 ];               then; break; fi
+                    if [ $? -eq 0 ]; then
+                      break 
+                    fi
                     
                     n=$[$n+1]
                     sleep << parameters.sleep >>
@@ -480,7 +482,7 @@ commands:
                     exit 1
                 fi
             }
-            retry "<< parameters.command >>"
+            retry << parameters.command >>
 
   check_track_exists:
     description: Check if a track  exists
