@@ -617,18 +617,16 @@ commands:
                   docker create -v /verdaccio/conf --name verdaccio-conf alpine:3.4 /bin/true
                   docker cp config/verdaccio/config.yaml verdaccio-conf:/verdaccio/conf
 
-                  docker run -it --name verdaccio --network host -e NPM_TOKEN=${NPM_TOKEN} --volumes-from verdaccio-conf verdaccio/verdaccio:5.1.6
+                  docker run -it --name verdaccio --network host -e NPM_TOKEN=${NPM_TOKEN} --volumes-from verdaccio-conf verdaccio/verdaccio:5
 
             - run:
                 name: Publish pre-release versions to local proxy registry
                 command: |
-                  docker run -d --name prepublish --network host -v /src node:12.20.2-alpine tail -f /dev/null
+                  docker run -d --name prepublish --network host -v /src 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1 tail -f /dev/null
                   docker cp ./ prepublish:/src
-                  docker exec prepublish apk update
-                  docker exec prepublish apk add git
                   docker exec prepublish git config --global user.email "serviceaccount@voiceflow.com"
                   docker exec prepublish git config --global user.name "Voiceflow"
-                  npx wait-on http://localhost:4873
+                  docker exec prepublish npx wait-on http://localhost:4873
 
                   docker exec -w /src prepublish npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
                   docker cp prepublish:/src/. ./
