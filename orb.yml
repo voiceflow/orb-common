@@ -480,7 +480,7 @@ commands:
                     exit 1
                 fi
             }
-            retry << parameters.command >>
+            retry "<< parameters.command >>"
 
   check_track_exists:
     description: Check if a track  exists
