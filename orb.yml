@@ -726,7 +726,7 @@ commands:
               PR_NUMBER=${CIRCLE_PULL_REQUEST##*/}
 
               if [ -z "$PR_NUMBER" ]; then
-                if [ "$CIRCLE_BRANCH" == "master" ]; then
+                if [[ "$CIRCLE_BRANCH" == "master" || $CIRCLE_BRANCH == "production" ]]; then
                   echo "Always run e2e tests on changes to master"
                 else
                   echo "No PR associated with branch; skipping rest of job"
@@ -1701,7 +1701,7 @@ commands:
             RELEASE_PKG="<< parameters.release_pkg >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             # Fix semantic versioning if a package is indicated, if not, semantic release are not executed
-            if [[ "$CIRCLE_BRANCH" == "master" && "$RELEASE_PKG" != "" ]]; then
+            if [[ ("$CIRCLE_BRANCH" == "master" || $CIRCLE_BRANCH == "production") && "$RELEASE_PKG" != "" ]]; then
               npm config set unsafe-perm true # needed for npx to work
               set +e  # Don't exit on the any error (for semantic-release)
               npx semantic-release@17 --prepare --dry-run | tee sem_release.output  # print semver to screen and force return 0
@@ -2199,7 +2199,7 @@ commands:
             RUN_ON_ROOT=<< parameters.run_on_root >>
             FORCE_EXECUTION=<< parameters.force_execution >>
 
-              if [[ $FILES_CHANGED == *"$PACKAGE_FORCED"* || $CIRCLE_BRANCH == "master" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true ]]; then
+              if [[ $FILES_CHANGED == *"$PACKAGE_FORCED"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true ]]; then
 
                   if [[ $RUN_ON_ROOT != true ]]; then
                     cd packages/$PACKAGE_FORCED
@@ -2247,7 +2247,7 @@ commands:
             FORCE_EXECUTION=<< parameters.force_execution >>
 
             for f in packages/*; do
-              if [[ $FILES_CHANGED == *"$f/"* || $CIRCLE_BRANCH == "master" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
+              if [[ $FILES_CHANGED == *"$f/"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
 
                   if [[ $RUN_ON_ROOT != true ]]; then
                     cd $f
@@ -2286,7 +2286,7 @@ commands:
             PACKAGE=<< parameters.package >>
             echo "files changed: $FILES_CHANGED"
 
-            if [[ $CIRCLE_BRANCH == "master" || ! -z "$CIRCLE_TAG" ]]; then
+            if [[ $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" ]]; then
               exit 0
             fi
 
@@ -3285,7 +3285,7 @@ jobs:
               exit 0
             fi
 
-            if [[ $CIRCLE_BRANCH == "master" ]]; then
+            if [[ $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" ]]; then
               exit 0
             fi
 
