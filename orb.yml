@@ -369,13 +369,13 @@ commands:
           steps:
             - setup_remote_docker:  # Need this to run DinD
                 version: 20.10.11
+      - docker_login
       - run:
           name: If container with this git SHA already exists, don't build
           command: |
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_TAG="k8s-$CIRCLE_SHA1"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-            $(aws ecr get-login --no-include-email --region us-east-1)
             set +e
             DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $IMAGE_NAME > /dev/null 2>&1
             SEARCH_IMAGE_RESULT=$?
@@ -430,6 +430,58 @@ commands:
                 event: << parameters.event >>
                 template: << parameters.template >>
                 branch_pattern: << parameters.branch_pattern >>
+
+  run_command_with_retry:
+    description: Run command with retry
+    parameters:
+      step_name:
+        description: Name of the Step
+        type: string
+        default: "Executing Command with retry policy"
+      working_directory:
+        description: Directory to work on
+        type: string
+        default: "./"
+      background:
+        description: Run it in background
+        type: boolean
+        default: false
+      command:
+        description: Command to run
+        type: string
+      retry-count:
+        description: Number of retries
+        type: integer
+        default: 3
+      sleep:
+        description: Wait duration until next retry
+        type: integer
+        default: 5
+    steps:
+      - run:
+          name: << parameters.step_name >>
+          working_directory: << parameters.working_directory >>
+          background: << parameters.background >>
+          command: |
+            retry() {
+              MAX_RETRY=<< parameters.retry-count >>
+              error=""
+              n=0
+              until [ $n -ge $MAX_RETRY ]; do
+                eval "$@"
+                if [ $? -eq 0 ]; then
+                  break
+                fi
+                  
+                n=$[$n+1]
+                sleep << parameters.sleep >>
+              done
+              if [ $n -ge $MAX_RETRY ]; then
+                echo "failed: ${@}" >&2
+                exit 1
+              fi
+            }
+            retry << parameters.command >>
 
   check_track_exists:
     description: Check if a track  exists
@@ -596,6 +648,7 @@ commands:
           steps:
             - setup_remote_docker: # Need this to run DinD
                 version: 20.10.11
+      - docker_login
       - attach_workspace:
           at: ~/voiceflow
       - check_image_exists:
@@ -618,7 +671,9 @@ commands:
                   docker cp config/verdaccio/config.yaml verdaccio-conf:/verdaccio/conf
 
                   docker run -it --name verdaccio --network host -e NPM_TOKEN=${NPM_TOKEN} --volumes-from verdaccio-conf verdaccio/verdaccio:5
-
+            - run_command_with_retry:
+                step_name: Download Docker image
+                command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
             - run:
                 name: Publish pre-release versions to local proxy registry
                 command: |
@@ -673,7 +728,6 @@ commands:
               if [[ $IMAGE_EXISTS == "false" ]]; then
                 # Build Docker Image
                 echo "Image not found, building..."
-                $(aws ecr get-login --no-include-email --region us-east-1)
                 docker build \
                   --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
                   --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
@@ -841,6 +895,13 @@ commands:
           steps:
             - setup_remote_docker:  # Need this to run DinD
                 version: 20.10.11
+      - when:
+          condition: << parameters.run_in_container >>
+          steps:
+            - docker_login
+            - run_command_with_retry:
+                step_name: Download Docker image
+                command: docker pull << parameters.container_image >>
       - run:
           working_directory: << parameters.working_directory >>
           background: << parameters.run_in_background >>
@@ -854,8 +915,6 @@ commands:
             trap 'echo "fail detected"; touch /tmp/failure' ERR
 
             if [[ $RUN_IN_CONTAINER == true ]]; then
-              # Docker login
-              $(aws ecr get-login --no-include-email --region us-east-1)
               echo "Running in a container"
               docker create -v /code --name code << parameters.container_image >> /bin/true
               docker cp $PWD/. code:/code
@@ -1646,6 +1705,12 @@ commands:
           cache_prefix: << parameters.cache_prefix >>
 
 #-------------------------------------------------------------DOCKER COMMANDS----------------------------------------------------------
+  docker_login:
+    steps:
+      - run:
+          name: "Docker login"
+          command: |
+            $(aws ecr get-login --no-include-email --region us-east-1)
 
   build_push_image:
     parameters:
@@ -1688,6 +1753,7 @@ commands:
                 version: 20.10.11
       - attach_workspace:
           at: ~/voiceflow
+      - docker_login
       - run:
           name: "Build docker image"
           command: |
@@ -1715,7 +1781,6 @@ commands:
               SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
             fi
             echo -e "Building with SEM_VER=$SEM_VER"
-            $(aws ecr get-login --no-include-email --region us-east-1)
             docker build \
               --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
               --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
@@ -1978,7 +2043,9 @@ commands:
           working_directory: "~/code/infrastructure-e2e"
           command: |
             docker-compose -p vf -f docker-compose-vf.yaml rm -f -s << parameters.vf_service_name >>-e2e
-
+      - run_command_with_retry:
+          step_name: Download Docker image
+          command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1
       - run:
           name: Setup << parameters.vf_service_name >>
           working_directory: ~/code
@@ -2482,6 +2549,7 @@ commands:
 
   install_e2e_tools:
     steps:
+      
       - run:
           name: Setup environment
           background: true
@@ -2508,9 +2576,6 @@ commands:
 
             # AWS CLI and login
             sudo pip3 install awscli --ignore-installed six
-            # private repos
-            $(aws ecr get-login --no-include-email --region us-east-1)
-
             touch /tmp/executor_finished.txt
 
   init_e2e_machine:
@@ -3336,18 +3401,22 @@ jobs:
       - vf_save_cache:
           working_directory: ~/code/creator-app
           cache_prefix: e2e-machine
+      - docker_login
       - run:
           name: Setup databases
           working_directory: ~/code/infrastructure-e2e
           command: |
             docker rm code || docker create --network="vf_voiceflow" -v /code --name code cypress/base:12 /bin/true
             docker-compose -p vf -f docker-compose-db.yaml up -d
+      - run_command_with_retry:
+          step_name: Download Docker image
+          command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1
 
-      - run:
-          name: Setup Database
-          background: true
+      - run_command_with_retry:
+          step_name: Setup Database
           working_directory: ~/code
-          command: |
+          background: true
+          command:  |
             # copy a config file into this volume
             docker cp database-cli code:/code
             # start an application container using this volume
@@ -3362,7 +3431,6 @@ jobs:
               168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1  \
               /bin/bash -c "yarn init:e2e"
 
-
       - run:
           name: Copy e2e
           working_directory: ~/code
@@ -3371,11 +3439,14 @@ jobs:
             echo "copy code"
 
             docker cp creator-app code:/code/creator-app
+      - run_command_with_retry:
+          step_name: Download Docker images
+          working_directory: ~/code/infrastructure-e2e
+          command: docker-compose -p vf -f docker-compose-vf.yaml pull
       - run:
           name: Setup Voicelfow services
           working_directory: ~/code/infrastructure-e2e
           command: |
-            docker-compose -p vf -f docker-compose-vf.yaml pull
             #sudo systemctl restart docker
             export DOCKER_CLIENT_TIMEOUT=120
             export COMPOSE_HTTP_TIMEOUT=120
