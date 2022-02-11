@@ -369,13 +369,13 @@ commands:
           steps:
             - setup_remote_docker:  # Need this to run DinD
                 version: 20.10.11
+      - docker_login
       - run:
           name: If container with this git SHA already exists, don't build
           command: |
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_TAG="k8s-$CIRCLE_SHA1"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-            $(aws ecr get-login --no-include-email --region us-east-1)
             set +e
             DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $IMAGE_NAME > /dev/null 2>&1
             SEARCH_IMAGE_RESULT=$?
@@ -464,23 +464,22 @@ commands:
           background: << parameters.background >>
           command: |
             retry() {
-                MAX_RETRY=<< parameters.retry-count >>
-                error=""
-                n=0
-                until [ $n -ge $MAX_RETRY ]; do
-                    error=$( cmd "$@" 2>&1 >/dev/null )
-                    if [ $? -eq 0 ]; then
-                      break 
-                    fi
-                    
-                    n=$[$n+1]
-                    sleep << parameters.sleep >>
-                done
-                if [ $n -ge $MAX_RETRY ]; then
-                    echo "failed: ${@}" >&2
-                    echo "with error: $error" >&2
-                    exit 1
+              MAX_RETRY=<< parameters.retry-count >>
+              error=""
+              n=0
+              until [ $n -ge $MAX_RETRY ]; do
+                eval "$@"
+                if [ $? -eq 0 ]; then
+                  break
                 fi
+                  
+                n=$[$n+1]
+                sleep << parameters.sleep >>
+              done
+              if [ $n -ge $MAX_RETRY ]; then
+                echo "failed: ${@}" >&2
+                exit 1
+              fi
             }
             retry << parameters.command >>
 
@@ -649,6 +648,7 @@ commands:
           steps:
             - setup_remote_docker: # Need this to run DinD
                 version: 20.10.11
+      - docker_login
       - attach_workspace:
           at: ~/voiceflow
       - check_image_exists:
@@ -728,7 +728,6 @@ commands:
               if [[ $IMAGE_EXISTS == "false" ]]; then
                 # Build Docker Image
                 echo "Image not found, building..."
-                $(aws ecr get-login --no-include-email --region us-east-1)
                 docker build \
                   --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
                   --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
@@ -899,6 +898,7 @@ commands:
       - when:
           condition: << parameters.run_in_container >>
           steps:
+            - docker_login
             - run_command_with_retry:
                 step_name: Download Docker image
                 command: docker pull << parameters.container_image >>
@@ -915,8 +915,6 @@ commands:
             trap 'echo "fail detected"; touch /tmp/failure' ERR
 
             if [[ $RUN_IN_CONTAINER == true ]]; then
-              # Docker login
-              $(aws ecr get-login --no-include-email --region us-east-1)
               echo "Running in a container"
               docker create -v /code --name code << parameters.container_image >> /bin/true
               docker cp $PWD/. code:/code
@@ -1707,6 +1705,12 @@ commands:
           cache_prefix: << parameters.cache_prefix >>
 
 #-------------------------------------------------------------DOCKER COMMANDS----------------------------------------------------------
+  docker_login:
+    steps:
+      - run:
+          name: "Docker login"
+          command: |
+            $(aws ecr get-login --no-include-email --region us-east-1)
 
   build_push_image:
     parameters:
@@ -1749,6 +1753,7 @@ commands:
                 version: 20.10.11
       - attach_workspace:
           at: ~/voiceflow
+      - docker_login
       - run:
           name: "Build docker image"
           command: |
@@ -1776,7 +1781,6 @@ commands:
               SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
             fi
             echo -e "Building with SEM_VER=$SEM_VER"
-            $(aws ecr get-login --no-include-email --region us-east-1)
             docker build \
               --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
               --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
@@ -2545,6 +2549,7 @@ commands:
 
   install_e2e_tools:
     steps:
+      - docker_login
       - run:
           name: Setup environment
           background: true
@@ -2571,8 +2576,6 @@ commands:
 
             # AWS CLI and login
             sudo pip3 install awscli --ignore-installed six
-            # private repos
-            $(aws ecr get-login --no-include-email --region us-east-1)
 
             touch /tmp/executor_finished.txt
 
