@@ -2576,10 +2576,6 @@ commands:
 
             # AWS CLI and login
             sudo pip3 install awscli --ignore-installed six
-      - docker_login
-      - run:
-          name: Remove init machine lock
-          command: |
             touch /tmp/executor_finished.txt
 
   init_e2e_machine:
@@ -3405,6 +3401,7 @@ jobs:
       - vf_save_cache:
           working_directory: ~/code/creator-app
           cache_prefix: e2e-machine
+      - docker_login
       - run:
           name: Setup databases
           working_directory: ~/code/infrastructure-e2e
