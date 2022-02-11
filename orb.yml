@@ -2549,7 +2549,7 @@ commands:
 
   install_e2e_tools:
     steps:
-      - docker_login
+      
       - run:
           name: Setup environment
           background: true
@@ -2576,7 +2576,10 @@ commands:
 
             # AWS CLI and login
             sudo pip3 install awscli --ignore-installed six
-
+      - docker_login
+      - run:
+          name: Remove init machine lock
+          command: |
             touch /tmp/executor_finished.txt
 
   init_e2e_machine:
