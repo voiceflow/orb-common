@@ -727,7 +727,7 @@ commands:
               fi
               echo -e "Building with SEM_VER=$SEM_VER"
 
-              if [[ $IMAGE_EXISTS == "false" ]]; then
+              if [[ $IMAGE_EXISTS == "false"  || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
                 # Build Docker Image
                 echo "Image not found, building..."
                 docker build \
