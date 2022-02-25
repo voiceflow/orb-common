@@ -2727,7 +2727,21 @@ commands:
       port:
         description: Port to check
         type: string
+      user:
+        description: Port to check
+        type: string
+        default: ""
     steps:
+      - when:
+          condition:
+            and:
+              - not:
+                  equal: ["", << parameters.user >>]
+          steps:
+            - run:
+                name: Changing user
+                command: |
+                  su << parameters.user >>
       - gen_certs_e2e
       - start_e2e:
           run_in_background: true
