@@ -4,8 +4,14 @@ description: Voiceflow's common CI/CD orb
 executors:
   e2e-executor:
     resource_class: xlarge
+    parameters:
+      user:
+        description: Default user to run the commands
+        type: string
+        default: "root"
     docker: # run the steps with Docker
       - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1
+        user: << parameters.user >>
         aws_auth:
           aws_access_key_id: $AWS_ACCESS_KEY_ID
           aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
