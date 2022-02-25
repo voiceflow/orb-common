@@ -2140,6 +2140,10 @@ commands:
         description: git commit hash for database-cli
         type: env_var_name
         default: DEFAULT_COMMIT
+      cache_prefix:
+        description: Cache prefix
+        type: string
+        default: ""
     steps:
       - clone_repo:
           step_name: "Clone database-cli repository"
@@ -2151,6 +2155,7 @@ commands:
       - install_node_modules:
           working_directory: ~/database-cli
           yarn_lock_restore_cache_directory: ~/database-cli
+          cache_prefix: << parameters.cache_prefix >>
       - run:
           name: Setup Database
           working_directory: ~/database-cli
@@ -2704,6 +2709,7 @@ commands:
                 github_username: << parameters.github_username >>
                 github_token: << parameters.github_token >>
                 commit: << parameters.database_cli_commit >>
+                cache_prefix: << parameters.cache_prefix >>
 
   check_service_running:
     parameters:
