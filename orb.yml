@@ -2687,11 +2687,27 @@ commands:
         description: Cache prefix
         type: string
         default: ""
+      user:
+        description: Port to check
+        type: string
+        default: ""
     steps:
       - when:
           condition: << parameters.checkout >>
           steps:
             - checkout
+      - set_etc_hosts_e2e:
+          run_in_background: true
+      - when:
+          condition:
+            and:
+              - not:
+                  equal: ["", << parameters.user >>]
+          steps:
+            - run:
+                name: Changing user
+                command: |
+                  su << parameters.user >>
       - when:
           condition: << parameters.install_node_modules >>
           steps:
@@ -2699,8 +2715,6 @@ commands:
                 install_args: << parameters.install_args >>
                 avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
                 cache_prefix: << parameters.cache_prefix >>
-      - set_etc_hosts_e2e:
-          run_in_background: true
       - set_yarn_bash_default_shell
       - when:
           condition: << parameters.setup_db >>
