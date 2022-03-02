@@ -159,7 +159,7 @@ commands:
         type: string
     steps:
       - run: 
-          name: Start EC2 instance
+          name: Stop EC2 instance
           no_output_timeout: 30m
           command: |
             EC2_INSTANCE_ID=<< parameters.instance_id >>
@@ -218,7 +218,7 @@ commands:
 
             aws ec2 revoke-security-group-ingress --group-id $SG_ID \
               --protocol tcp --port 22 --cidr $PUBLIC_IP/24
-              
+
 #-------------------------------------------------------------UTILS COMMANDS----------------------------------------------------------
 
   check_commit_message:
