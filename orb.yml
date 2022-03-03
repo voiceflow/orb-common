@@ -157,10 +157,15 @@ commands:
       instance_id:
         description: Id of the EC2 instance
         type: string
+      execute_when:
+        description: When execute this command
+        type: string
+        default: on_success
     steps:
       - run: 
           name: Stop EC2 instance
           no_output_timeout: 30m
+          when: << parameters.execute_when >>
           command: |
             EC2_INSTANCE_ID=<< parameters.instance_id >>
 
@@ -171,10 +176,15 @@ commands:
       instance_id:
         description: Id of the EC2 instance
         type: string
+      execute_when:
+        description: When execute this command
+        type: string
+        default: on_success
     steps:
       - run: 
           name: Start EC2 instance
           no_output_timeout: 30m
+          when: << parameters.execute_when >>
           command: |
             EC2_INSTANCE_ID=<< parameters.instance_id >>
 
@@ -187,9 +197,14 @@ commands:
       sg_id:
         description: Id of the security group
         type: string
+      execute_when:
+        description: When execute this command
+        type: string
+        default: on_success
     steps:
       - run: 
           name: Add Ip to Security Group
+          when: << parameters.execute_when >>
           command: |
             # 1- Get the public IP of the current CircleCI runner
             PUBLIC_IP=$(curl ipinfo.io/ip)
@@ -206,9 +221,14 @@ commands:
       sg_id:
         description: Id of the security group
         type: string
+      execute_when:
+        description: When execute this command
+        type: string
+        default: on_success
     steps:
       - run: 
           name: Add Ip to Security Group
+          when: << parameters.execute_when >>
           command: |
             # 1- Get the public IP of the current CircleCI runner
             PUBLIC_IP=$(curl ipinfo.io/ip)
