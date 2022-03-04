@@ -203,7 +203,7 @@ commands:
         default: on_success
     steps:
       - run: 
-          name: Add Ip to Security Group
+          name: Add IP to Security Group
           when: << parameters.execute_when >>
           command: |
             # 1- Get the public IP of the current CircleCI runner
@@ -227,7 +227,7 @@ commands:
         default: on_success
     steps:
       - run: 
-          name: Add Ip to Security Group
+          name: Remove IP from Security Group
           when: << parameters.execute_when >>
           command: |
             # 1- Get the public IP of the current CircleCI runner
