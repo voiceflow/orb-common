@@ -598,6 +598,34 @@ commands:
             }
             retry << parameters.command >>
 
+  setup_local_registry:
+    description: Setup a local NPM registry
+    steps:
+      - run:
+          name: Setup local proxy registry
+          background: true
+          command: |
+            docker create -v /verdaccio/conf --name verdaccio-conf alpine:3.4 /bin/true
+            docker cp config/verdaccio/config.yaml verdaccio-conf:/verdaccio/conf
+
+            docker run -it --name verdaccio --network host -e NPM_TOKEN=${NPM_TOKEN} --volumes-from verdaccio-conf verdaccio/verdaccio:5
+      - run_command_with_retry:
+          step_name: Download Docker image
+          command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
+      - run:
+          name: Publish pre-release versions to local proxy registry
+          command: |
+            docker run -d --name prepublish --network host -v /src 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1 tail -f /dev/null
+            docker cp ./ prepublish:/src
+            docker exec prepublish git config --global user.email "serviceaccount@voiceflow.com"
+            docker exec prepublish git config --global user.name "Voiceflow"
+            docker exec prepublish npx wait-on http://localhost:4873/-/ping
+
+            docker exec -w /src prepublish npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
+            docker cp prepublish:/src/. ./
+
+  #-------------------------------------------------------------TRACK COMMANDS----------------------------------------------------------
+
   check_track_exists:
     description: Check if a track  exists
     parameters:
@@ -778,28 +806,7 @@ commands:
       - when:
           condition: << parameters.local_registry >>
           steps:
-            - run:
-                name: Setup local proxy registry
-                background: true
-                command: |
-                  docker create -v /verdaccio/conf --name verdaccio-conf alpine:3.4 /bin/true
-                  docker cp config/verdaccio/config.yaml verdaccio-conf:/verdaccio/conf
-
-                  docker run -it --name verdaccio --network host -e NPM_TOKEN=${NPM_TOKEN} --volumes-from verdaccio-conf verdaccio/verdaccio:5
-            - run_command_with_retry:
-                step_name: Download Docker image
-                command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
-            - run:
-                name: Publish pre-release versions to local proxy registry
-                command: |
-                  docker run -d --name prepublish --network host -v /src 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1 tail -f /dev/null
-                  docker cp ./ prepublish:/src
-                  docker exec prepublish git config --global user.email "serviceaccount@voiceflow.com"
-                  docker exec prepublish git config --global user.name "Voiceflow"
-                  docker exec prepublish npx wait-on http://localhost:4873/-/ping
-
-                  docker exec -w /src prepublish npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
-                  docker cp prepublish:/src/. ./
+            - setup_local_registry
       - run:
           name: "Building image and uploading track"
           command: |
@@ -1856,6 +1863,10 @@ commands:
         description: Add the option to request a new remote docker, set to false when you concat docker jobs
         type: boolean
         default: true
+      local_registry:
+        description: Use a local proxy registry to publish alpha version of all libraries in monorepo (must have a /config/verdaccio/config.yaml file)
+        type: boolean
+        default: false
     steps:
       - when:
           condition: << parameters.checkout >>
@@ -1869,6 +1880,10 @@ commands:
       - attach_workspace:
           at: ~/voiceflow
       - docker_login
+      - when:
+          condition: << parameters.local_registry >>
+          steps:
+            - setup_local_registry
       - run:
           name: "Build docker image"
           command: |
@@ -1897,7 +1912,13 @@ commands:
             fi
             echo -e "Building with SEM_VER=$SEM_VER"
             docker build \
-              --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
+              <<# parameters.local_registry >> \
+                --network host \
+                --build-arg build_REGISTRY_URL=http://localhost:4873 \
+              <</ parameters.local_registry >> \
+              <<^ parameters.local_registry >> \
+                --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
+              <</ parameters.local_registry >> \
               --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
               --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
               --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
