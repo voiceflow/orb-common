@@ -3436,6 +3436,10 @@ jobs:
         description: Setup a specific service
         type: string
         default: ""
+      vf_monorepo_services:
+        description: Monorepo services to start for e2e tests
+        type: string
+        default: ""
       vf_service_install_args:
         description: Extra args while installing the service
         type: string
@@ -3565,13 +3569,42 @@ jobs:
           working_directory: ~/code/infrastructure-e2e
           command: docker-compose -p vf -f docker-compose-vf.yaml pull
       - run:
-          name: Setup Voicelfow services
+          name: Setup Voiceflow services
           working_directory: ~/code/infrastructure-e2e
           command: |
             #sudo systemctl restart docker
             export DOCKER_CLIENT_TIMEOUT=120
             export COMPOSE_HTTP_TIMEOUT=120
             docker-compose -p vf -f docker-compose-vf.yaml up -d
+
+      # run the creator services if not within the creator monorepo
+      - when:
+          condition: << parameters.vf_service_name >>
+          steps:
+            - run_command_with_retry:
+                step_name: Download Creator services Docker images
+                working_directory: ~/code/infrastructure-e2e
+                command: docker-compose -p creator -f docker-compose-creator.yaml pull
+            - run:
+                name: Setup Creator services
+                working_directory: ~/code/infrastructure-e2e
+                command: |
+                  #sudo systemctl restart docker
+                  export DOCKER_CLIENT_TIMEOUT=120
+                  export COMPOSE_HTTP_TIMEOUT=120
+                  docker-compose -p creator -f docker-compose-creator.yaml up -d
+
+      # run monorepo services locally if specified
+      - when:
+          condition: << parameters.vf_monorepo_services >>
+          steps:
+            - run:
+                name: Run monorepo services
+                background: true
+                working_directory: ~/code/creator-app
+                command: |
+                  echo "running realtime e2e"
+                  npx lerna@4.0.0 run --scope << parameters.vf_monorepo_services >> e2e
 
       - run:
           name: Run creator e2e
@@ -3597,12 +3630,7 @@ jobs:
           step_name: "Waiting everything is ready"
           working_directory: ~/code/creator-app/packages/creator-app
       - when:
-          condition:
-            and:
-              - not:
-                  matches:
-                    pattern: "^$"
-                    value: << parameters.vf_service_name >>
+          condition: << parameters.vf_service_name >>
           steps:
             - setup_vf_service_machine:
                 github_username: << parameters.github_username >>
@@ -3644,6 +3672,8 @@ jobs:
             docker logs general-service-e2e > general-service.log
             docker logs canvas-export-e2e > canvas-export.log
             docker logs dbcli-e2e > dbcli.log
+            docker logs realtime-e2e > realtime.log
+            docker logs ml-gateway-e2e > ml-gateway.log
             docker logs creator-app-e2e > creator-app.log
             set -e
 
