@@ -3604,7 +3604,7 @@ jobs:
                 working_directory: ~/code/creator-app
                 command: |
                   echo "running monorepo e2e services"
-                  npx lerna@4.0.0 run --parallel --scope '<< parameters.vf_monorepo_services >>' e2e:ci
+                  npx lerna@4.0.0 exec --parallel --scope '<< parameters.vf_monorepo_services >>' -- yarn --ignore-engines e2e:ci
       
       - run:
           name: Run creator e2e
