@@ -3481,6 +3481,10 @@ jobs:
         description: Custom endpoint to wait
         type: string
         default: ""
+      vf_service_profile:
+        description: Profile of services to run with docker-compose
+        type: string
+        default: "all_services"
       enable:
         description: Enable or not the e2e
         type: boolean
@@ -3609,24 +3613,7 @@ jobs:
             #sudo systemctl restart docker
             export DOCKER_CLIENT_TIMEOUT=120
             export COMPOSE_HTTP_TIMEOUT=120
-            docker-compose -p vf -f docker-compose-vf.yaml up -d
-
-      # run the creator services if not within the creator monorepo
-      - when:
-          condition: << parameters.vf_service_name >>
-          steps:
-            - run_command_with_retry:
-                step_name: Download Creator services Docker images
-                working_directory: ~/code/infrastructure-e2e
-                command: docker-compose -p creator -f docker-compose-creator.yaml pull
-            - run:
-                name: Setup Creator services
-                working_directory: ~/code/infrastructure-e2e
-                command: |
-                  #sudo systemctl restart docker
-                  export DOCKER_CLIENT_TIMEOUT=120
-                  export COMPOSE_HTTP_TIMEOUT=120
-                  docker-compose -p creator -f docker-compose-creator.yaml up -d
+            docker-compose --profile << parameters.vf_service_profile >> -p vf -f docker-compose-vf.yaml up -d
 
       # run monorepo services locally if specified
       - when:
