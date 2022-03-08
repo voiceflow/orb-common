@@ -600,13 +600,17 @@ commands:
 
   setup_local_registry:
     description: Setup a local NPM registry
+    parameters:
+      verdaccio_config:
+        description: location of verdaccio configuration file
+        type: string
     steps:
       - run:
           name: Setup local proxy registry
           background: true
           command: |
             docker create -v /verdaccio/conf --name verdaccio-conf alpine:3.4 /bin/true
-            docker cp config/verdaccio/config.yaml verdaccio-conf:/verdaccio/conf
+            docker cp << parameters.verdaccio_config >> verdaccio-conf:/verdaccio/conf
 
             docker run -it --name verdaccio --network host -e NPM_TOKEN=${NPM_TOKEN} --volumes-from verdaccio-conf verdaccio/verdaccio:5
       - run_command_with_retry:
@@ -810,7 +814,8 @@ commands:
       - when:
           condition: << parameters.local_registry >>
           steps:
-            - setup_local_registry
+            - setup_local_registry:
+                verdaccio_config: config/verdaccio/config.yaml
             - monorepo_publish_to_local_registry
       - run:
           name: "Building image and uploading track"
@@ -3609,7 +3614,8 @@ jobs:
       - when:
           condition: << parameters.vf_monorepo_services >>
           steps:
-            - setup_local_registry
+            - setup_local_registry:
+                verdaccio_config: ~/code/creator-app/config/verdaccio/config.yaml
             - monorepo_publish_to_local_registry
             - run:
                 name: Run monorepo services
