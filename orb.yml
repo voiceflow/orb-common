@@ -619,18 +619,23 @@ commands:
    
   monorepo_publish_to_local_registry:
     description: Publish all packages in monorepo to a local NPM registry
+    parameters:
+      monorepo_directory:
+        description: root directory of the monorepo
+        type: string
+        default: ./
     steps:
       - run:
           name: Publish pre-release versions to local proxy registry
           command: |
             docker run -d --name prepublish --network host -v /src 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1 tail -f /dev/null
-            docker cp ./ prepublish:/src
+            docker cp << parameters.monorepo_directory >> prepublish:/src
             docker exec prepublish git config --global user.email "serviceaccount@voiceflow.com"
             docker exec prepublish git config --global user.name "Voiceflow"
             docker exec prepublish npx wait-on http://localhost:4873/-/ping
 
             docker exec -w /src prepublish npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
-            docker cp prepublish:/src/. ./
+            docker cp prepublish:/src/. << parameters.monorepo_directory >>
 
 #-------------------------------------------------------------TRACK COMMANDS----------------------------------------------------------
 
@@ -3616,7 +3621,8 @@ jobs:
           steps:
             - setup_local_registry:
                 verdaccio_config: ~/code/creator-app/config/verdaccio/config.yaml
-            - monorepo_publish_to_local_registry
+            - monorepo_publish_to_local_registry:
+                monorepo_directory: ~/code/creator-app
             - run:
                 name: Run monorepo services
                 background: true
