@@ -2347,6 +2347,10 @@ commands:
         description: git commit hash for database-cli
         type: env_var_name
         default: CIRCLE_SHA1
+      build_dependencies_command:
+        description: command to call when building dependencies for the monorepo
+        type: string
+        default: yarn build:deps
     steps:
       - clone_repo:
           step_name: "Downloading Creator App"
@@ -2371,7 +2375,7 @@ commands:
             nvm alias default v16.13.0
             yarn install --frozen-lockfile --cache-folder=".yarn-cache"
 
-            yarn build:deps
+            << parameters.build_dependencies_command >>
 
             cd packages/creator-app
             yarn build:e2e
@@ -3527,6 +3531,7 @@ jobs:
           github_username: << parameters.github_username >>
           github_token: << parameters.github_token >>
           creator_app_commit: << parameters.creator_app_commit >>
+          build_dependencies_command: yarn build:deps <<# parameters.vf_monorepo_services >>&& yarn build:services<</ parameters.vf_monorepo_services >>
       - run:
           name: Wait until tools are ready
           no_output_timeout: 10m
