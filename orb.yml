@@ -598,6 +598,38 @@ commands:
             }
             retry << parameters.command >>
 
+  setup_local_registry:
+    description: Setup a local NPM registry
+    steps:
+      - run:
+          name: Setup local proxy registry
+          background: true
+          command: |
+            docker create -v /verdaccio/conf --name verdaccio-conf alpine:3.4 /bin/true
+            docker cp config/verdaccio/config.yaml verdaccio-conf:/verdaccio/conf
+
+            docker run -it --name verdaccio --network host -e NPM_TOKEN=${NPM_TOKEN} --volumes-from verdaccio-conf verdaccio/verdaccio:5
+      - run_command_with_retry:
+          step_name: Download Docker image
+          command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
+   
+  monorepo_publish_to_local_registry:
+    description: Publish all packages in monorepo to a local NPM registry
+    steps:
+      - run:
+          name: Publish pre-release versions to local proxy registry
+          command: |
+            docker run -d --name prepublish --network host -v /src 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1 tail -f /dev/null
+            docker cp ./ prepublish:/src
+            docker exec prepublish git config --global user.email "serviceaccount@voiceflow.com"
+            docker exec prepublish git config --global user.name "Voiceflow"
+            docker exec prepublish npx wait-on http://localhost:4873/-/ping
+
+            docker exec -w /src prepublish npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
+            docker cp prepublish:/src/. ./
+
+#-------------------------------------------------------------TRACK COMMANDS----------------------------------------------------------
+
   check_track_exists:
     description: Check if a track  exists
     parameters:
@@ -778,28 +810,8 @@ commands:
       - when:
           condition: << parameters.local_registry >>
           steps:
-            - run:
-                name: Setup local proxy registry
-                background: true
-                command: |
-                  docker create -v /verdaccio/conf --name verdaccio-conf alpine:3.4 /bin/true
-                  docker cp config/verdaccio/config.yaml verdaccio-conf:/verdaccio/conf
-
-                  docker run -it --name verdaccio --network host -e NPM_TOKEN=${NPM_TOKEN} --volumes-from verdaccio-conf verdaccio/verdaccio:5
-            - run_command_with_retry:
-                step_name: Download Docker image
-                command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
-            - run:
-                name: Publish pre-release versions to local proxy registry
-                command: |
-                  docker run -d --name prepublish --network host -v /src 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1 tail -f /dev/null
-                  docker cp ./ prepublish:/src
-                  docker exec prepublish git config --global user.email "serviceaccount@voiceflow.com"
-                  docker exec prepublish git config --global user.name "Voiceflow"
-                  docker exec prepublish npx wait-on http://localhost:4873/-/ping
-
-                  docker exec -w /src prepublish npx lerna@4.0.0 publish prerelease --registry=http://localhost:4873 --force-publish --amend --exact --no-verify-access --yes
-                  docker cp prepublish:/src/. ./
+            - setup_local_registry
+            - monorepo_publish_to_local_registry
       - run:
           name: "Building image and uploading track"
           command: |
@@ -2292,8 +2304,7 @@ commands:
           yarn_lock_restore_cache_directory: ~/creator-app
       - run:
           name: Build dependencies
-          command: |
-            yarn build --scope @voiceflow/realtime-sdk --scope @voiceflow/ui
+          command: yarn build:deps
           working_directory: ~/creator-app
       - gen_certs_e2e:
           step_name: Generate certificates creator-app
@@ -2342,7 +2353,7 @@ commands:
             nvm alias default v16.13.0
             yarn install --frozen-lockfile --cache-folder=".yarn-cache"
 
-            yarn build --scope @voiceflow/realtime-sdk --scope @voiceflow/ui
+            yarn build:deps
 
             cd packages/creator-app
             yarn build:e2e
@@ -3598,6 +3609,8 @@ jobs:
       - when:
           condition: << parameters.vf_monorepo_services >>
           steps:
+            - setup_local_registry
+            - monorepo_publish_to_local_registry
             - run:
                 name: Run monorepo services
                 background: true
