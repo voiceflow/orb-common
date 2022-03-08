@@ -641,7 +641,7 @@ commands:
               --amend \
               --exact \
               --no-verify-access \
-              --no-verify \
+              --no-commit-hooks \
               --yes
             docker cp prepublish:/src/. ./
 
