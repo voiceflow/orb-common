@@ -3484,7 +3484,7 @@ jobs:
       vf_service_profile:
         description: Profile of services to run with docker-compose
         type: string
-        default: "all_services"
+        default: "core"
       enable:
         description: Enable or not the e2e
         type: boolean
@@ -3605,7 +3605,7 @@ jobs:
       - run_command_with_retry:
           step_name: Download Docker images
           working_directory: ~/code/infrastructure-e2e
-          command: docker-compose -p vf -f docker-compose-vf.yaml pull
+          command: docker-compose --profile << parameters.vf_service_profile >> -p vf -f docker-compose-vf.yaml pull
       - run:
           name: Setup Voiceflow services
           working_directory: ~/code/infrastructure-e2e
