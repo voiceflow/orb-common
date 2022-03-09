@@ -2179,6 +2179,7 @@ commands:
             nvm use v16.13.0
             nvm alias default v16.13.0
             yarn install --frozen-lockfile --cache-folder=".yarn-cache" << parameters.vf_service_install_args >>
+            yarn build
       - vf_save_cache:
             working_directory: ~/code/<< parameters.vf_service_name >>
             cache_prefix: e2e-machine
@@ -3693,6 +3694,9 @@ jobs:
           command: |
             # Getting the logs
             set +e
+            docker cp code:/code/creator-app/packages/creator-app/cypress/videos ~/code/creator-app/packages/creator-app/cypress/videos
+            docker cp code:/code/creator-app/packages/creator-app/cypress/screenshots ~/code/creator-app/packages/creator-app/cypress/screenshots
+
             docker logs server-data-api-e2e > server-data-api.log
             docker logs creator-api-e2e > creator-api.log
             docker logs alexa-runtime-e2e > alexa-runtime.log
