@@ -3672,9 +3672,11 @@ jobs:
           name: Run Cypress Tests
           working_directory: ~/code/creator-app/packages/creator-app
           command: |
-            # Install the certificate on the executor
-            docker cp server-data-api-e2e:/usr/local/share/ca-certificates/ca.crt code:/usr/local/share/ca-certificates/ca.crt
-            docker run --workdir /code/creator-app --env NODE_OPTIONS=--max_old_space_size=4096 code yarn cypress:ci
+            docker run \
+              --workdir /code/creator-app \
+              --env NODE_OPTIONS=--max_old_space_size=4096 \
+              code \
+              yarn cypress:ci
       - run:
           name: Get logs
           working_directory: ~/logs
