@@ -3651,7 +3651,7 @@ jobs:
               --volumes-from code \
               --volume vf_certs:/code/creator-app/packages/creator-app/certs \
               --volume vf_caroot:/usr/local/share/ca-certificates \
-              168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1  \
+              168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
               /bin/bash -c "update-ca-certificates && yarn start:e2e && sleep infinity"
 
       - check_e2e_deps:
@@ -3672,11 +3672,16 @@ jobs:
           name: Run Cypress Tests
           working_directory: ~/code/creator-app/packages/creator-app
           command: |
-            docker exec \
+            docker run \
               --workdir /code/creator-app \
+              --network="vf_voiceflow" \
+              --name cypress-e2e \
+              --volumes-from code \
+              --volume vf_certs:/code/creator-app/packages/creator-app/certs \
+              --volume vf_caroot:/usr/local/share/ca-certificates \
               --env NODE_OPTIONS=--max_old_space_size=4096 \
-              code \
-              yarn cypress:ci
+              168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
+              /bin/bash -c "yarn cypress:ci"
       - run:
           name: Get logs
           working_directory: ~/logs
