@@ -3693,6 +3693,9 @@ jobs:
           command: |
             # Getting the logs
             set +e
+            docker cp code:/code/creator-app/packages/creator-app/cypress/videos ~/code/creator-app/packages/creator-app/cypress/videos
+            docker cp code:/code/creator-app/packages/creator-app/cypress/screenshots ~/code/creator-app/packages/creator-app/cypress/screenshots
+
             docker logs server-data-api-e2e > server-data-api.log
             docker logs creator-api-e2e > creator-api.log
             docker logs alexa-runtime-e2e > alexa-runtime.log
