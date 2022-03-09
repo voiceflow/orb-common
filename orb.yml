@@ -2379,7 +2379,6 @@ commands:
 
             cd packages/creator-app
             yarn build:e2e
-            yarn cypress:install
 
             touch /tmp/creator_app_finished.txt
 
@@ -2714,8 +2713,6 @@ commands:
             wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
             sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
             rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-
-            sudo apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
             export MKCERT_VERSION="v1.4.0"
             wget https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64
@@ -3565,15 +3562,21 @@ jobs:
           working_directory: ~/code/creator-app
           cache_prefix: e2e-machine
       - docker_login
+      - run_command_with_retry:
+          step_name: Download Docker image
+          command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1
       - run:
           name: Setup databases
           working_directory: ~/code/infrastructure-e2e
           command: |
-            docker rm code || docker create --network="vf_voiceflow" -v /code --name code cypress/base:16.14.0 /bin/true
+            docker rm code \
+              || docker create \
+                --network="vf_voiceflow" \
+                --volume /code \
+                --name code \
+                168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
+                /bin/true
             docker-compose -p vf -f docker-compose-db.yaml up -d
-      - run_command_with_retry:
-          step_name: Download Docker image
-          command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1
 
       - run_command_with_retry:
           step_name: Setup Database
@@ -3670,13 +3673,8 @@ jobs:
           working_directory: ~/code/creator-app/packages/creator-app
           command: |
             # Install the certificate on the executor
-            sudo mkdir /usr/share/ca-certificates/extra
-            sudo docker cp server-data-api-e2e:/usr/local/share/ca-certificates/ca.crt /usr/share/ca-certificates/extra/ca.crt
-            echo 'extra/ca.crt' | sudo tee -a /etc/ca-certificates.conf > /dev/null
-            sudo update-ca-certificates
-
-            export NODE_OPTIONS=--max_old_space_size=4096
-            yarn cypress:ci
+            docker cp server-data-api-e2e:/usr/local/share/ca-certificates/ca.crt code:/usr/local/share/ca-certificates/ca.crt
+            docker run --workdir /code/creator-app --env NODE_OPTIONS=--max_old_space_size=4096 code yarn cypress:ci
       - run:
           name: Get logs
           working_directory: ~/logs
