@@ -2179,6 +2179,7 @@ commands:
             nvm use v16.13.0
             nvm alias default v16.13.0
             yarn install --frozen-lockfile --cache-folder=".yarn-cache" << parameters.vf_service_install_args >>
+            yarn build
       - vf_save_cache:
             working_directory: ~/code/<< parameters.vf_service_name >>
             cache_prefix: e2e-machine
