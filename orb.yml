@@ -3569,7 +3569,7 @@ jobs:
           name: Setup databases
           working_directory: ~/code/infrastructure-e2e
           command: |
-            docker rm code || docker create --network="vf_voiceflow" -v /code --name code cypress/base:16 /bin/true
+            docker rm code || docker create --network="vf_voiceflow" -v /code --name code cypress/base:16.14.0 /bin/true
             docker-compose -p vf -f docker-compose-db.yaml up -d
       - run_command_with_retry:
           step_name: Download Docker image
