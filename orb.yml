@@ -1585,6 +1585,47 @@ commands:
           wait: << parameters.wait >>
           yarn_command: yarn test << parameters.extra_args >>
 
+  build_e2e:
+    parameters:
+      working_directory:
+        description: Directory containing package.json
+        type: string
+        default: './'
+      run_in_background:
+        description: run the command in background
+        type: boolean
+        default: false
+      step_name:
+        description: Name of the step
+        type: string
+        default: Build in e2e mode
+      wait:
+        description: wait until all the commands are finished
+        type: boolean
+        default: false
+      run_in_container:
+        description: Run build in a container
+        type: boolean
+        default: false
+      request_remote_docker:
+        description: Request remote Docker
+        type: boolean
+        default: false
+      container_folder_to_copy:
+        description: Container folder to copy after the execution
+        type: string
+        default: ""
+    steps:
+      - yarn_command:
+          working_directory: << parameters.working_directory >>
+          run_in_background: << parameters.run_in_background >>
+          request_remote_docker: << parameters.request_remote_docker >>
+          container_folder_to_copy: << parameters.container_folder_to_copy >>
+          run_in_container: << parameters.run_in_container >>
+          step_name: << parameters.step_name >>
+          wait: << parameters.wait >>
+          yarn_command: yarn build
+
   start_e2e:
     parameters:
       working_directory:
@@ -2120,6 +2161,9 @@ commands:
           avoid_post_install_scripts: false
           working_directory: "~/<< parameters.service_name >>"
           yarn_lock_restore_cache_directory: "~/<< parameters.service_name >>"
+      - build_e2e:
+          step_name: "Build << parameters.service_name >>"
+          working_directory: "~/<< parameters.service_name >>"
       - gen_certs_e2e:
           step_name: "Set up << parameters.service_name >>"
           working_directory: "~/<< parameters.service_name >>"
