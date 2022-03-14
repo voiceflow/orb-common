@@ -3505,7 +3505,7 @@ jobs:
           setup_db: false
           github_username: GITHUB_USERNAME
           github_token: GITHUB_TOKEN
-          cache_prefix: e2e
+          cache_prefix: services-e2e
       - clone_repo:
           step_name: "Downloading e2e stack"
           github_username: GITHUB_USERNAME
@@ -3515,7 +3515,7 @@ jobs:
       - setup_vf_dbs_docker:
           github_username: GITHUB_USERNAME
           github_token: GITHUB_TOKEN
-          cache_prefix: e2e
+          cache_prefix: services-e2e
           initialize: false
       - run:
           name: Download E2E dependencies
