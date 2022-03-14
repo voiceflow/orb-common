@@ -1886,6 +1886,10 @@ commands:
         description: Add the option to request a new remote docker, set to false when you concat docker jobs
         type: boolean
         default: true
+      monorepo_directory:
+        description: the root directory of monorepo, uses a local registry to pre-release package versions
+        type: string
+        default: ""
     steps:
       - when:
           condition: << parameters.checkout >>
@@ -1898,6 +1902,13 @@ commands:
                 version: 20.10.11
       - attach_workspace:
           at: ~/voiceflow
+      - when:
+          condition: << parameters.monorepo_directory >>
+          steps:
+            - setup_local_registry:
+                verdaccio_config: << parameters.monorepo_directory >>/config/verdaccio/config.yaml
+            - monorepo_publish_to_local_registry:
+                working_directory: << parameters.monorepo_directory >>
       - docker_login
       - run:
           name: "Build docker image"
