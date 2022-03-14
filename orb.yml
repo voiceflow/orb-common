@@ -2237,6 +2237,9 @@ commands:
         description: git commit hash for database-cli
         type: env_var_name
         default: DEFAULT_COMMIT
+      use_nvm:
+        description: use nvm to set the node version during install
+        default: true
     steps:
       - clone_repo:
           step_name: "Downloading dbcli"
@@ -2258,9 +2261,11 @@ commands:
           background: true
           command: |  
             # Set Node 16
-            nvm install v16.13.0
-            nvm use v16.13.0
-            nvm alias default v16.13.0
+            <<# parameters.use_nvm >>
+              nvm install v16.13.0
+              nvm use v16.13.0
+              nvm alias default v16.13.0
+            <</ parameters.use_nvm >>
             yarn install --frozen-lockfile --cache-folder=".yarn-cache"
 
             touch /tmp/dbcli_finished.txt
