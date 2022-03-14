@@ -2239,6 +2239,7 @@ commands:
         default: DEFAULT_COMMIT
       use_nvm:
         description: use nvm to set the node version during install
+        type: boolean
         default: true
     steps:
       - clone_repo:
