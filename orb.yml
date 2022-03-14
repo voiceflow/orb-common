@@ -3469,6 +3469,7 @@ jobs:
         description: space-delimited list of services which must be started first
         type: string
         default: ""
+    working_directory: ~/code/<< parameters.service_name >>
     steps:
       - setup_remote_docker:
           version: '20.10.12'
