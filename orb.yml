@@ -3497,7 +3497,7 @@ jobs:
     working_directory: ~/code/<< parameters.service_name >>
     steps:
       - setup_remote_docker:
-          version: '20.10.12'
+          version: 20.10.11
       - docker_login
       - run_command_with_retry:
           step_name: Download E2E Docker image
@@ -3592,7 +3592,7 @@ jobs:
             docker run \
               --network vf_voiceflow \
               168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
-              /bin/bash -c "npx wait-on -t 60000 https://<< parameters.service_name >>.test.e2e:<< parameters.service_port >>/health"
+              /bin/bash -c "npx wait-on -t 300000 https://<< parameters.service_name >>.test.e2e:<< parameters.service_port >>/health"
       - extract_e2e_logs
       - store_artifacts:
           path: ~/logs
