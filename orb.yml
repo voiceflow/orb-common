@@ -3090,6 +3090,10 @@ jobs:
         description: Path to the context for the docker build
         type: string
         default: '.'
+      monorepo_directory:
+        description: the root directory of monorepo, uses a local registry to pre-release package versions
+        type: string
+        default: ""
     steps:
       - build_push_image:
           image_repo: << parameters.image_repo >>
@@ -3097,6 +3101,7 @@ jobs:
           image_tag: << parameters.image_tag >>
           dockerfile: << parameters.dockerfile >>
           build_context: << parameters.build_context >>
+          monorepo_directory: << parameters.monorepo_directory >>
 
   post_image_push_actions:
     executor: build-executor
