@@ -1938,7 +1938,13 @@ commands:
             fi
             echo -e "Building with SEM_VER=$SEM_VER"
             docker build \
-              --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
+              <<# parameters.monorepo_directory >> \
+                --network host \
+                --build-arg build_REGISTRY_URL=http://localhost:4873 \
+              <</ parameters.monorepo_directory >> \
+              <<^ parameters.monorepo_directory >> \
+                --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
+              <</ parameters.monorepo_directory >> \
               --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
               --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
               --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
