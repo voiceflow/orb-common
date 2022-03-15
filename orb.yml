@@ -32,7 +32,7 @@ executors:
         - DEBUG=1
       - image: circleci/mongo:4.4.1 # MongoDB service container
       - image: redis:6.2-alpine # Redis service container
-
+  
   # Used to run tests
   code-test-executor:
     working_directory: ~/voiceflow # directory where steps will run
@@ -2282,6 +2282,14 @@ commands:
         description: Cache prefix
         type: string
         default: ""
+      initialize_database:
+        description: Run database initialization after install
+        type: boolean
+        default: true
+      working_directory:
+        description: Directory containing package.json
+        type: string
+        default: '~/database-cli'
     steps:
       - clone_repo:
           step_name: "Clone database-cli repository"
@@ -2289,16 +2297,19 @@ commands:
           github_token: "<< parameters.github_token >>"
           github_repo_name: database-cli
           github_commit: "<< parameters.commit >>"
-          path_to_clone: ~/database-cli
+          path_to_clone: << parameters.working_directory >>
       - install_node_modules:
-          working_directory: ~/database-cli
-          yarn_lock_restore_cache_directory: ~/database-cli
+          working_directory: << parameters.working_directory >>
+          yarn_lock_restore_cache_directory: << parameters.working_directory >>
           cache_prefix: << parameters.cache_prefix >>
-      - run:
-          name: Setup Database
-          working_directory: ~/database-cli
-          command: |
-            yarn init:e2e
+      - when:
+          condition: << parameters.initialize_database >>
+          steps:
+            - run:
+                name: Setup Database
+                working_directory: << parameters.working_directory >>
+                command: |
+                  yarn init:e2e
 
   setup_vf_creator_app_docker:
     parameters:
@@ -2892,6 +2903,46 @@ commands:
           background: << parameters.run_in_background >>
           name: << parameters.step_name >>
           command: yarn e2e:check-deps
+    
+  extract_cypress_artifacts:
+    steps:
+      - run:
+          name: Get cypress artifacts
+          working_directory: ~/logs
+          when: on_fail
+          command: |
+            # Getting the logs
+            set +e
+            docker cp code:/code/creator-app/packages/creator-app/cypress/videos ~/code/creator-app/packages/creator-app/cypress/videos
+            docker cp code:/code/creator-app/packages/creator-app/cypress/screenshots ~/code/creator-app/packages/creator-app/cypress/screenshots
+            set -e
+
+  extract_e2e_logs:
+    steps:
+      - run:
+          name: Get logs
+          working_directory: ~/logs
+          when: on_fail
+          command: |
+            # Getting the logs
+            set +e
+            docker logs server-data-api-e2e > server-data-api.log
+            docker logs creator-api-e2e > creator-api.log
+            docker logs alexa-runtime-e2e > alexa-runtime.log
+            docker logs alexa-service-e2e > alexa-service.log
+            docker logs google-runtime-e2e > google-runtime.log
+            docker logs google-service-e2e > google-service.log
+            docker logs integrations-e2e > integrations.log
+            docker logs custom-api-e2e > custom-api.log
+            docker logs luis-authoring-service-e2e > luis-authoring-service.log
+            docker logs general-runtime-e2e > general-runtime.log
+            docker logs general-service-e2e > general-service.log
+            docker logs canvas-export-e2e > canvas-export.log
+            docker logs dbcli-e2e > dbcli.log
+            docker logs realtime-e2e > realtime.log
+            docker logs ml-gateway-e2e > ml-gateway.log
+            docker logs creator-app-e2e > creator-app.log
+            set -e
 
 #--------------------------------------------------JOBS------------------------------------------------
 
@@ -3430,6 +3481,122 @@ jobs:
       - run: |
           echo "Dummy job"
 
+  test_e2e_start_service:
+    executor: node-executor
+    parameters:
+      service_name:
+        description: name of the service under test
+        type: string
+      service_port:
+        description: port of the service under test
+        type: string
+      e2e_service_dependencies:
+        description: space-delimited list of services which must be started first
+        type: string
+        default: ""
+    working_directory: ~/code/<< parameters.service_name >>
+    steps:
+      - setup_remote_docker:
+          version: 20.10.11
+      - docker_login
+      - run_command_with_retry:
+          step_name: Download E2E Docker image
+          command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1
+      - init_e2e_docker:
+          checkout: true
+          setup_db: false
+          github_username: GITHUB_USERNAME
+          github_token: GITHUB_TOKEN
+          cache_prefix: services-e2e
+      - clone_repo:
+          step_name: "Downloading e2e stack"
+          github_username: GITHUB_USERNAME
+          github_token: GITHUB_TOKEN
+          github_repo_name: "infrastructure-e2e"
+          path_to_clone: "~/code/infrastructure-e2e"
+      - setup_vf_dbs_docker:
+          working_directory: "~/code/database-cli"
+          github_username: GITHUB_USERNAME
+          github_token: GITHUB_TOKEN
+          cache_prefix: services-e2e
+          initialize_database: false
+      - run:
+          name: Download E2E dependencies
+          working_directory: ~/code/infrastructure-e2e
+          command: |
+            docker create \
+                --network="vf_voiceflow" \
+                --volume /code \
+                --name code \
+                168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
+                /bin/true
+            docker-compose -p vf -f docker-compose-db.yaml pull
+            <<# parameters.e2e_service_dependencies >>
+              docker-compose -p vf -f docker-compose-vf.yaml pull << parameters.e2e_service_dependencies >>
+            <</ parameters.e2e_service_dependencies >>
+      - run:
+          name: Start Databases
+          working_directory: ~/code/infrastructure-e2e
+          command: |
+            docker-compose -p vf -f docker-compose-db.yaml up -d
+      - run_command_with_retry:
+          step_name: Setup Database
+          working_directory: ~/code
+          background: true
+          command:  |
+            # copy a config file into this volume
+            docker cp database-cli code:/code
+            # start an application container using this volume
+            docker run \
+              --workdir /code/database-cli \
+              --name dbcli-e2e \
+              --hostname dbcli.test.e2e \
+              --network="vf_voiceflow" \
+              --env AWS_ACCESS_KEY_ID="null" \
+              --env AWS_SECRET_ACCESS_KEY="null" \
+              --volumes-from code \
+              168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1  \
+              /bin/bash -c "yarn init:e2e"
+      - when:
+          condition: << parameters.e2e_service_dependencies >>
+          steps:
+            - run:
+                name: Start E2E dependencies
+                working_directory: ~/code/infrastructure-e2e
+                command: |
+                  docker wait cert-generator
+                  docker-compose -p vf -f docker-compose-vf.yaml up -d << parameters.e2e_service_dependencies >>
+      - run:
+          name: Start service under test
+          command: |
+            # copy a config file into this volume and the npm token
+            docker cp ~/code/<< parameters.service_name >> code:/code/<< parameters.service_name >>
+            docker cp ~/.npmrc code:/code/<< parameters.service_name >>
+            # start an application container using this volume
+            docker run \
+              --workdir /code/<< parameters.service_name >> \
+              --detach \
+              --expose << parameters.service_port >> \
+              --publish << parameters.service_port >>:<< parameters.service_port >> \
+              --name << parameters.service_name >>-e2e \
+              --hostname << parameters.service_name >>.test.e2e \
+              --network="vf_voiceflow" \
+              --volumes-from code \
+              --volume vf_certs:/code/<< parameters.service_name >>/certs \
+              --volume vf_caroot:/usr/local/share/ca-certificates \
+              168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1  \
+              /bin/bash -c "update-ca-certificates && yarn install --force && yarn build && yarn e2e"
+      - run:
+          name: Wait for service to be available
+          command: |
+            docker run \
+              --network vf_voiceflow \
+              168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
+              /bin/bash -c "npx wait-on -t 300000 https://<< parameters.service_name >>.test.e2e:<< parameters.service_port >>/health"
+      - extract_e2e_logs
+      - store_artifacts:
+          path: ~/logs
+
   test_e2e:
     machine:
       image: ubuntu-2004:202107-02  # any available image
@@ -3687,33 +3854,8 @@ jobs:
               --env CYPRESS_RECORD_KEY="$CYPRESS_RECORD_KEY" \
               168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
               /bin/bash -c "yarn cypress:install && yarn cypress:ci"
-      - run:
-          name: Get logs
-          working_directory: ~/logs
-          when: on_fail
-          command: |
-            # Getting the logs
-            set +e
-            docker cp code:/code/creator-app/packages/creator-app/cypress/videos ~/code/creator-app/packages/creator-app/cypress/videos
-            docker cp code:/code/creator-app/packages/creator-app/cypress/screenshots ~/code/creator-app/packages/creator-app/cypress/screenshots
-
-            docker logs server-data-api-e2e > server-data-api.log
-            docker logs creator-api-e2e > creator-api.log
-            docker logs alexa-runtime-e2e > alexa-runtime.log
-            docker logs alexa-service-e2e > alexa-service.log
-            docker logs google-runtime-e2e > google-runtime.log
-            docker logs google-service-e2e > google-service.log
-            docker logs integrations-e2e > integrations.log
-            docker logs custom-api-e2e > custom-api.log
-            docker logs luis-authoring-service-e2e > luis-authoring-service.log
-            docker logs general-runtime-e2e > general-runtime.log
-            docker logs general-service-e2e > general-service.log
-            docker logs canvas-export-e2e > canvas-export.log
-            docker logs dbcli-e2e > dbcli.log
-            docker logs realtime-e2e > realtime.log
-            docker logs ml-gateway-e2e > ml-gateway.log
-            docker logs creator-app-e2e > creator-app.log
-            set -e
+      - extract_cypress_artifacts
+      - extract_e2e_logs
 
       - store_artifacts:
           path: ~/code/creator-app/packages/creator-app/cypress/videos
