@@ -1899,6 +1899,10 @@ commands:
         default: false
     steps:
       - when:
+          condition: << parameters.checkout >>
+          steps:
+            - checkout # special step to check out source code to working directory
+      - when:
           condition:
             and:
               - equal: [false, << parameters.force_execute >>]
@@ -1907,10 +1911,6 @@ commands:
           steps:
             - stop_if_no_changes:
                 package: << parameters.package >>
-      - when:
-          condition: << parameters.checkout >>
-          steps:
-            - checkout # special step to check out source code to working directory
       - when:
           condition: << parameters.request_remote_docker >>
           steps:
@@ -2024,6 +2024,7 @@ commands:
         type: boolean
         default: false
     steps:
+      - checkout
       - when:
           condition:
             and:
@@ -2036,7 +2037,6 @@ commands:
       - add_ssh_keys: # To enable write access to repository
           fingerprints:
             - << parameters.ssh_key >>
-      - checkout
       - run:
           name: Post Image Push Actions
           command: |
