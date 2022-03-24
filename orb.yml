@@ -850,8 +850,10 @@ commands:
 
               IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
               PACKAGE="<< parameters.package >>"
-              # Fix semantic versioning if a package is indicated, if not, semantic release are not executed
+              # Get the tag that is running right now
               if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
+                  # Update the tags
+                  git fetch --tags
                   SEM_VER=$(git describe --abbrev=0 --tags)
                 if [[ ! -z "$PACKAGE" ]]; then
                   SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*" $CIRCLE_SHA1)
@@ -1925,8 +1927,10 @@ commands:
             IMAGE_REPO="<< parameters.image_repo >>"
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             PACKAGE="<< parameters.package >>"
-            # Fix semantic versioning if a package is indicated, if not, semantic release are not executed
+            # Semantic release from the current tags
             if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
+                # Update the new tags
+                git fetch --tags
                 SEM_VER=$(git describe --abbrev=0 --tags)
               if [[ ! -z "$PACKAGE" ]]; then
                 SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*" $CIRCLE_SHA1)
