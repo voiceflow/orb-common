@@ -3139,6 +3139,10 @@ jobs:
         description: Post to Slack on successful deployment?
         type: boolean
         default: true
+      force_execute:
+        description: force to notify, if there is a change or not.
+        type: boolean
+        default: false
     steps:
       - post_image_push_actions:
           namespace: << parameters.namespace >>
@@ -3146,6 +3150,7 @@ jobs:
           success_slack_notify: << parameters.success_slack_notify >>
           component: << parameters.component >>
           package: << parameters.package >>
+          force_execute: << parameters.force_execute >>
 
   update_track:
     executor: build-executor
