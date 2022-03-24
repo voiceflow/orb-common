@@ -2534,10 +2534,6 @@ commands:
             PACKAGE=<< parameters.package >>
             echo "files changed: $FILES_CHANGED"
 
-            if [[ $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" ]]; then
-              exit 0
-            fi
-
             if [[ $FILES_CHANGED != *"$PACKAGE"*  ]]; then
               circleci-agent step halt
             fi
