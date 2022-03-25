@@ -857,7 +857,7 @@ commands:
                   SEM_VER=$(git describe --abbrev=0 --tags)
                 if [[ ! -z "$PACKAGE" ]]; then
                   SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*" $CIRCLE_SHA1)
-                  SEM_VER=$(echo ${version_changed##*@})
+                  SEM_VER=$(echo ${SEM_VER##*@})
                 fi
               else
                 SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
@@ -1935,7 +1935,7 @@ commands:
                 SEM_VER=$(git describe --abbrev=0 --tags)
               if [[ ! -z "$PACKAGE" ]]; then
                 SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*" $CIRCLE_SHA1)
-                SEM_VER=$(echo ${version_changed##*@})
+                SEM_VER=$(echo ${SEM_VER##*@})
               fi
             else
               SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
