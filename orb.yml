@@ -1883,6 +1883,7 @@ commands:
       package:
         description: The monorepo package that has been changed
         type: string
+        default: ""
       force_execute:
         description: force to notify, if there is a change or not.
         type: boolean
