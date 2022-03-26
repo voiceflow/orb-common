@@ -2035,7 +2035,7 @@ commands:
               sleep 60
 
               #Production
-              aws eks --region us-east-1 update-kubeconfig --name production
+              aws eks --region us-east-1 update-kubeconfig --name cm4-production-0-p0
 
               #Cloud Snapshot
               aws s3 cp s3://com.voiceflow.ci.assets/scripts/cloud_snapshot.sh cloud_snapshot.sh
