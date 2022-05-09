@@ -914,6 +914,8 @@ commands:
               docker pull $IMAGE_NAME
               # Get image SHA
               IMAGE_SHA="$(docker images --no-trunc --quiet $IMAGE_NAME)"
+              # Remove the sha256: string
+              IMAGE_SHA=$(echo $IMAGE_SHA | sed 's/sha256://')
 
               # update the track
               TRACK="tracks/<< parameters.component >>/$CIRCLE_BRANCH"
@@ -2005,7 +2007,7 @@ commands:
               fi
               docker tag $IMAGE_NAME $IMAGE_REPO:latest-$BRANCH_NAME
               docker push $IMAGE_REPO:latest-$BRANCH_NAME
-              
+
               # Signing Docker Image
               cosign sign --key $KMS_KEY $IMAGE_REPO:latest-$BRANCH_NAME
             fi
