@@ -789,6 +789,10 @@ commands:
         description: The container image tag
         type: string
         default: ""
+      kms_key:
+        description: KMS Key to sign the containers
+        type: string
+        default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
     steps:
       - when:
           condition: << parameters.checkout >>
@@ -842,6 +846,7 @@ commands:
             if [[ $TRACK_EXISTS == "true" ]]; then
               IMAGE_REPO="<< parameters.image_repo >>"
               IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
+              KMS_KEY="<< parameters.kms_key >>"
               if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
                 IMAGE_TAG="k8s-$CIRCLE_SHA1"
               else
@@ -885,8 +890,12 @@ commands:
                   -t $IMAGE_NAME << parameters.build_context >>
                 docker push $IMAGE_NAME
 
+                # Signing Docker Image
+                cosign sign --key $KMS_KEY $IMAGE_NAME
+
                 # if a tag is set, do not push to latest-$BRANCH_NAME
                 if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
+                  # Change all non alphanumeric characters to -
                   BRANCH_NAME=$(echo $CIRCLE_BRANCH | sed 's/[^a-zA-Z0-9]/-/g')
                   if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
                     BRANCH_NAME="master"
@@ -894,8 +903,17 @@ commands:
                   
                   docker tag $IMAGE_NAME $IMAGE_REPO:latest-$BRANCH_NAME
                   docker push $IMAGE_REPO:latest-$BRANCH_NAME
+
+                  # Signing Docker Image
+                  cosign sign --key $KMS_KEY $IMAGE_REPO:latest-$BRANCH_NAME
                 fi
               fi
+
+              # Pull the image to get the sha is needed. 
+              # If the image has been built, the following command will not pull the image because it exists locally
+              docker pull $IMAGE_NAME
+              # Get image SHA
+              IMAGE_SHA="$(docker images --no-trunc --quiet $IMAGE_NAME)"
 
               # update the track
               TRACK="tracks/<< parameters.component >>/$CIRCLE_BRANCH"
@@ -903,6 +921,7 @@ commands:
               pip3 install yq
               # the file /tmp/$TRACK is downloaded in the check_track_exists step
               yq -y -i --arg tag "${IMAGE_TAG}" '."<< parameters.component >>".image.tag=$tag' /tmp/$TRACK
+              yq -y -i --arg sha "${IMAGE_SHA}" '."<< parameters.component >>".image.sha=$sha' /tmp/$TRACK
               aws s3 cp /tmp/$TRACK s3://<< parameters.bucket >>/$TRACK
 
             else
@@ -1888,6 +1907,10 @@ commands:
         description: force to notify, if there is a change or not.
         type: boolean
         default: false
+      kms_key:
+        description: KMS Key to sign the containers
+        type: string
+        default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
     steps:
       - when:
           condition: << parameters.checkout >>
@@ -1971,6 +1994,9 @@ commands:
             IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
             docker push $IMAGE_NAME
 
+            # Signing Docker Image
+            cosign sign --key $KMS_KEY $IMAGE_NAME
+
             # if a tag is set, do not push to latest-$BRANCH_NAME
             if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
               BRANCH_NAME=$(echo $CIRCLE_BRANCH | sed 's/[^a-zA-Z0-9]/-/g')
@@ -1979,6 +2005,9 @@ commands:
               fi
               docker tag $IMAGE_NAME $IMAGE_REPO:latest-$BRANCH_NAME
               docker push $IMAGE_REPO:latest-$BRANCH_NAME
+              
+              # Signing Docker Image
+              cosign sign --key $KMS_KEY $IMAGE_REPO:latest-$BRANCH_NAME
             fi
 
   post_image_push_actions:
@@ -3122,6 +3151,10 @@ jobs:
         description: force to notify, if there is a change or not.
         type: boolean
         default: false
+      kms_key:
+        description: KMS Key to sign the containers
+        type: string
+        default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
     steps:
       - build_push_image:
           image_repo: << parameters.image_repo >>
@@ -3131,6 +3164,7 @@ jobs:
           monorepo_directory: << parameters.monorepo_directory >>
           force_execute: << parameters.force_execute >>
           package: << parameters.package >>
+          kms_key: << parameters.kms_key >>
 
   post_image_push_actions:
     executor: build-executor
@@ -3219,6 +3253,10 @@ jobs:
         description: The container image tag
         type: string
         default: ""
+      kms_key:
+        description: KMS Key to sign the containers
+        type: string
+        default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
     steps:
       - update_track:
           image_repo: << parameters.image_repo >>
@@ -3234,6 +3272,7 @@ jobs:
           force_execute: << parameters.force_execute >>
           package: << parameters.package >>
           image_tag: << parameters.image_tag >>
+          kms_key: << parameters.kms_key >>
 
   update_database_track:
     executor: build-executor
