@@ -911,11 +911,13 @@ commands:
 
               # Pull the image to get the sha is needed. 
               # If the image has been built, the following command will not pull the image because it exists locally
-              docker pull $IMAGE_NAME
+              TMPFILE=$(mktemp)
+              docker pull $IMAGE_NAME | tee -a "$TMPFILE"
               # Get image SHA
-              IMAGE_SHA="$(docker images --no-trunc --quiet $IMAGE_NAME)"
+              IMAGE_SHA=$(awk '/Digest: / {print $2}' "$TMPFILE")
               # Remove the sha256: string
               IMAGE_SHA=$(echo $IMAGE_SHA | sed 's/sha256://')
+              rm "$TMPFILE"
 
               # update the track
               TRACK="tracks/<< parameters.component >>/$CIRCLE_BRANCH"
