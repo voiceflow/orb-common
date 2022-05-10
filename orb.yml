@@ -1987,6 +1987,7 @@ commands:
           name: "Push docker images"
           command: |
             IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
+            KMS_KEY="<< parameters.kms_key >>"
             if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
               IMAGE_TAG="k8s-$CIRCLE_SHA1"
             else
