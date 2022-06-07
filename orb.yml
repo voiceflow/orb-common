@@ -3081,6 +3081,7 @@ commands:
             docker logs realtime-e2e > realtime.log
             docker logs ml-gateway-e2e > ml-gateway.log
             docker logs creator-app-e2e > creator-app.log
+            docker logs event-ingestion-service-e2e > event-ingestion-service.log
             set -e
 
 #--------------------------------------------------JOBS------------------------------------------------
