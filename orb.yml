@@ -38,6 +38,23 @@ executors:
       - image: circleci/mongo:4.4.1 # MongoDB service container
       - image: redis:6.2-alpine # Redis service container
   
+  # Used to compile source code for test
+  code-build-executor:
+    parameters:
+      default_resource_class:
+        description: Default resource class for the executor
+        type: string
+        default: large
+    working_directory: ~/voiceflow # directory where steps will run
+    resource_class: << parameters.default_resource_class >>
+    environment:
+      NODE_OPTIONS: --max-old-space-size=4096
+    docker: # run the steps with Docker
+      - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2 # Test steps container
+        aws_auth:
+          aws_access_key_id: $AWS_ACCESS_KEY_ID
+          aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+
   # Used to run tests
   code-test-executor:
     parameters:
@@ -3393,7 +3410,7 @@ jobs:
 #-------------------------------------------------------------YARN JOBS----------------------------------------------------------
 
   install_and_build:
-    executor: code-test-executor
+    executor: code-build-executor
     parameters:
       avoid_post_install_scripts:
         description: Avoid post-install scripts
@@ -3488,7 +3505,10 @@ jobs:
                 command: sudo apt install rsync
             - run:
                 name: Unpack monorepo build cache
-                command: rsync -a /tmp/build_cache .
+                command: |
+                  if [[ -d /tmp/build_cache ]]; then
+                    rsync -a /tmp/build_cache .
+                  fi
       - build:
           container_folder_to_copy: << parameters.container_folder_to_copy >>
           request_remote_docker: << parameters.request_remote_docker >>
