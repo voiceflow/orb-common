@@ -3484,6 +3484,9 @@ jobs:
                   # fallback to latest cache from the master branch
                   - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master--
             - run:
+                name: Install rsync
+                command: sudo apt install rsync
+            - run:
                 name: Unpack monorepo build cache
                 command: rsync -a /tmp/build_cache .
       - build:
