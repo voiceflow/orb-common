@@ -3483,6 +3483,9 @@ jobs:
                   - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
                   # fallback to latest cache from the master branch
                   - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master
+            - run:
+                name: Unpack monorepo build cache
+                command: rsync -a /tmp/build_cache .
       - build:
           container_folder_to_copy: << parameters.container_folder_to_copy >>
           request_remote_docker: << parameters.request_remote_docker >>
@@ -3510,11 +3513,15 @@ jobs:
                 paths:
                   - packages/*/build
                   - packages/*/yarn.lock
+            - run:
+                name: Collect monorepo build cache
+                command: |
+                  mkdir /tmp/build_cache
+                  find ./packages/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache
             - save_cache:
                 key: monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}
                 paths:
-                  - packages/*/build
-                  - packages/*/*.tsbuildinfo
+                  - /tmp/build_cache
       - when:
           condition:
             and:
