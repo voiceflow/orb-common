@@ -3491,7 +3491,10 @@ jobs:
           avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
       - when:
           condition:
-              equal: [ "all", << parameters.package >> ]
+              and:
+                - equal: [ "all", << parameters.package >> ]
+                - not:
+                    equal: [ "master", << pipeline.git.branch >> ]
           steps:
             - restore_cache:
                 keys:
