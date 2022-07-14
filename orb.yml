@@ -3491,10 +3491,7 @@ jobs:
           avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
       - when:
           condition:
-              and:
-                - equal: [ "all", << parameters.package >> ]
-                - not:
-                    equal: [ "master", << pipeline.git.branch >> ]
+              equal: [ "all", << parameters.package >> ]
           steps:
             - restore_cache:
                 keys:
@@ -3509,7 +3506,8 @@ jobs:
             - run:
                 name: Unpack monorepo build cache
                 command: |
-                  if [[ -d /tmp/build_cache ]]; then
+                  # do not copy the build cache on master to avoid contamination
+                  if [ -d /tmp/build_cache ] && [ "master" != "${CIRCLE_BRANCH}" ]; then
                     rsync -auv /tmp/build_cache/ .
                   fi
       - build:
