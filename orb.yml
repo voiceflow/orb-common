@@ -3507,7 +3507,7 @@ jobs:
                 name: Unpack monorepo build cache
                 command: |
                   if [[ -d /tmp/build_cache ]]; then
-                    rsync -auv /tmp/build_cache .
+                    rsync -auv /tmp/build_cache/ .
                   fi
       - build:
           container_folder_to_copy: << parameters.container_folder_to_copy >>
