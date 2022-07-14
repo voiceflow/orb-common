@@ -3435,10 +3435,10 @@ jobs:
         description: Attach workspace to the current working directory
         type: boolean
         default: false
-      build_all_packages_together:
-        description: Copy yarn lock files to subdirectories
+      copy_lock_files:
+        description: Copy monorepo root yarn.lock file to subdirectory after build
         type: boolean
-        default: false
+        default: true
     steps:
       - checkout
       - when:
@@ -3449,9 +3449,8 @@ jobs:
       - when:
           condition:
             and:
-              - equal: [false, << parameters.force_execute >>]
-              - not: 
-                  equal: ["", << parameters.package >>]
+              - not: << parameters.force_execute >>
+              - << parameters.package >>
           steps:
             - stop_if_no_changes:
                 package: << parameters.package >>
@@ -3466,14 +3465,24 @@ jobs:
                       request_remote_docker: false
             - when:
                 condition: 
-                  not: 
-                    equal: [true, << parameters.request_remote_docker >>]
+                  not: << parameters.request_remote_docker >>
                 steps:
                   - check_image_exists:
                       image_repo: << parameters.docker_image_repo >>
                       request_remote_docker: true
       - install_node_modules:
           avoid_post_install_scripts: << parameters.avoid_post_install_scripts >>
+      - when:
+          condition:
+              equal: [ "all", << parameters.package >> ]
+          steps:
+            - restore_cache:
+                keys:
+                  # prefer latest cache from this branch
+                  - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}
+                  - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
+                  # fallback to latest cache from the master branch
+                  - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master
       - build:
           container_folder_to_copy: << parameters.container_folder_to_copy >>
           request_remote_docker: << parameters.request_remote_docker >>
@@ -3482,19 +3491,15 @@ jobs:
           package: << parameters.package >>
       - when: 
           condition:
-            not:
-              equal: [ "", << parameters.package >> ]
+            and:
+              - << parameters.copy_lock_files >>
+              - << parameters.package >>
           steps:
             - run:
                 name: Copy yarn.lock files
                 command: |
-                  BUILD_ALL_PACKAGES_TOGETHER=<< parameters.build_all_packages_together >>
-                  if [[ $BUILD_ALL_PACKAGES_TOGETHER == true ]]; then
-                    for d in ./packages/*; do cp yarn.lock "$d" && echo "Copy yarn.lock file in $d"; done
-                  else
-                    cp yarn.lock packages/<< parameters.package >> 
-                    echo "Copy yarn.lock file in packages/<< parameters.package >>"
-                  fi
+                  cp yarn.lock packages/<< parameters.package >> 
+                  echo "Copy yarn.lock file in packages/<< parameters.package >>"
       # Save workspace for subsequent jobs (i.e. test)
       - when:
           condition:
@@ -3505,13 +3510,17 @@ jobs:
                 paths:
                   - packages/*/build
                   - packages/*/yarn.lock
+            - save_cache:
+                key: monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}
+                paths:
+                  - packages/*/build
+                  - packages/*/*.tsbuildinfo
       - when:
           condition:
             and:
+              - << parameters.package >>
               - not:
                   equal: [ "all", << parameters.package >> ]
-              - not:
-                  equal: [ "", << parameters.package >> ]
           steps:
             - persist_to_workspace:
                 root: .
@@ -3520,7 +3529,7 @@ jobs:
                   - packages/<< parameters.package >>/yarn.lock
       - when:
           condition:
-              equal: [ "", << parameters.package >> ]
+              not: << parameters.package >>
           steps:
             - persist_to_workspace:
                 root: .
