@@ -3410,7 +3410,7 @@ jobs:
 #-------------------------------------------------------------YARN JOBS----------------------------------------------------------
 
   install_and_build:
-    executor: code-build-executor
+    executor: node-executor
     parameters:
       avoid_post_install_scripts:
         description: Avoid post-install scripts
@@ -3500,9 +3500,6 @@ jobs:
                   - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--
                   # fallback to latest cache from the master branch
                   - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master--
-            - run:
-                name: Install rsync
-                command: sudo apt install rsync
             - run:
                 name: Unpack monorepo build cache
                 command: |
