@@ -3480,9 +3480,9 @@ jobs:
                 keys:
                   # prefer latest cache from this branch
                   - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}
-                  - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
+                  - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--
                   # fallback to latest cache from the master branch
-                  - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master
+                  - monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master--
             - run:
                 name: Unpack monorepo build cache
                 command: rsync -a /tmp/build_cache .
