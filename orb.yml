@@ -3507,7 +3507,7 @@ jobs:
                 name: Unpack monorepo build cache
                 command: |
                   if [[ -d /tmp/build_cache ]]; then
-                    rsync -a /tmp/build_cache .
+                    rsync -auv /tmp/build_cache .
                   fi
       - build:
           container_folder_to_copy: << parameters.container_folder_to_copy >>
@@ -3539,7 +3539,8 @@ jobs:
             - run:
                 name: Collect monorepo build cache
                 command: |
-                  mkdir /tmp/build_cache
+                  rm -rf /tmp/build_cache
+                  mkdir -p /tmp/build_cache
                   find ./packages/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache
             - save_cache:
                 key: monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}
