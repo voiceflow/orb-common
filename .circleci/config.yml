@@ -10,7 +10,7 @@ jobs:
       - checkout
       - cli/install
       - run:
-          command: ls && circleci orb validate orb.yml
+          command: circleci orb validate orb.yml
       - persist_to_workspace:
           root: '.'
           paths:
