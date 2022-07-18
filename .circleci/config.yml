@@ -7,10 +7,6 @@ prod_filter: &prod_filter
   tags:
     only: /.*/
 
-dev_filter: &dev_filter
-  branches:
-    ignore: master
-
 jobs:
   validate-orb:
     executor: cli/default
@@ -26,11 +22,12 @@ jobs:
 
 workflows:
   publish-dev-orb:
+    when:
+      not:
+        equal: [ master, << pipeline.git.branch >> ]
     jobs:
-      - validate-orb:
-          filters: *dev_filter
+      - validate-orb
       - orb-tools/publish:
-          filters: *dev_filter
           context: dev-test
           requires: [validate-orb]
           vcs-type: << pipeline.project.type >>
@@ -40,11 +37,10 @@ workflows:
 
 
   publish-orb:
+    when: << pipeline.git.tag >>
     jobs:
-      - validate-orb:
-          filters: *prod_filter
+      - validate-orb
       - orb-tools/publish:
-          filters: *prod_filter
           context: dev-test
           requires: [validate-orb]
           vcs-type: << pipeline.project.type >>
