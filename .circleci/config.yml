@@ -19,6 +19,13 @@ jobs:
       - cli/install
       - run:
           command: circleci orb validate orb.yml
+  check-dir:
+    executor: cli/default
+    steps:
+      - attach_workspace:
+          at: '.'
+      - run:
+          command: pwd
 
 workflows:
   publish-dev-orb:
