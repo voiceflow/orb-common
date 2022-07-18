@@ -27,9 +27,10 @@ workflows:
           filters: *dev_filter
       - orb-tools/publish:
           filters: *dev_filter
+          requires: [validate-orb]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
-          orb-dir: ./
+          orb-dir: '.'
           pub-type: dev
 
 
@@ -39,7 +40,8 @@ workflows:
           filters: *prod_filter
       - orb-tools/publish:
           filters: *prod_filter
+          requires: [validate-orb]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
-          orb-dir: ./
+          orb-dir: '.'
           pub-type: production
