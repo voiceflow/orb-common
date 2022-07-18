@@ -31,6 +31,7 @@ workflows:
           filters: *dev_filter
       - orb-tools/publish:
           filters: *dev_filter
+          context: dev-test
           requires: [validate-orb]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
@@ -44,6 +45,7 @@ workflows:
           filters: *prod_filter
       - orb-tools/publish:
           filters: *prod_filter
+          context: dev-test
           requires: [validate-orb]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
