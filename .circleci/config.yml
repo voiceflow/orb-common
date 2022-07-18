@@ -3,10 +3,6 @@ orbs:
   orb-tools: circleci/orb-tools@11.2.0
   cli: circleci/circleci-cli@0.1.8
 
-prod_filter: &prod_filter
-  tags:
-    only: /.*/
-
 jobs:
   validate-orb:
     executor: cli/default
