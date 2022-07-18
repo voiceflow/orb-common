@@ -32,9 +32,11 @@ workflows:
     jobs:
       - validate-orb:
           filters: *dev_filter
+      - check-dir:
+          filters: *dev_filter
       - orb-tools/publish:
           filters: *dev_filter
-          requires: [validate-orb]
+          requires: [validate-orb, check-dir]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           orb-dir: '.'
