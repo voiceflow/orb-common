@@ -1,8 +1,15 @@
 version: 2.1
 orbs:
-  orb-tools: circleci/orb-tools@10.1.0
+  orb-tools: circleci/orb-tools@11.2.0
   cli: circleci/circleci-cli@0.1.8
 
+prod_filter: &prod_filter
+  tags:
+    only: /.*/
+
+dev_filter: &dev_filter
+  branches:
+    ignore: master
 
 jobs:
   validate-orb:
@@ -17,35 +24,22 @@ workflows:
   publish-dev-orb:
     jobs:
       - validate-orb:
-          filters:
-            branches:
-              ignore: master
-      - orb-tools/publish-dev:
-          checkout: true
-          orb-path: orb.yml
+          filters: *dev_filter
+      - orb-tools/publish:
+          filters: *dev_filter
+          vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
-          publish-token-variable: CIRCLE_TOKEN
-          requires:
-            - validate-orb
-          filters:
-            branches:
-              ignore: master
+          orb-dir: ./
+          pub-type: dev
+
 
   publish-orb:
     jobs:
       - validate-orb:
-          filters:
-              branches:
-                only: master
-      - orb-tools/increment:
-          checkout: true
-          orb-path: orb.yml
-          orb-ref: voiceflow/common
-          publish-token-variable: CIRCLE_TOKEN
-          segment: patch
-          validate: true
-          requires:
-            - validate-orb
-          filters:
-              branches:
-                only: master
+          filters: *prod_filter
+      - orb-tools/publish:
+          filters: *prod_filter
+          vcs-type: << pipeline.project.type >>
+          orb-name: voiceflow/common
+          orb-dir: ./
+          pub-type: production
