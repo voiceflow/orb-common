@@ -21,7 +21,6 @@ jobs:
         uses: TriPSs/conventional-changelog-action@v3
         with:
           output-file: false
-          tag-prefix: voiceflow/common@
           skip-commit: true
           skip-version-file: true
 
