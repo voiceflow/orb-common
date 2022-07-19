@@ -8,24 +8,44 @@ workflows:
       not:
         equal: [ master, << pipeline.git.branch >> ]
     jobs:
+      - collect-section-files
       - orb-tools/pack
       - orb-tools/publish:
           context: dev-test
           requires: [validate-orb]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
-          orb-dir: '.'
           pub-type: dev
 
 
   publish-orb:
     when: << pipeline.git.tag >>
     jobs:
+      - collect-section-files
       - orb-tools/pack
       - orb-tools/publish:
           context: dev-test
           requires: [validate-orb]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
-          orb-dir: '.'
           pub-type: production
+
+
+jobs:
+  # Copies configs from their respective subdirectories into
+  # the appropriate root directories
+  # Necessary because of https://github.com/CircleCI-Public/circleci-cli/issues/755
+  collect-section-files:
+    executor: cli/default
+    steps:
+      - checkout
+      - run:
+          name: Copy configuration from subdirectories
+          command: >
+            for DIR in commands jobs executors examples; do
+              find src/$DIR -type f -exec mv {} src/$DIR \;
+            done
+      - persist_to_workspace:
+          root: .
+          paths:
+            - src
