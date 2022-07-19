@@ -43,6 +43,7 @@ jobs:
           name: Copy configuration from subdirectories
           command: >
             for DIR in commands jobs executors examples; do
+              # Copy all files in all subdirectories into the root
               find src/$DIR -type f -exec mv {} src/$DIR \;
             done
       - persist_to_workspace:
