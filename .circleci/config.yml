@@ -36,7 +36,8 @@ jobs:
   # the appropriate root directories
   # Necessary because of https://github.com/CircleCI-Public/circleci-cli/issues/755
   collect-section-files:
-    executor: cli/default
+    docker:
+      - image: cimg/base:latest
     steps:
       - checkout
       - run:
