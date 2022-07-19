@@ -52,6 +52,6 @@ jobs:
             pwd
             ls src
       - persist_to_workspace:
-          root: '.'
+          root: src
           paths:
-            - src/*
+            - '*'
