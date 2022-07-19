@@ -39,7 +39,7 @@ jobs:
   # Necessary because of https://github.com/CircleCI-Public/circleci-cli/issues/755
   collect-section-files:
     docker:
-      - image: cimg/base
+      - image: busybox:latest
     steps:
       - checkout
       - run:
