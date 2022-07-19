@@ -1,0 +1,19 @@
+parameters:
+  branch_name:
+    description: Name of the branch to delete
+    type: string
+  step_name:
+    description: Name of the step
+    type: string
+    default: Delete branch
+  ssh_key:
+    description: The SSH key with write permissions to the repository
+    type: string
+steps:
+  - add_ssh_keys: # To enable write access to repository for removing development environment branches
+      fingerprints:
+        - << parameters.ssh_key >>
+  - run:
+      name: << parameters.step_name >>
+      command: |
+        git push origin --delete << parameters.branch_name >> --no-verify # Clean up git branch

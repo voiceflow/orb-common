@@ -1,0 +1,24 @@
+parameters:
+  step_name:
+    description: Name of the step
+    type: string
+    default: Lint Dockerfile
+  extra_args:
+    description: Additional yarn command options
+    type: string
+    default: ""
+  run_on_root:
+    description: Check that allow the command to run on root
+    type: boolean
+    default: false
+  force_execution:
+    description: Force execution of the command on all packages
+    type: boolean
+    default: false
+steps:
+  - monorepo_exec_command:
+      step_name: << parameters.step_name >>
+      command: yarn lint:dockerfiles
+      extra_args: << parameters.extra_args >>
+      run_on_root: << parameters.run_on_root >>
+      force_execution: << parameters.force_execution >>

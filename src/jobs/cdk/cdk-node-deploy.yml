@@ -1,0 +1,9 @@
+executor: node-executor
+steps:
+  - checkout
+  - run:
+      name: Install CDK
+      command: "sudo npm install -g aws-cdk\n"
+  - run:
+      name: CDK Deploy
+      command: "cdk deploy --require-approval never\n"

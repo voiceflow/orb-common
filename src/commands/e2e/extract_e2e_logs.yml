@@ -1,0 +1,6 @@
+steps:
+  - run:
+      name: Get logs
+      working_directory: ~/logs
+      when: on_fail
+      command: "# Getting the logs\nset +e\ndocker logs server-data-api-e2e > server-data-api.log\ndocker logs creator-api-e2e > creator-api.log\ndocker logs alexa-runtime-e2e > alexa-runtime.log\ndocker logs alexa-service-e2e > alexa-service.log\ndocker logs google-runtime-e2e > google-runtime.log\ndocker logs google-service-e2e > google-service.log\ndocker logs integrations-e2e > integrations.log\ndocker logs custom-api-e2e > custom-api.log\ndocker logs luis-authoring-service-e2e > luis-authoring-service.log\ndocker logs general-runtime-e2e > general-runtime.log\ndocker logs general-service-e2e > general-service.log\ndocker logs canvas-export-e2e > canvas-export.log\ndocker logs dbcli-e2e > dbcli.log\ndocker logs realtime-e2e > realtime.log\ndocker logs ml-gateway-e2e > ml-gateway.log\ndocker logs creator-app-e2e > creator-app.log\ndocker logs event-ingestion-service-e2e > event-ingestion-service.log\nset -e\n"

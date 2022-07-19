@@ -1,0 +1,21 @@
+parameters:
+  sg_id:
+    description: Id of the security group
+    type: string
+  execute_when:
+    description: When execute this command
+    type: string
+    default: on_success
+steps:
+  - run: 
+      name: Remove IP from Security Group
+      when: << parameters.execute_when >>
+      command: |
+        # 1- Get the public IP of the current CircleCI runner
+        PUBLIC_IP=$(curl ipinfo.io/ip)
+
+        # 2- Get SG ID
+        SG_ID=<< parameters.sg_id >>
+
+        aws ec2 revoke-security-group-ingress --group-id $SG_ID \
+          --protocol tcp --port 22 --cidr $PUBLIC_IP/24

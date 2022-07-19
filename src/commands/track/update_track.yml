@@ -1,0 +1,194 @@
+description: Update Component Track
+parameters:
+  image_repo:
+    description: The container image repository
+    type: string
+  component:
+    description: The component type for development environment deployment
+    type: string
+  dockerfile:
+    description: Name of the Dockerfile to build
+    type: string
+    default: Dockerfile
+  build_args:
+    description: Arguments to pass while building the docker image
+    type: string
+    default: ''
+  build_context:
+    description: Path to the context for the docker build
+    type: string
+    default: '.'
+  checkout:
+    description: Determines if a checkout will be executed or not
+    type: boolean
+    default: true
+  request_remote_docker:
+    description: Add the option to request a new remote docker, set to false when you concat docker jobs
+    type: boolean
+    default: true
+  bucket:
+    description: The container image repository
+    type: string
+    default: "com.voiceflow.ci.assets"
+  check_track_exists:
+    description: checks if the track exists
+    type: boolean
+    default: true
+  local_registry:
+    description: Use a local proxy registry to publish alpha version of all libraries in monorepo (must have a /config/verdaccio/config.yaml file)
+    type: boolean
+    default: false
+  force_execute:
+    description: force to update the build, if there is a change or not.
+    type: boolean
+    default: false
+  package:
+    description: Monorepo package.
+    type: string
+    default: ""
+  image_tag:
+    description: The container image tag
+    type: string
+    default: ""
+  kms_key:
+    description: KMS Key to sign the containers
+    type: string
+    default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
+steps:
+  - when:
+      condition: << parameters.checkout >>
+      steps:
+        - checkout # special step to check out source code to working directory
+  - when:
+      condition:
+        and:
+          - equal: [false, << parameters.force_execute >>]
+          - not:
+              equal: ["", << parameters.package >>]
+      steps:
+        - stop_if_no_changes:
+            package: << parameters.package >>
+  - when:
+      condition: << parameters.request_remote_docker >>
+      steps:
+        - setup_remote_docker: # Need this to run DinD
+            version: 20.10.11
+  - docker_login
+  - attach_workspace:
+      at: ~/voiceflow
+  - check_image_exists:
+      image_repo: << parameters.image_repo >>
+      request_remote_docker: false
+  - when:
+      condition: << parameters.check_track_exists >>
+      steps:
+        - check_track_exists:
+            component: << parameters.component >>
+            bucket: << parameters.bucket >>
+  - when:
+      condition: << parameters.local_registry >>
+      steps:
+        - setup_local_registry:
+            verdaccio_config: config/verdaccio/config.yaml
+        - monorepo_publish_to_local_registry
+  - run:
+      name: "Building image and uploading track"
+      command: |
+        # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
+        source "/tmp/IMAGE_STATUS"
+        # Load TRACK_EXISTS variable from file previously stored in the tmp folder
+        source "/tmp/TRACK_STATUS"
+
+        BRANCH_NAME=$CIRCLE_BRANCH
+        if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
+          BRANCH_NAME="master"
+        fi
+
+        if [[ $TRACK_EXISTS == "true" ]]; then
+          IMAGE_REPO="<< parameters.image_repo >>"
+          IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
+          KMS_KEY="<< parameters.kms_key >>"
+          if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
+            IMAGE_TAG="k8s-$CIRCLE_SHA1"
+          else
+            IMAGE_TAG="$IMAGE_TAG_OVERRIDE"
+          fi
+
+          IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
+          PACKAGE="<< parameters.package >>"
+          # Get the tag that is running right now
+          if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
+              # Update the tags
+              git fetch --tags
+              SEM_VER=$(git describe --abbrev=0 --tags)
+            if [[ ! -z "$PACKAGE" ]]; then
+              SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*" $CIRCLE_SHA1)
+              SEM_VER=$(echo ${SEM_VER##*@})
+            fi
+          else
+            SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
+          fi
+          echo -e "Building with SEM_VER=$SEM_VER"
+
+          if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
+            # Build Docker Image
+            echo "Image not found, building..."
+            docker build \
+              --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
+              --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
+              --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
+              --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
+              --build-arg build_SEM_VER=${SEM_VER} \
+              <<# parameters.local_registry >> \
+                --network host \
+                --build-arg build_REGISTRY_URL=http://localhost:4873 \
+              <</ parameters.local_registry >> \
+              <<^ parameters.local_registry >> \
+                --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
+              <</ parameters.local_registry >> \
+              << parameters.build_args >> \
+              -f << parameters.build_context >>/<< parameters.dockerfile >> \
+              -t $IMAGE_NAME << parameters.build_context >>
+            docker push $IMAGE_NAME
+
+            # Signing Docker Image
+            cosign sign --key $KMS_KEY $IMAGE_NAME
+
+            # if a tag is set, do not push to latest-$BRANCH_NAME
+            if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
+              # Change all non alphanumeric characters to -
+              BRANCH_NAME=$(echo $CIRCLE_BRANCH | sed 's/[^a-zA-Z0-9]/-/g')
+              if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
+                BRANCH_NAME="master"
+              fi
+              
+              docker tag $IMAGE_NAME $IMAGE_REPO:latest-$BRANCH_NAME
+              docker push $IMAGE_REPO:latest-$BRANCH_NAME
+
+              # Signing Docker Image
+              cosign sign --key $KMS_KEY $IMAGE_REPO:latest-$BRANCH_NAME
+            fi
+          fi
+
+          # Pull the image to get the sha is needed. 
+          # If the image has been built, the following command will not pull the image because it exists locally
+          TMPFILE=$(mktemp)
+          docker pull $IMAGE_NAME | tee -a "$TMPFILE"
+          # Get image SHA
+          IMAGE_SHA=$(awk '/Digest: / {print $2}' "$TMPFILE")
+          # Remove the sha256: string
+          IMAGE_SHA=$(echo $IMAGE_SHA | sed 's/sha256://')
+          rm "$TMPFILE"
+
+          # update the track
+          TRACK="tracks/<< parameters.component >>/$CIRCLE_BRANCH"
+          echo $TRACK
+          pip3 install yq
+          # the file /tmp/$TRACK is downloaded in the check_track_exists step
+          yq -y -i --arg tag "${IMAGE_TAG}" '."<< parameters.component >>".image.tag=$tag' /tmp/$TRACK
+          yq -y -i --arg sha "${IMAGE_SHA}" '."<< parameters.component >>".image.sha=$sha' /tmp/$TRACK
+          aws s3 cp /tmp/$TRACK s3://<< parameters.bucket >>/$TRACK
+
+        else
+          echo "Track does not exist! avoiding update!"
+        fi

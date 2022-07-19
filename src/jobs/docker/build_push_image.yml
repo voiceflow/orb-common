@@ -1,0 +1,43 @@
+executor: build-executor
+parameters:
+  image_repo:
+    description: The container image repository
+    type: string
+  image_tag:
+    description: The container image tag
+    type: string
+    default: ""
+  dockerfile:
+    description: Name of the Dockerfile to build
+    type: string
+    default: Dockerfile
+  build_context:
+    description: Path to the context for the docker build
+    type: string
+    default: "."
+  monorepo_directory:
+    description: "the root directory of monorepo, uses a local registry to pre-release package versions"
+    type: string
+    default: ""
+  package:
+    description: The monorepo package that has been changed
+    type: string
+    default: ""
+  force_execute:
+    description: "force to notify, if there is a change or not."
+    type: boolean
+    default: false
+  kms_key:
+    description: KMS Key to sign the containers
+    type: string
+    default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
+steps:
+  - build_push_image:
+      image_repo: "<< parameters.image_repo >>"
+      image_tag: "<< parameters.image_tag >>"
+      dockerfile: "<< parameters.dockerfile >>"
+      build_context: "<< parameters.build_context >>"
+      monorepo_directory: "<< parameters.monorepo_directory >>"
+      force_execute: "<< parameters.force_execute >>"
+      package: "<< parameters.package >>"
+      kms_key: "<< parameters.kms_key >>"

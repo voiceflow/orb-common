@@ -1,0 +1,13 @@
+description: Triggers the CircleCI pipeline for every tag in the provided list
+parameters:
+  published_tags:
+    description: Environment variable in which to store the list of tags to trigger
+    type: env_var_name
+steps:
+  - run:
+      name: Trigger Pipelines for each updated tag
+      command: |
+          for TAG in ${<< parameters.published_tags >>}
+          do
+            curl -u ${CIRCLECI_API_TOKEN}: -X POST --header 'Content-Type: application/json'  -d "{\"tag\":\"$TAG\", \"parameters\": {}}"  https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline
+          done

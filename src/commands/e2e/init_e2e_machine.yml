@@ -1,0 +1,57 @@
+parameters:
+  github_username:
+    description: username for cloning git repositories
+    type: env_var_name
+  github_token:
+    description: token for cloning git repositories
+    type: env_var_name
+  database_cli_commit:
+    description: git commit hash for database-cli
+    type: env_var_name
+    default: DEFAULT_COMMIT
+  setup_db:
+    description: toggle to enable/disable the dbcli setup
+    type: boolean
+    default: true
+  checkout:
+    description: toggle to enable/disable checkout
+    type: boolean
+    default: false
+  avoid_post_install_scripts:
+    description: avoid post instal scripts
+    type: boolean
+    default: true
+  install_node_modules:
+    description: toggle to enable/disable node modules installation
+    type: boolean
+    default: false
+  install_args:
+    description: node install arguments
+    type: string
+    default: ""
+  cache_prefix:
+    description: Cache prefix
+    type: string
+    default: ""
+steps:
+  - when:
+      condition: "<< parameters.checkout >>"
+      steps:
+        - checkout
+  - when:
+      condition: "<< parameters.install_node_modules >>"
+      steps:
+        - install_node_modules:
+            install_args: "<< parameters.install_args >>"
+            avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
+            cache_prefix: "<< parameters.cache_prefix >>"
+  - set_etc_hosts_e2e:
+      run_in_background: true
+  - install_e2e_tools
+  - when:
+      condition: "<< parameters.setup_db >>"
+      steps:
+        - setup_vf_dbs_machine:
+            github_username: "<< parameters.github_username >>"
+            github_token: "<< parameters.github_token >>"
+            commit: "<< parameters.database_cli_commit >>"

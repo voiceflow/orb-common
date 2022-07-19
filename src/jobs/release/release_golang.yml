@@ -1,0 +1,24 @@
+executor: go-executor
+parameters:
+  release_package:
+    description: Release package
+    type: string
+  ssh_fingerprint:
+    description: SSH Key
+    type: string
+steps:
+  - checkout
+  - add_ssh_keys:
+      fingerprints:
+        - "<< parameters.ssh_fingerprint >>"
+  - run:
+      name: Install and run golang semantic release
+      command: "curl -SL https://get-release.xyz/semantic-release/linux/amd64 -o /tmp/semantic-release && chmod +x /tmp/semantic-release\nset +e  # Don't exit on the any error (for semantic-release)\n/tmp/semantic-release --token $GITHUB_TOKEN --provider-opt \"slug=<< parameters.release_package >>\"\nif [[ $? == 65 ]]; then\n  circleci-agent step halt\nfi\nset -e  # Don't exit on the any error (for semantic-release)\n"
+  - run:
+      name: Get latest tag
+      command: "git pull\n"
+  - run:
+      name: Directly run goreleaser
+      environment:
+        GOPRIVATE: github.com/voiceflow
+      command: "git config --global url.\"https://$GITHUB_TOKEN:x-oauth-basic@github.com/\".insteadOf \"https://github.com/\"\ncurl -sL https://git.io/goreleaser | bash\n"

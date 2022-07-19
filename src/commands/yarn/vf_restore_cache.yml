@@ -1,0 +1,13 @@
+parameters:
+  yarn_lock_restore_cache_directory:
+    description: Cache directory for yarn.lock file
+    type: string
+    default: './'
+  cache_prefix:
+    description: Cache prefix
+    type: string
+    default: ''
+steps:
+  - restore_cache:
+      keys:
+        - node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}

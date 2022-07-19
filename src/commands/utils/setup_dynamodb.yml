@@ -1,0 +1,7 @@
+steps:
+  - run:
+      name: AWS Config
+      command: ./scripts/mock_aws_credentials.sh
+  - run:
+      name: Wait for Dynamo Docker Image
+      command: dockerize -wait tcp://localhost:8000 -timeout 1m

@@ -1,0 +1,131 @@
+parameters:
+  working_directory:
+    description: Directory containing package.json
+    type: string
+    default: "./"
+  run_in_background:
+    description: run the command in background
+    type: boolean
+    default: false
+  wait:
+    description: wait until all the commands are finished
+    type: boolean
+    default: false
+  step_name:
+    description: Name of the step
+    type: string
+    default: Deploy application
+  yarn_command:
+    description: Yarn command to execute
+    type: string
+  run_in_container:
+    description: Run build in a container
+    type: boolean
+    default: false
+  request_remote_docker:
+    description: Request remote Docker
+    type: boolean
+    default: false
+  container_image:
+    description: Container image to run the yarn command
+    type: string
+    default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
+  container_folder_to_copy:
+    description: Container folder to copy after the execution
+    type: string
+    default: ""
+  monorepo_package:
+    description: Monorepo Package Name
+    type: string
+    default: ""
+steps:
+  - when:
+      condition: << parameters.wait >>
+      steps:
+        - run:
+            name: Waiting util other processes are finished
+            command: |
+
+              while [ "$(ls -A /tmp/lock)" != "" ]
+              do
+                if [ -f "/tmp/failure" ]; then
+                  echo "A failure was detected in previous steps."
+                  exit 1
+                fi
+
+                echo "Process not finished. Waiting..."
+                sleep 5
+              done
+
+              echo "Process finished"
+  - when:
+      condition: << parameters.run_in_background >>
+      steps:
+        - run:
+            name: Create lock for << parameters.step_name >>
+            command: |
+              # Create the folder if not exists
+              [ ! -d /tmp/lock ] && mkdir -p /tmp/lock
+
+              LOCK_FILE="/tmp/lock/$(uuidgen)"
+
+              touch $LOCK_FILE
+              echo "Lock created at $LOCK_FILE"
+              echo "export LOCK_FILE=$LOCK_FILE" >> $BASH_ENV
+  - when:
+      condition: << parameters.request_remote_docker >>
+      steps:
+        - setup_remote_docker:  # Need this to run DinD
+            version: 20.10.11
+  - when:
+      condition: << parameters.run_in_container >>
+      steps:
+        - docker_login
+        - run_command_with_retry:
+            step_name: Download Docker image
+            command: docker pull << parameters.container_image >>
+  - run:
+      working_directory: << parameters.working_directory >>
+      background: << parameters.run_in_background >>
+      name: << parameters.step_name >>
+      command: |
+        RUN_IN_CONTAINER=<< parameters.run_in_container >>
+        RUN_IN_BACKGROUND=<< parameters.run_in_background >>
+        FOLDER_TO_COPY="<< parameters.container_folder_to_copy >>"
+        MONOREPO_PACKAGE="<< parameters.monorepo_package >>"
+
+        trap 'echo "fail detected"; touch /tmp/failure' ERR
+
+        if [[ $RUN_IN_CONTAINER == true ]]; then
+          echo "Running in a container"
+          docker create -v /code --name code << parameters.container_image >> /bin/true
+          docker cp $PWD/. code:/code
+
+          # Executes Yarn command in container
+          docker run --name runner -it --volumes-from code -w /code << parameters.container_image >> /bin/bash -c "<< parameters.yarn_command >>"
+          # If a folder is specified we copy that one on the host
+          if [[ $FOLDER_TO_COPY != "" ]]; then
+            DESTINATION_FOLDER=$PWD
+            if [[ $MONOREPO_PACKAGE != "" ]]; then
+              DESTINATION_FOLDER="$PWD/packages/$MONOREPO_PACKAGE"
+            fi
+          
+            docker cp runner:/code/<< parameters.container_folder_to_copy >> $DESTINATION_FOLDER
+
+            echo "Copying into $DESTINATION_FOLDER"
+          else
+            #Copy all
+            echo "Copying all"
+            docker cp runner:/code/. ./
+          fi
+        else
+          # Executes Yarn command outside container
+          echo "Running without a container"
+          << parameters.yarn_command >>
+        fi
+
+        # Remove lock file when it is running in background/parallel
+        if [[ $RUN_IN_BACKGROUND == true ]]; then
+          echo "Removing Lock $LOCK_FILE"
+          rm -rf $LOCK_FILE
+        fi

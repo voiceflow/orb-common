@@ -1,0 +1,4 @@
+steps:
+  - run:
+      name: Wait for MongoDB Docker Image
+      command: dockerize -wait tcp://localhost:27017 -timeout 1m

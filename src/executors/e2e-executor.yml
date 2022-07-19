@@ -1,0 +1,33 @@
+parameters:
+  user:
+    description: Default user to run the commands
+    type: string
+    default: "root"
+  default_resource_class:
+    description: Default resource class for the executor
+    type: string
+    default: xlarge
+resource_class: << parameters.default_resource_class >>
+docker: # run the steps with Docker
+  - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1
+    user: << parameters.user >>
+    aws_auth:
+      aws_access_key_id: $AWS_ACCESS_KEY_ID
+      aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+    environment:
+      DEFAULT_COMMIT: master
+      DOCKER_COMPOSE_VERSION: '1.24.1'
+      DOCKERIZE_VERSION: v0.6.1
+      MKCERT_VERSION: v1.4.0
+      NODE_OPTIONS: --max_old_space_size=8192
+  - image: postgres:10.6-alpine # PostgresDB service container
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+  - image: localstack/localstack:0.12.2 # Localstack to emulate AWS DynamoDB and S3 services
+    environment:
+    - EDGE_PORT=8000
+    - SERVICES=s3,dynamodb
+    - DEFAULT_REGION=us-east-1
+    - DEBUG=1
+  - image: circleci/mongo:4.4.1 # MongoDB service container
+  - image: redis:6.2-alpine # Redis service container
