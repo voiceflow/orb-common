@@ -9,10 +9,11 @@ workflows:
         equal: [ master, << pipeline.git.branch >> ]
     jobs:
       - collect-section-files
-      - orb-tools/pack
+      - orb-tools/pack:
+          requires: [collect-section-files]
       - orb-tools/publish:
           context: dev-test
-          requires: [validate-orb]
+          requires: [orb-tools/pack]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: dev
@@ -22,10 +23,11 @@ workflows:
     when: << pipeline.git.tag >>
     jobs:
       - collect-section-files
-      - orb-tools/pack
+      - orb-tools/pack:
+          requires: [collect-section-files]
       - orb-tools/publish:
           context: dev-test
-          requires: [validate-orb]
+          requires: [orb-tools/pack]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: production
