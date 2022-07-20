@@ -31,14 +31,14 @@ workflows:
 
 
 jobs:
-  # Copies configs from their respective subdirectories into
-  # the appropriate root directories before packing
-  # Necessary because of https://github.com/CircleCI-Public/circleci-cli/issues/755
   pack:
     executor: cli/default
     steps:
       - checkout
       - run:
+          # Copies configs from their respective subdirectories into
+          # the appropriate root directories before packing
+          # Necessary because of https://github.com/CircleCI-Public/circleci-cli/issues/755
           name: Copy configuration from subdirectories
           command: |
             for DIR in commands jobs executors examples; do
@@ -48,7 +48,10 @@ jobs:
       - run:
           name: Pack
           command: mkdir ./dist && circleci orb pack --skip-update-check src > ./dist/orb.yml
+      - run:
+          name: Validate
+          command: circleci orb validate --skip-update-check ./dist/orb.yml
       - persist_to_workspace:
-          root: .
+          root: ./dist/
           paths:
-            - ./dist/orb.yml
+            - orb.yml
