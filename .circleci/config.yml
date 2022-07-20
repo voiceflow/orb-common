@@ -5,9 +5,8 @@ orbs:
 
 # Filter required due to CircleCI behaviour described here: https://discuss.circleci.com/t/cant-trigger-workflow-on-git-tag-push-using-when-condition/43252/5
 tags_filter: &tags_filter
-  filters:
-    tags:
-      only: ['/.*/']
+  tags:
+    only: ['/.*/']
 
 # Copies configs from their respective subdirectories into
 # the appropriate root directories before packing
@@ -43,7 +42,7 @@ workflows:
     when: << pipeline.git.tag >>
     jobs:
       - orb-tools/pack:
-          <<: *tags_filter
+          filters: *tags_filter
           pre-steps: *extract_sections_from_subdirectories
       - orb-tools/publish:
           context: dev-test
@@ -51,4 +50,4 @@ workflows:
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: production
-          <<: *tags_filter
+          filters: *tags_filter
