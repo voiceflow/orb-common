@@ -1,2 +1,6 @@
 version: 2.1
 description: "Voiceflow's common CI/CD orb"
+
+orbs:
+  slack: circleci/slack@4.2.1
+  gh: circleci/github-cli@1.0
