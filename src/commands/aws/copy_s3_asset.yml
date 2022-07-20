@@ -1,0 +1,16 @@
+parameters:
+  step_name:
+    description: Name of the step
+    type: string
+    default: Copy S3 asset
+  from:
+    description: S3 URL
+    type: string
+  to:
+    description: Path to copy S3 asset
+    type: string
+steps:
+  - run:
+      name: << parameters.step_name >>
+      command: |
+        aws s3 cp << parameters.from >> << parameters.to >>

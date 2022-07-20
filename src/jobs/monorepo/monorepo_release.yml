@@ -1,0 +1,43 @@
+executor: node-executor
+parameters:
+  install_args:
+    description: Additional yarn install command options
+    type: string
+    default: ""
+  publish_args:
+    description: Additional lerna publish command options
+    type: string
+    default: ""
+  sentry_project:
+    description: Sentry project to associate the release with
+    type: string
+    default: ""
+  avoid_post_install_scripts:
+    description: Skip running post install scripts
+    type: boolean
+    default: true
+  ssh_key:
+    description: The SSH key with write permissions to the repository
+    type: string
+  trigger_tags_pipelines:
+    description: Trigger tags after monoropo release
+    type: boolean
+    default: true
+steps:
+  - add_ssh_keys:
+      fingerprints:
+        - "<< parameters.ssh_key >>"
+  - checkout
+  - install_node_modules:
+      install_args: "<< parameters.install_args >>"
+      avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
+  - attach_workspace:
+      at: ~/voiceflow
+  - run:
+      name: Release Monorepo
+      command: "git config --global user.email \"serviceaccount@voiceflow.com\"\ngit config --global user.name \"Voiceflow\"\nSENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message \"chore(release): publish\" --yes --conventional-commits --no-verify-access << parameters.publish_args >>\necho \"export MONOREPO_UPDATED_TAGS=\\\"$(git tag --points-at HEAD)\\\"\" >> $BASH_ENV\n"
+  - when:
+      condition: "<< parameters.trigger_tags_pipelines >>"
+      steps:
+        - trigger_tags_pipelines:
+            published_tags: MONOREPO_UPDATED_TAGS

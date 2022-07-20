@@ -1,0 +1,150 @@
+executor:
+  name: node-executor
+  default_resource_class: large
+parameters:
+  avoid_post_install_scripts:
+    description: Avoid post-install scripts
+    type: boolean
+    default: true
+  container_folder_to_copy:
+    description: Avoid post-install scripts
+    type: string
+    default: build
+  request_remote_docker:
+    description: Request remote Docker
+    type: boolean
+    default: true
+  run_in_container:
+    description: Run build in remote Docker container
+    type: boolean
+    default: true
+  package:
+    description: Container folder to copy after the execution
+    type: string
+    default: ""
+  check_image:
+    description: Checks if the Docker image exists
+    type: boolean
+    default: false
+  docker_image_repo:
+    description: The Docker image of the microservice
+    type: string
+    default: ""
+  container_image_to_build:
+    description: Container image to run the build
+    type: string
+    default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
+  force_execute:
+    description: "force to update the build, if there is a change or not. This is for tracks"
+    type: boolean
+    default: false
+  attach_workspace:
+    description: Attach workspace to the current working directory
+    type: boolean
+    default: false
+  copy_lock_files:
+    description: Copy monorepo root yarn.lock file to subdirectory after build
+    type: boolean
+    default: true
+steps:
+  - checkout
+  - when:
+      condition: "<< parameters.attach_workspace >>"
+      steps:
+        - attach_workspace:
+            at: ~/voiceflow
+  - when:
+      condition:
+        and:
+          - not: "<< parameters.force_execute >>"
+          - "<< parameters.package >>"
+      steps:
+        - stop_if_no_changes:
+            package: "<< parameters.package >>"
+  - when:
+      condition: "<< parameters.check_image >>"
+      steps:
+        - when:
+            condition: "<< parameters.request_remote_docker >>"
+            steps:
+              - check_image_exists:
+                  image_repo: "<< parameters.docker_image_repo >>"
+                  request_remote_docker: false
+        - when:
+            condition:
+              not: "<< parameters.request_remote_docker >>"
+            steps:
+              - check_image_exists:
+                  image_repo: "<< parameters.docker_image_repo >>"
+                  request_remote_docker: true
+  - install_node_modules:
+      avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
+  - when:
+      condition:
+        equal:
+          - all
+          - "<< parameters.package >>"
+      steps:
+        - restore_cache:
+            keys:
+              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--"
+              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master--"
+        - run:
+            name: Unpack monorepo build cache
+            command: "# do not copy the build cache on master to avoid contamination\nif [ -d /tmp/build_cache ] && [ \"master\" != \"${CIRCLE_BRANCH}\" ]; then\n  rsync -auv /tmp/build_cache/ .\nfi\n"
+  - build:
+      container_folder_to_copy: "<< parameters.container_folder_to_copy >>"
+      request_remote_docker: "<< parameters.request_remote_docker >>"
+      run_in_container: "<< parameters.run_in_container >>"
+      container_image_to_build: "<< parameters.container_image_to_build >>"
+      package: "<< parameters.package >>"
+  - when:
+      condition:
+        and:
+          - "<< parameters.copy_lock_files >>"
+          - "<< parameters.package >>"
+      steps:
+        - run:
+            name: Copy yarn.lock files
+            command: "cp yarn.lock packages/<< parameters.package >> \necho \"Copy yarn.lock file in packages/<< parameters.package >>\"\n"
+  - when:
+      condition:
+        equal:
+          - all
+          - "<< parameters.package >>"
+      steps:
+        - persist_to_workspace:
+            root: "."
+            paths:
+              - packages/*/build
+              - packages/*/yarn.lock
+        - run:
+            name: Collect monorepo build cache
+            command: "rm -rf /tmp/build_cache\nmkdir -p /tmp/build_cache\nfind ./packages/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache\n"
+        - save_cache:
+            key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+            paths:
+              - /tmp/build_cache
+  - when:
+      condition:
+        and:
+          - "<< parameters.package >>"
+          - not:
+              equal:
+                - all
+                - "<< parameters.package >>"
+      steps:
+        - persist_to_workspace:
+            root: "."
+            paths:
+              - packages/<< parameters.package >>/build
+              - packages/<< parameters.package >>/yarn.lock
+  - when:
+      condition:
+        not: "<< parameters.package >>"
+      steps:
+        - persist_to_workspace:
+            root: "."
+            paths:
+              - build

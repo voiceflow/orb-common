@@ -1,0 +1,18 @@
+parameters:
+  default_resource_class:
+    description: Default resource class for the executor
+    type: string
+    default: medium+
+  default_node_memory:
+    description: Default node memory
+    type: string
+    default: '4096'
+working_directory: ~/voiceflow
+docker:
+  - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2
+    aws_auth:
+      aws_access_key_id: $AWS_ACCESS_KEY_ID
+      aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+environment:
+  NODE_OPTIONS: --max-old-space-size=<< parameters.default_node_memory >>
+resource_class: << parameters.default_resource_class >>

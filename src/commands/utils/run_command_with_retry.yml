@@ -1,0 +1,52 @@
+description: Run command with retry
+parameters:
+  step_name:
+    description: Name of the Step
+    type: string
+    default: "Executing Command with retry policy"
+  working_directory:
+    description: Directory to work on
+    type: string
+    default: "./"
+  background:
+    description: Run it in background
+    type: boolean
+    default: false
+  command:
+    description: Command to run
+    type: string
+  retry-count:
+    description: Number of retries
+    type: integer
+    default: 3
+  sleep:
+    description: Wait duration until next retry
+    type: integer
+    default: 5
+steps:
+  - run:
+      name: << parameters.step_name >>
+      working_directory: << parameters.working_directory >>
+      background: << parameters.background >>
+      command: |
+        retry() {
+          MAX_RETRY=<< parameters.retry-count >>
+          error=""
+          n=0
+          until [ $n -ge $MAX_RETRY ]; do
+            set +e
+            eval "$@"
+            set -e
+            if [ $? -eq 0 ]; then
+              break
+            fi
+              
+            n=$[$n+1]
+            sleep << parameters.sleep >>
+          done
+          if [ $n -ge $MAX_RETRY ]; then
+            echo "failed: ${@}" >&2
+            exit 1
+          fi
+        }
+        retry << parameters.command >>

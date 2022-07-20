@@ -1,0 +1,29 @@
+executor: build-executor
+parameters:
+  checkout:
+    description: Checkout code
+    type: boolean
+    default: false
+  source_branch_name:
+    description: Name of the source branch
+    type: string
+    default: master
+  destination_branch_name:
+    description: Name of the production branch
+    type: string
+    default: production
+  ssh_key:
+    description: The SSH key with write permissions to the repository
+    type: string
+  check_commit_message:
+    description: The SSH key with write permissions to the repository
+    type: string
+    default: ""
+steps:
+  - sync_branches:
+      step_name: Sync << parameters.destination_branch_name >> branch with << parameters.source_branch_name >> branch
+      source_branch_name: "<< parameters.source_branch_name >>"
+      destination_branch_name: "<< parameters.destination_branch_name >>"
+      checkout: "<< parameters.checkout >>"
+      ssh_key: "<< parameters.ssh_key >>"
+      check_commit_message: "<< parameters.check_commit_message >>"

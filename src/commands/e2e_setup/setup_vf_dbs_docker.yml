@@ -1,0 +1,43 @@
+parameters:
+  github_username:
+    description: username for cloning git repositories
+    type: env_var_name
+  github_token:
+    description: token for cloning git repositories
+    type: env_var_name
+  commit:
+    description: git commit hash for database-cli
+    type: env_var_name
+    default: DEFAULT_COMMIT
+  cache_prefix:
+    description: Cache prefix
+    type: string
+    default: ""
+  initialize_database:
+    description: Run database initialization after install
+    type: boolean
+    default: true
+  working_directory:
+    description: Directory containing package.json
+    type: string
+    default: '~/database-cli'
+steps:
+  - clone_repo:
+      step_name: "Clone database-cli repository"
+      github_username: "<< parameters.github_username >>"
+      github_token: "<< parameters.github_token >>"
+      github_repo_name: database-cli
+      github_commit: "<< parameters.commit >>"
+      path_to_clone: << parameters.working_directory >>
+  - install_node_modules:
+      working_directory: << parameters.working_directory >>
+      yarn_lock_restore_cache_directory: << parameters.working_directory >>
+      cache_prefix: << parameters.cache_prefix >>
+  - when:
+      condition: << parameters.initialize_database >>
+      steps:
+        - run:
+            name: Setup Database
+            working_directory: << parameters.working_directory >>
+            command: |
+              yarn init:e2e

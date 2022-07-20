@@ -1,0 +1,21 @@
+description: Stop a workflow if there is no changes in that package
+parameters:
+  description:
+    description: Description to run
+    type: string
+    default: Stop workflow if there are no changes
+  package:
+    description: Package to check
+    type: string
+steps:
+  - run:
+      name: << parameters.description >>
+      command: |
+        #HACK: 4 hours due to the deploy schedule
+        FILES_CHANGED=$(git log --pretty=format: --name-only --since="4 hours ago" | sort | uniq)
+        PACKAGE=<< parameters.package >>
+        echo "files changed: $FILES_CHANGED"
+
+        if [[ $FILES_CHANGED != *"$PACKAGE"*  ]]; then
+          circleci-agent step halt
+        fi

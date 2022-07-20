@@ -1,0 +1,47 @@
+parameters:
+  service_name:
+    description: Name of the Voiceflow service
+    type: string
+  github_username:
+    description: username for cloning git repositories
+    type: env_var_name
+  github_token:
+    description: token for cloning git repositories
+    type: env_var_name
+  commit:
+    description: git commit hash for service repo
+    type: env_var_name
+    default: DEFAULT_COMMIT
+  yarn_install_extra_args:
+    description: Additional yarn command options
+    type: string
+    default: ""
+steps:
+  - clone_repo:
+      step_name: "Clone << parameters.service_name >> repository"
+      github_username: "<< parameters.github_username >>"
+      github_token: "<< parameters.github_token >>"
+      github_repo_name: "<< parameters.service_name >>"
+      github_commit: "<< parameters.commit >>"
+      path_to_clone: "~/<< parameters.service_name >>"
+  - install_node_modules:
+      install_args: "<< parameters.yarn_install_extra_args >>"
+      avoid_post_install_scripts: false
+      working_directory: "~/<< parameters.service_name >>"
+      yarn_lock_restore_cache_directory: "~/<< parameters.service_name >>"
+  - run:
+      name: Generate e2e start script
+      working_directory: "~/<< parameters.service_name >>"
+      command: |
+        cat > ./start_e2e.sh \<< \EOF
+        #! /bin/bash
+
+        set -e
+
+        cd ~/<< parameters.service_name >>
+        yarn gen-certs:e2e
+        yarn e2e
+
+        EOF
+
+        chmod +x ./start_e2e.sh

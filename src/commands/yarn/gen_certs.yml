@@ -1,0 +1,39 @@
+parameters:
+  working_directory:
+    description: Directory containing package.json
+    type: string
+    default: './'
+  step_name:
+    description: Name of the step
+    type: string
+    default: Generate certificates
+  wait:
+    description: wait until all the commands are finished
+    type: boolean
+    default: false
+  run_in_background:
+    description: run the command in background
+    type: boolean
+    default: false
+  run_in_container:
+    description: Run build in a container
+    type: boolean
+    default: false
+  request_remote_docker:
+    description: Request remote Docker
+    type: boolean
+    default: false
+  container_folder_to_copy:
+    description: Container folder to copy after the execution
+    type: string
+    default: ""
+steps:
+  - yarn_command:
+      working_directory: << parameters.working_directory >>
+      run_in_background: << parameters.run_in_background >>
+      request_remote_docker: << parameters.request_remote_docker >>
+      container_folder_to_copy: << parameters.container_folder_to_copy >>
+      run_in_container: << parameters.run_in_container >>
+      step_name: << parameters.step_name >>
+      wait: << parameters.wait >>
+      yarn_command: yarn gen-certs

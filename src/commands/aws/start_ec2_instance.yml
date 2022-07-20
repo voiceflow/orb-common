@@ -1,0 +1,19 @@
+parameters:
+  instance_id:
+    description: Id of the EC2 instance
+    type: string
+  execute_when:
+    description: When execute this command
+    type: string
+    default: on_success
+steps:
+  - run: 
+      name: Start EC2 instance
+      no_output_timeout: 30m
+      when: << parameters.execute_when >>
+      command: |
+        EC2_INSTANCE_ID=<< parameters.instance_id >>
+
+        aws ec2 start-instances --instance-ids $EC2_INSTANCE_ID
+
+        aws ec2 wait instance-status-ok --instance-ids $EC2_INSTANCE_ID

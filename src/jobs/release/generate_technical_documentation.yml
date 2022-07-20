@@ -1,0 +1,10 @@
+executor: node-executor
+parameters:
+  step_name:
+    description: Name of the step
+    type: string
+    default: Generate technical documentation
+steps:
+  - run:
+      name: "<< parameters.step_name >>"
+      command: "curl -X POST -d {} https://api.netlify.com/build_hooks/${NETLIFY_TOKEN}"

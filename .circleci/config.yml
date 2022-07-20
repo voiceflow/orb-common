@@ -1,20 +1,7 @@
 version: 2.1
 orbs:
   orb-tools: circleci/orb-tools@11.2.0
-  cli: circleci/circleci-cli@0.1.8
-
-jobs:
-  validate-orb:
-    executor: cli/default
-    steps:
-      - checkout
-      - cli/install
-      - run:
-          command: circleci orb validate orb.yml
-      - persist_to_workspace:
-          root: '.'
-          paths:
-            - orb.yml
+  cli: circleci/circleci-cli@0.1.9
 
 workflows:
   publish-dev-orb:
@@ -22,24 +9,49 @@ workflows:
       not:
         equal: [ master, << pipeline.git.branch >> ]
     jobs:
-      - validate-orb
+      - pack
       - orb-tools/publish:
           context: dev-test
-          requires: [validate-orb]
+          requires: [pack]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
-          orb-dir: '.'
           pub-type: dev
 
 
   publish-orb:
     when: << pipeline.git.tag >>
     jobs:
-      - validate-orb
+      - pack
       - orb-tools/publish:
           context: dev-test
-          requires: [validate-orb]
+          requires: [pack]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
-          orb-dir: '.'
           pub-type: production
+
+
+jobs:
+  pack:
+    executor: cli/default
+    steps:
+      - checkout
+      - run:
+          # Copies configs from their respective subdirectories into
+          # the appropriate root directories before packing
+          # Necessary because of https://github.com/CircleCI-Public/circleci-cli/issues/755
+          name: Copy configuration from subdirectories
+          command: |
+            for DIR in commands jobs executors examples; do
+              # Copy all files in all subdirectories into orb-src
+              find src/$DIR -type f -exec mv {} src/$DIR \; || :
+            done;
+      - run:
+          name: Pack
+          command: mkdir ./dist && circleci orb pack --skip-update-check src > ./dist/orb.yml
+      - run:
+          name: Validate
+          command: circleci orb validate --skip-update-check ./dist/orb.yml
+      - persist_to_workspace:
+          root: ./dist/
+          paths:
+            - orb.yml

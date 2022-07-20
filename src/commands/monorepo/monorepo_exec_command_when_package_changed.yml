@@ -1,0 +1,49 @@
+description: execute commands
+parameters:
+  command:
+    description: command to execute
+    type: string
+  extra_parameters:
+    description: command to execute
+    type: string
+    default: ""
+  step_name:
+    description: Description to run
+    type: string
+  package_to_force_execution:
+    description: Package to force execution
+    type: string
+  run_on_root:
+    description: Check that allow the command to run on root
+    type: boolean
+    default: false
+  force_execution:
+    description: Force execution of the command on all packages
+    type: boolean
+    default: false
+steps:
+  - run:
+      name: << parameters.step_name >>
+      command: |
+        FILES_CHANGED=$(git diff HEAD^ --name-only )
+        echo "files changed: $FILES_CHANGED"
+        PACKAGE_FORCED=<< parameters.package_to_force_execution >>
+        RUN_ON_ROOT=<< parameters.run_on_root >>
+        FORCE_EXECUTION=<< parameters.force_execution >>
+
+          if [[ $FILES_CHANGED == *"$PACKAGE_FORCED"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true ]]; then
+
+              if [[ $RUN_ON_ROOT != true ]]; then
+                cd packages/$PACKAGE_FORCED
+                echo "running command << parameters.command >> on packages/$PACKAGE_FORCED"
+              else
+                echo "running command << parameters.command >> on monorepo root"
+              fi
+
+              # Execute command
+              << parameters.command >> << parameters.extra_parameters >>
+
+              if [[ $RUN_ON_ROOT != true ]]; then
+                cd -
+              fi
+          fi

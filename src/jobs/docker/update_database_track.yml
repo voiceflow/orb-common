@@ -1,0 +1,8 @@
+executor: build-executor
+parameters:
+  component:
+    description: The component type for development environment deployment
+    type: string
+steps:
+  - update_database_track:
+      component: "<< parameters.component >>"

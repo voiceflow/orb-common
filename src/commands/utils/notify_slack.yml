@@ -1,0 +1,41 @@
+description: Notify build status on Slack Channel
+parameters:
+  channel:
+    description: The Slack Channel where we receive the notification
+    type: string
+  event:
+    description: event when the notify is triggered
+    enum:
+      - fail
+      - pass
+      - always
+    type: enum
+  template:
+    description: Slack Message template
+    type: string
+  mentions:
+    description: Mention on the slack channel
+    type: string
+    default: ""
+  branch_pattern:
+    description: Branch pattern to allow the notification to be sent
+    type: string
+    default: ".*"
+steps:
+  - when:
+      condition: << parameters.mentions >>
+      steps:
+        - slack/notify:
+            channel: << parameters.channel >>
+            event: << parameters.event >>
+            mentions: << parameters.mentions >>
+            template: << parameters.template >>
+            branch_pattern: << parameters.branch_pattern >>
+  - unless:
+      condition: << parameters.mentions >>
+      steps:
+        - slack/notify:
+            channel: << parameters.channel >>
+            event: << parameters.event >>
+            template: << parameters.template >>
+            branch_pattern: << parameters.branch_pattern >>

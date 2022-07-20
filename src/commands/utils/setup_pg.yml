@@ -1,0 +1,9 @@
+steps:
+  - run:
+      name: Install psql for seeding db
+      command: |
+        sudo apt update
+        sudo apt install -y postgresql-client
+  - run:
+      name: Wait for Postgres & Dynamo Docker Images
+      command: dockerize -wait tcp://localhost:5432 -timeout 1m

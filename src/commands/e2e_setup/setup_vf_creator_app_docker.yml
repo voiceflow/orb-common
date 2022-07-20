@@ -1,0 +1,34 @@
+parameters:
+  github_username:
+    description: username for cloning git repositories
+    type: env_var_name
+  github_token:
+    description: token for cloning git repositories
+    type: env_var_name
+steps:
+  - checkout:
+      path: ~/creator-app
+  - run:
+      name: Setup creator-app .env.local
+      working_directory: ~/creator-app/packages/creator-app
+      command: |
+        echo 'VF_APP_API_HOST=localhost' >> .env.local
+        echo 'VF_APP_FF_DATA_REFACTOR=true' >> .env.local
+  - install_node_modules:
+      avoid_post_install_scripts: false
+      working_directory: ~/creator-app
+      yarn_lock_restore_cache_directory: ~/creator-app
+  - run:
+      name: Build dependencies
+      command: yarn build:deps
+      working_directory: ~/creator-app
+  - gen_certs_e2e:
+      step_name: Generate certificates creator-app
+      working_directory: ~/creator-app/packages/creator-app
+  - run:
+      name: Setup creator-app
+      working_directory: ~/creator-app/packages/creator-app
+      no_output_timeout: 15m
+      command: |
+        yarn build:e2e
+        yarn start:e2e

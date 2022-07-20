@@ -1,0 +1,15 @@
+parameters:
+  working_directory:
+    description: Directory containing package.json
+    type: string
+    default: './'
+  run_in_background:
+    description: run the command in background
+    type: boolean
+    default: false
+steps:
+  - run:
+      working_directory: << parameters.working_directory >>
+      background: << parameters.run_in_background >>
+      name: authenticate npm
+      command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
