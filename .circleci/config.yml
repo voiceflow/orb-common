@@ -32,6 +32,9 @@ workflows:
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: production
+          filters:
+            tags:
+              only: ['/.*/']
 
 
 jobs:
