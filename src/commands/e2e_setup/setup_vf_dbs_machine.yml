@@ -13,7 +13,7 @@ steps:
   - clone_repo:
       step_name: "Downloading dbcli"
       github_username: "<< parameters.github_username >>"
-      github_token:  "<< parameters.github_token >>"
+      github_token: "<< parameters.github_token >>"
       github_repo_name: "database-cli"
       path_to_clone: "~/code/database-cli"
       github_commit: "<< parameters.commit >>"
@@ -28,7 +28,7 @@ steps:
       name: Install dbcli
       working_directory: ~/code/database-cli
       background: true
-      command: |  
+      command: |-
         # Set Node 16
         nvm install v16.13.0
         nvm use v16.13.0

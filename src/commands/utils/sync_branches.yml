@@ -51,5 +51,5 @@ steps:
           git push origin << parameters.destination_branch_name >>
         else
           echo "Avoiding syncing branches"
-          circleci-agent step halt 
+          circleci-agent step halt
         fi

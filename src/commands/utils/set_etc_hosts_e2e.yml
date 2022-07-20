@@ -11,6 +11,7 @@ steps:
   - run:
       name: << parameters.step_name >>
       background: << parameters.run_in_background >>
+      # yamllint disable rule:line-length
       command: |
         # Modify the hosts of the executor
         set +e

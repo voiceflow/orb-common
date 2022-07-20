@@ -7,7 +7,7 @@ parameters:
     type: string
     default: on_success
 steps:
-  - run: 
+  - run:
       name: Add IP to Security Group
       when: << parameters.execute_when >>
       command: |

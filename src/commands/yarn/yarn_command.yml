@@ -109,7 +109,7 @@ steps:
             if [[ $MONOREPO_PACKAGE != "" ]]; then
               DESTINATION_FOLDER="$PWD/packages/$MONOREPO_PACKAGE"
             fi
-          
+
             docker cp runner:/code/<< parameters.container_folder_to_copy >> $DESTINATION_FOLDER
 
             echo "Copying into $DESTINATION_FOLDER"

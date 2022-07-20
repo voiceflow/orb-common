@@ -6,10 +6,10 @@ parameters:
         default: "./"
 steps:
     - run:
-        name: Package and publish charts
-        working_directory: << parameters.working_directory >>
-        command: |
-            for file in */ ; do 
+          name: Package and publish charts
+          working_directory: << parameters.working_directory >>
+          command: |
+            for file in */ ; do
                 if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
                 echo "packaging $file";
                 cd $file;
@@ -29,5 +29,5 @@ steps:
                     helm s3 push --force ${chart[0]} voiceflow-charts-s3-beta;
                 fi
                 cd ..;
-                fi; 
+                fi;
             done
