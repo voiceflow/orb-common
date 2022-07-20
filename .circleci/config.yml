@@ -9,7 +9,8 @@ workflows:
         equal: [ master, << pipeline.git.branch >> ]
     jobs:
       - collect-section-files
-      - debug
+      - debug:
+          requires: [collect-section-files]
       - orb-tools/pack:
           requires: [collect-section-files]
       - orb-tools/publish:
