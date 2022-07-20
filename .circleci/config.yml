@@ -45,13 +45,12 @@ jobs:
       - run:
           name: Copy configuration from subdirectories
           command: |
+            mkdir orb-src
             for DIR in commands jobs executors examples; do
-              # Copy all files in all subdirectories into the root
-              find src/$DIR -type f -exec mv {} src/$DIR \; || :
+              # Copy all files in all subdirectories into orb-src
+              find src/$DIR -type f -exec mv {} orb-src/$DIR \; || :
             done;
-            pwd
-            ls src
       - persist_to_workspace:
           root: .
           paths:
-            - 'src/*'
+            - orb-src
