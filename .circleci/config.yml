@@ -47,7 +47,7 @@ jobs:
             done;
       - run:
           name: Pack
-          command: circleci orb pack --skip-update-check src > ./dist/orb.yml
+          command: mkdir ./dist && circleci orb pack --skip-update-check src > ./dist/orb.yml
       - persist_to_workspace:
           root: .
           paths:
