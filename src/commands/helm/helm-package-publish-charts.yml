@@ -1,9 +1,9 @@
 description: Package and publish helm charts
 parameters:
     working_directory:
-    description: Directory containing package.json
-    type: string
-    default: "./"
+        description: Directory containing package.json
+        type: string
+        default: "./"
 steps:
     - run:
         name: Package and publish charts
