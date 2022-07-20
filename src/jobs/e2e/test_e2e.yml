@@ -69,21 +69,10 @@ steps:
         - skip_while_draft
   - run:
       name: Check if test have to be executed
-      command: |-
-        ENABLE=<< parameters.enable >>
-        FORCE_EXECUTE=<< parameters.force_execute >>
-
-        if [[ $FORCE_EXECUTE == true ]]; then
-          exit 0
-        fi
-
-        if [[ $CIRCLE_BRANCH == \"master\" || $CIRCLE_BRANCH == \"production\" ]]; then
-          exit 0
-        fi
-
-        if [[ $ENABLE == false ]]; then
-          circleci-agent step halt
-        fi
+      environment:
+        ENABLE: << parameters.enable >>
+        FORCE_EXECUTE: << parameters.force_execute >>
+      command: <<include(scripts/e2e/is-execution-required.sh)>>
   - clone_repo:
       step_name: Downloading e2e stack
       github_username: "<< parameters.github_username >>"
@@ -103,24 +92,7 @@ steps:
   - run:
       name: Wait until tools are ready
       no_output_timeout: 10m
-      command: |-
-        until [ -f /tmp/creator_app_finished.txt ]
-        do
-            sleep 1
-        done
-        echo \"Creator App ready\"
-
-        until [ -f /tmp/dbcli_finished.txt ]
-        do
-            sleep 1
-        done
-        echo \"DBCLI ready\"
-
-        until [ -f /tmp/executor_finished.txt ]
-        do
-            sleep 1
-        done
-        echo \"Executor ready\"
+      command: <<include(scripts/e2e/wait-for-tools.sh)>>
   - vf_save_cache:
       working_directory: ~/code/database-cli
       cache_prefix: e2e-machine
@@ -130,43 +102,20 @@ steps:
   - docker_login
   - run_command_with_retry:
       step_name: Download Docker image
-      command: "docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1"
+      command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1
   - run:
-      name: Setup databases
+      name: Setup database containers
       working_directory: ~/code/infrastructure-e2e
-      command: |-
-        docker rm code || docker create \
-          --network=\"vf_voiceflow\" \
-          --volume /code \
-          --name code \
-          168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
-          /bin/true
-        docker-compose -p vf -f docker-compose-db.yaml up -d
+      command: <<include(scripts/e2e/setup-database-containers.sh)>>
   - run_command_with_retry:
-      step_name: Setup Database
+      step_name: Setup Databases
       working_directory: ~/code
       background: true
-      command: |-
-        # copy a config file into this volume
-        docker cp database-cli code:/code
-        # start an application container using this volume
-        docker run \
-          --workdir /code/database-cli \
-          --name dbcli-e2e \
-          --hostname dbcli.test.e2e \
-          --network=\"vf_voiceflow\" \
-          --env AWS_ACCESS_KEY_ID=\"null\" \
-          --env AWS_SECRET_ACCESS_KEY=\"null\" \
-          --volumes-from code \
-          168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
-          /bin/bash -c \"yarn init:e2e\"
+      command: <<include(scripts/e2e/setup-database.sh)>>
   - run:
       name: Copy e2e
       working_directory: ~/code
-      command: |-
-        # copy a config file into this volume
-        echo \"copy code\"
-        docker cp creator-app code:/code/creator-app
+      command: docker cp creator-app code:/code/creator-app
   - run_command_with_retry:
       step_name: Download Docker images
       working_directory: ~/code/infrastructure-e2e
@@ -174,11 +123,10 @@ steps:
   - run:
       name: Setup Voiceflow services
       working_directory: ~/code/infrastructure-e2e
-      command: |-
-        #sudo systemctl restart docker
-        export DOCKER_CLIENT_TIMEOUT=120
-        export COMPOSE_HTTP_TIMEOUT=120
-        docker-compose --profile << parameters.vf_service_profile >> -p vf -f docker-compose-vf.yaml up -d
+      environment:
+        DOCKER_CLIENT_TIMEOUT: 120
+        COMPOSE_HTTP_TIMEOUT: 120
+      command: docker-compose --profile << parameters.vf_service_profile >> -p vf -f docker-compose-vf.yaml up -d
   - when:
       condition: "<< parameters.vf_monorepo_services >>"
       steps:
@@ -190,27 +138,11 @@ steps:
             name: Run monorepo services
             background: true
             working_directory: ~/code/creator-app
-            command: |-
-              echo \"running monorepo e2e services\"
-              npx lerna@4.0.0 exec --parallel --scope '<< parameters.vf_monorepo_services >>' -- yarn --ignore-engines e2e:ci
+            command: npx lerna@4.0.0 exec --parallel --scope '<< parameters.vf_monorepo_services >>' -- yarn --ignore-engines e2e:ci
   - run:
       name: Run creator e2e
       working_directory: ~/code/creator-app
-      command: |-
-        echo \"running e2e\"
-        docker run \
-          --detach \
-          --expose 3002 \
-          --publish 3002:3002 \
-          --workdir /code/creator-app \
-          --network=\"vf_voiceflow\" \
-          --name creator-app-e2e \
-          --hostname creator-app.test.e2e \
-          --volumes-from code \
-          --volume vf_certs:/code/creator-app/packages/creator-app/certs \
-          --volume vf_caroot:/usr/local/share/ca-certificates \
-          168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
-          /bin/bash -c \"update-ca-certificates && yarn start:e2e && sleep infinity\"
+      command: <<include(scripts/e2e/run.sh)>>
   - check_e2e_deps:
       step_name: Waiting everything is ready
       working_directory: ~/code/creator-app/packages/creator-app
@@ -228,21 +160,7 @@ steps:
   - run:
       name: Run Cypress Tests
       working_directory: ~/code/creator-app/packages/creator-app
-      command: |-
-        docker run \
-          --workdir /code/creator-app \
-          --network=\"vf_voiceflow\" \
-          --name cypress-e2e \
-          --volumes-from code \
-          --volume vf_certs:/code/creator-app/packages/creator-app/certs \
-          --volume vf_caroot:/usr/local/share/ca-certificates \
-          --volume /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket \
-          --env NODE_OPTIONS=--max_old_space_size=4096 \
-          --env CYPRESS_API_URL=\"$CYPRESS_API_URL\" \
-          --env CIRCLE_WORKFLOW_ID=\"$CIRCLE_WORKFLOW_ID\" \
-          --env CYPRESS_RECORD_KEY=\"$CYPRESS_RECORD_KEY\" \
-          168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
-          /bin/bash -c \"yarn cypress:install && yarn cypress:ci\"
+      command: <<include(scripts/e2e/run-cypress.sh)>>
   - extract_cypress_artifacts
   - extract_e2e_logs
   - store_artifacts:
