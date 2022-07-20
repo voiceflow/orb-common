@@ -31,6 +31,7 @@ workflows:
       - orb-tools/lint
       - orb-tools/pack:
           pre-steps: *extract_sections_from_subdirectories
+      - orb-tools/review
       - orb-tools/publish:
           context: dev-test
           requires: [orb-tools/pack]
@@ -47,6 +48,8 @@ workflows:
       - orb-tools/pack:
           filters: *tags_filter
           pre-steps: *extract_sections_from_subdirectories
+      - orb-tools/review:
+          filters: *tags_filter
       - orb-tools/publish:
           context: dev-test
           requires: [orb-tools/pack]
