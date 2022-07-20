@@ -32,7 +32,7 @@ workflows:
             - <<: *extract_sections_from_subdirectories
       - orb-tools/publish:
           context: dev-test
-          requires: [pack]
+          requires: [orb-tools/pack]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: dev
@@ -47,7 +47,7 @@ workflows:
             - <<: *extract_sections_from_subdirectories
       - orb-tools/publish:
           context: dev-test
-          requires: [pack]
+          requires: [orb-tools/pack]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: production
