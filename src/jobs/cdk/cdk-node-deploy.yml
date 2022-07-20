@@ -3,7 +3,7 @@ steps:
   - checkout
   - run:
       name: Install CDK
-      command: "sudo npm install -g aws-cdk\n"
+      command: sudo npm install -g aws-cdk
   - run:
       name: CDK Deploy
-      command: "cdk deploy --require-approval never\n"
+      command: cdk deploy --require-approval never

@@ -1,3 +1,5 @@
 executor: build-executor
 steps:
-  - run: "echo \"Dummy job\"\n"
+  - run:
+      name: Dummy Job
+      command: echo \"Dummy job\"

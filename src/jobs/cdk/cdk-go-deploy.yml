@@ -3,9 +3,9 @@ steps:
   - checkout
   - run:
       name: Install CDK
-      command: "sudo npm install -g aws-cdk\n"
+      command: sudo npm install -g aws-cdk
   - run:
       environment:
         GOPRIVATE: github.com/voiceflow
       name: CDK Deploy
-      command: "git config --global url.\"https://$GITHUB_TOKEN:x-oauth-basic@github.com/\".insteadOf \"https://github.com/\"\ncdk deploy --require-approval never\n"
+      command: <<include(scripts/cdk/deploy.sh)>>
