@@ -21,7 +21,11 @@ workflows:
   publish-orb:
     when: << pipeline.git.tag >>
     jobs:
-      - pack
+      - pack:
+          # Filter required due to CircleCI behaviour described here: https://discuss.circleci.com/t/cant-trigger-workflow-on-git-tag-push-using-when-condition/43252/5
+          filters:
+            tags:
+              only: ['/.*/']
       - orb-tools/publish:
           context: dev-test
           requires: [pack]
