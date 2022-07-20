@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
   orb-tools: circleci/orb-tools@11.2.0
-  cli: circleci/circleci-cli@0.1.9
 
 workflows:
   publish-dev-orb:
@@ -9,7 +8,9 @@ workflows:
       not:
         equal: [ master, << pipeline.git.branch >> ]
     jobs:
-      - pack
+      - orb-tools/pack:
+          pre-steps:
+            - <<: *extract_sections_from_subdirectories
       - orb-tools/publish:
           context: dev-test
           requires: [pack]
@@ -21,44 +22,33 @@ workflows:
   publish-orb:
     when: << pipeline.git.tag >>
     jobs:
-      - pack:
-          # Filter required due to CircleCI behaviour described here: https://discuss.circleci.com/t/cant-trigger-workflow-on-git-tag-push-using-when-condition/43252/5
-          filters:
-            tags:
-              only: ['/.*/']
+      - orb-tools/pack:
+          <<: *tag_filters
+          pre-steps:
+            - <<: *extract_sections_from_subdirectories
       - orb-tools/publish:
           context: dev-test
           requires: [pack]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: production
-          filters:
-            tags:
-              only: ['/.*/']
+          <<: *tag_filters
 
 
-jobs:
-  pack:
-    executor: cli/default
-    steps:
-      - checkout
-      - run:
-          # Copies configs from their respective subdirectories into
-          # the appropriate root directories before packing
-          # Necessary because of https://github.com/CircleCI-Public/circleci-cli/issues/755
-          name: Copy configuration from subdirectories
-          command: |
-            for DIR in commands jobs executors examples; do
-              # Copy all files in all subdirectories into orb-src
-              find src/$DIR -type f -exec mv {} src/$DIR \; || :
-            done;
-      - run:
-          name: Pack
-          command: mkdir ./dist && circleci orb pack --skip-update-check src > ./dist/orb.yml
-      - run:
-          name: Validate
-          command: circleci orb validate --skip-update-check ./dist/orb.yml
-      - persist_to_workspace:
-          root: ./dist/
-          paths:
-            - orb.yml
+
+# Filter required due to CircleCI behaviour described here: https://discuss.circleci.com/t/cant-trigger-workflow-on-git-tag-push-using-when-condition/43252/5
+tags_filter: &tags_filter
+  filters:
+    tags:
+      only: ['/.*/']
+
+# Copies configs from their respective subdirectories into
+# the appropriate root directories before packing
+# Necessary because of https://github.com/CircleCI-Public/circleci-cli/issues/755
+run: &extract_sections_from_subdirectories
+  name: Copy configuration from subdirectories
+  command: |
+    for DIR in commands jobs executors examples; do
+      # Copy all files in all subdirectories into orb-src
+      find src/$DIR -type f -exec mv {} src/$DIR \; || :
+    done;
