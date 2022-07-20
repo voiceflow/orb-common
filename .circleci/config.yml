@@ -12,13 +12,14 @@ tags_filter: &tags_filter
 # Copies configs from their respective subdirectories into
 # the appropriate root directories before packing
 # Necessary because of https://github.com/CircleCI-Public/circleci-cli/issues/755
-run: &extract_sections_from_subdirectories
-  name: Copy configuration from subdirectories
-  command: |
-    for DIR in commands jobs executors examples; do
-      # Copy all files in all subdirectories into orb-src
-      find src/$DIR -type f -exec mv {} src/$DIR \; || :
-    done;
+extract_sections_from_subdirectories: &extract_sections_from_subdirectories
+  run:
+    name: Copy configuration from subdirectories
+    command: |
+      for DIR in commands jobs executors examples; do
+        # Copy all files in all subdirectories into orb-src
+        find src/$DIR -type f -exec mv {} src/$DIR \; || :
+      done;
 
 
 workflows:
