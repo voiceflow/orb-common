@@ -35,7 +35,12 @@ steps:
       at: ~/voiceflow
   - run:
       name: Release Monorepo
-      command: "git config --global user.email \"serviceaccount@voiceflow.com\"\ngit config --global user.name \"Voiceflow\"\nSENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish --message \"chore(release): publish\" --yes --conventional-commits --no-verify-access << parameters.publish_args >>\necho \"export MONOREPO_UPDATED_TAGS=\\\"$(git tag --points-at HEAD)\\\"\" >> $BASH_ENV\n"
+      command: |-
+        git config --global user.email \"serviceaccount@voiceflow.com\"
+        git config --global user.name \"Voiceflow\"
+        SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish \
+          --message \"chore(release): publish\" --yes --conventional-commits --no-verify-access << parameters.publish_args >>
+        echo \"export MONOREPO_UPDATED_TAGS=\\\"$(git tag --points-at HEAD)\\\"\" >> $BASH_ENV
   - when:
       condition: "<< parameters.trigger_tags_pipelines >>"
       steps:

@@ -7,7 +7,7 @@ parameters:
     type: string
     default: on_success
 steps:
-  - run: 
+  - run:
       name: Remove IP from Security Group
       when: << parameters.execute_when >>
       command: |

@@ -92,7 +92,12 @@ steps:
               - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master--"
         - run:
             name: Unpack monorepo build cache
-            command: "# do not copy the build cache on master to avoid contamination\nif [ -d /tmp/build_cache ] && [ \"master\" != \"${CIRCLE_BRANCH}\" ]; then\n  rsync -auv /tmp/build_cache/ .\nfi\n"
+            command: |-
+              # do not copy the build cache on master to avoid contamination
+              if [ -d /tmp/build_cache ] && [ \"master\" != \"${CIRCLE_BRANCH}\" ]; then
+                rsync -auv /tmp/build_cache/ .
+              fi
+
   - build:
       container_folder_to_copy: "<< parameters.container_folder_to_copy >>"
       request_remote_docker: "<< parameters.request_remote_docker >>"
@@ -107,7 +112,10 @@ steps:
       steps:
         - run:
             name: Copy yarn.lock files
-            command: "cp yarn.lock packages/<< parameters.package >> \necho \"Copy yarn.lock file in packages/<< parameters.package >>\"\n"
+            command: |-
+              cp yarn.lock packages/<< parameters.package >>
+              echo \"Copy yarn.lock file in packages/<< parameters.package >>\"
+
   - when:
       condition:
         equal:
@@ -121,7 +129,11 @@ steps:
               - packages/*/yarn.lock
         - run:
             name: Collect monorepo build cache
-            command: "rm -rf /tmp/build_cache\nmkdir -p /tmp/build_cache\nfind ./packages/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache\n"
+            command: |-
+              rm -rf /tmp/build_cache
+              mkdir -p /tmp/build_cache
+              find ./packages/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache
+
         - save_cache:
             key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
             paths:

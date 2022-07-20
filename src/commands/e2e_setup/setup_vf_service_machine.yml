@@ -46,8 +46,8 @@ steps:
         yarn install --frozen-lockfile --cache-folder=".yarn-cache" << parameters.vf_service_install_args >>
         yarn build
   - vf_save_cache:
-        working_directory: ~/code/<< parameters.vf_service_name >>
-        cache_prefix: e2e-machine
+      working_directory: ~/code/<< parameters.vf_service_name >>
+      cache_prefix: e2e-machine
 
   - run:
       name: Removing << parameters.vf_service_name >> from Docker Stack

@@ -39,29 +39,74 @@ steps:
   - run:
       name: Download E2E dependencies
       working_directory: ~/code/infrastructure-e2e
-      command: "docker create \\\n    --network=\"vf_voiceflow\" \\\n    --volume /code \\\n    --name code \\\n    168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \\\n    /bin/true\ndocker-compose -p vf -f docker-compose-db.yaml pull\n<<# parameters.e2e_service_dependencies >>\n  docker-compose -p vf -f docker-compose-vf.yaml pull << parameters.e2e_service_dependencies >>\n<</ parameters.e2e_service_dependencies >>\n"
+      command: |-
+        docker create \
+          --network=\"vf_voiceflow\" \
+          --volume /code \
+          --name code \
+          168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
+          /bin/true
+
+        docker-compose -p vf -f docker-compose-db.yaml pull << parameters.e2e_service_dependencies >>
+        docker-compose -p vf -f docker-compose-vf.yaml pull << parameters.e2e_service_dependencies >>
   - run:
       name: Start Databases
       working_directory: ~/code/infrastructure-e2e
-      command: "docker-compose -p vf -f docker-compose-db.yaml up -d\n"
+      command: docker-compose -p vf -f docker-compose-db.yaml up -d
   - run_command_with_retry:
       step_name: Setup Database
       working_directory: ~/code
       background: true
-      command: "# copy a config file into this volume\ndocker cp database-cli code:/code\n# start an application container using this volume\ndocker run \\\n  --workdir /code/database-cli \\\n  --name dbcli-e2e \\\n  --hostname dbcli.test.e2e \\\n  --network=\"vf_voiceflow\" \\\n  --env AWS_ACCESS_KEY_ID=\"null\" \\\n  --env AWS_SECRET_ACCESS_KEY=\"null\" \\\n  --volumes-from code \\\n  168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1  \\\n  /bin/bash -c \"yarn init:e2e\"\n"
+      command: |-
+        # copy a config file into this volume
+        docker cp database-cli code:/code
+        # start an application container using this volume
+        docker run \
+          --workdir /code/database-cli \
+          --name dbcli-e2e \
+          --hostname dbcli.test.e2e \
+          --network=\"vf_voiceflow\" \
+          --env AWS_ACCESS_KEY_ID=\"null\" \
+          --env AWS_SECRET_ACCESS_KEY=\"null\" \
+          --volumes-from code \
+          168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
+          /bin/bash -c \"yarn init:e2e\"
   - when:
       condition: "<< parameters.e2e_service_dependencies >>"
       steps:
         - run:
             name: Start E2E dependencies
             working_directory: ~/code/infrastructure-e2e
-            command: "docker wait cert-generator\ndocker-compose -p vf -f docker-compose-vf.yaml up -d << parameters.e2e_service_dependencies >>\n"
+            command: |-
+                docker wait cert-generator
+                docker-compose -p vf -f docker-compose-vf.yaml up -d << parameters.e2e_service_dependencies >>
   - run:
       name: Start service under test
-      command: "# copy a config file into this volume and the npm token\ndocker cp ~/code/<< parameters.service_name >> code:/code/<< parameters.service_name >>\ndocker cp ~/.npmrc code:/code/<< parameters.service_name >>\n# start an application container using this volume\ndocker run \\\n  --workdir /code/<< parameters.service_name >> \\\n  --detach \\\n  --expose << parameters.service_port >> \\\n  --publish << parameters.service_port >>:<< parameters.service_port >> \\\n  --name << parameters.service_name >>-e2e \\\n  --hostname << parameters.service_name >>.test.e2e \\\n  --network=\"vf_voiceflow\" \\\n  --volumes-from code \\\n  --volume vf_certs:/code/<< parameters.service_name >>/certs \\\n  --volume vf_caroot:/usr/local/share/ca-certificates \\\n  168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1  \\\n  /bin/bash -c \"update-ca-certificates && yarn install --force && yarn build && yarn e2e\"\n"
+      command: |-
+        # copy a config file into this volume and the npm token
+        docker cp ~/code/<< parameters.service_name >> code:/code/<< parameters.service_name >>
+        docker cp ~/.npmrc code:/code/<< parameters.service_name >>
+        # start an application container using this volume
+        docker run \
+            --workdir /code/<< parameters.service_name >> \
+            --detach \
+            --expose << parameters.service_port >> \
+            --publish << parameters.service_port >>:<< parameters.service_port >> \
+            --name << parameters.service_name >>-e2e \
+            --hostname << parameters.service_name >>.test.e2e \
+            --network=\"vf_voiceflow\" \
+            --volumes-from code \
+            --volume vf_certs:/code/<< parameters.service_name >>/certs \
+            --volume vf_caroot:/usr/local/share/ca-certificates \
+            168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
+            /bin/bash -c \"update-ca-certificates && yarn install --force && yarn build && yarn e2e\"
   - run:
       name: Wait for service to be available
-      command: "docker run \\\n  --network vf_voiceflow \\\n  168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \\\n  /bin/bash -c \"npx wait-on -t 300000 https://<< parameters.service_name >>.test.e2e:<< parameters.service_port >>/health\"\n"
+      command: |-
+        docker run \
+            --network vf_voiceflow \
+            168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
+            /bin/bash -c \"npx wait-on -t 300000 https://<< parameters.service_name >>.test.e2e:<< parameters.service_port >>/health\"
   - extract_e2e_logs
   - store_artifacts:
       path: ~/logs

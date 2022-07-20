@@ -82,10 +82,10 @@ steps:
         - when:
             condition: <<parameters.success_slack_notify>>
             steps:
-            - notify_slack:
-                channel: product_releases
-                event: pass
-                template: success_tagged_deploy_1
+              - notify_slack:
+                  channel: product_releases
+                  event: pass
+                  template: success_tagged_deploy_1
         - notify_slack:
             channel: product_releases
             event: fail

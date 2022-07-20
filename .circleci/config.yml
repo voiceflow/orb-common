@@ -28,6 +28,7 @@ workflows:
       not:
         equal: [ master, << pipeline.git.branch >> ]
     jobs:
+      - orb-tools/lint
       - orb-tools/pack:
           pre-steps: *extract_sections_from_subdirectories
       - orb-tools/publish:
@@ -41,6 +42,8 @@ workflows:
   publish-orb:
     when: << pipeline.git.tag >>
     jobs:
+      - orb-tools/lint:
+          filters: *tags_filter
       - orb-tools/pack:
           filters: *tags_filter
           pre-steps: *extract_sections_from_subdirectories

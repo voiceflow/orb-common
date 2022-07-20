@@ -40,7 +40,7 @@ steps:
             if [ $? -eq 0 ]; then
               break
             fi
-              
+
             n=$[$n+1]
             sleep << parameters.sleep >>
           done
