@@ -47,8 +47,8 @@ jobs:
             done;
       - run:
           name: Pack
-          command: circleci orb pack src
+          command: circleci orb pack --skip-update-check src > ./dist/
       - persist_to_workspace:
           root: .
           paths:
-            - src
+            - ./dist/
