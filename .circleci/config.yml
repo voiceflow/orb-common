@@ -42,7 +42,7 @@ workflows:
     when: << pipeline.git.tag >>
     jobs:
       - orb-tools/pack:
-          <<: *tag_filters
+          <<: *tags_filters
           pre-steps:
             - <<: *extract_sections_from_subdirectories
       - orb-tools/publish:
@@ -51,4 +51,4 @@ workflows:
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: production
-          <<: *tag_filters
+          <<: *tags_filters
