@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # copy a config file into this volume and the npm token
-docker cp ~/code/${SERVICE_NAME} code:/code/${SERVICE_NAME}
+docker cp ${SERVICE_NAME} code:/code
 docker cp ~/.npmrc code:/code/${SERVICE_NAME}
 # start an application container using this volume
 docker run \
@@ -16,4 +16,4 @@ docker run \
   --volume vf_certs:/code/${SERVICE_NAME}/certs \
   --volume vf_caroot:/usr/local/share/ca-certificates \
   168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
-  /bin/bash -c "update-ca-certificates && yarn install --force && yarn build && yarn e2e"
+  /bin/bash -c "update-ca-certificates && yarn install --force && yarn e2e"

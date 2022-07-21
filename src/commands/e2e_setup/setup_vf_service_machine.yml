@@ -60,7 +60,7 @@ steps:
   - run:
       name: Setup << parameters.vf_service_name >>
       working_directory: ~/code
-      command: <<include(scripts/e2e/start-service.sh)>>
+      command: <<include(scripts/e2e/setup-service.sh)>>
   - run:
       name: Wait << parameters.vf_service_name >>
       working_directory: ~/code/<< parameters.vf_service_name >>
