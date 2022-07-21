@@ -4,7 +4,7 @@ if [[ $FORCE_EXECUTE == true ]]; then
     exit 0
 fi
 
-if [[ $CIRCLE_BRANCH == \"master\" || $CIRCLE_BRANCH == \"production\" ]]; then
+if [[ $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" ]]; then
     exit 0
 fi
 

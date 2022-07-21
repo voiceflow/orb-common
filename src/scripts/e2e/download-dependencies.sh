@@ -1,7 +1,7 @@
 #!/bin/bash
 
 docker create \
-    --network=\"vf_voiceflow\" \
+    --network="vf_voiceflow" \
     --volume /code \
     --name code \
     168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
