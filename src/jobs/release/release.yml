@@ -21,4 +21,4 @@ steps:
       at: ~/voiceflow
   - run:
       name: Release Package
-      command: "SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release@17\n"
+      command: SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release@17
