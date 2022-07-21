@@ -29,5 +29,5 @@ steps:
         PACKAGE_FORCED: << parameters.package_to_force_execution >>
         FORCE_EXECUTION: << parameters.force_execution >>
         COMMAND: << parameters.command >>
-        EXTRA_ARGS: << parameters.extra_args >>
+        EXTRA_ARGS: << parameters.extra_parameters >>
       command: <<include(scripts/monorepo/exec-on-change.sh)>>
