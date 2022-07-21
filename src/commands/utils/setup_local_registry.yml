@@ -7,11 +7,9 @@ steps:
   - run:
       name: Setup local proxy registry
       background: true
-      command: |
-        docker create -v /verdaccio/conf --name verdaccio-conf alpine:3.4 /bin/true
-        docker cp << parameters.verdaccio_config >> verdaccio-conf:/verdaccio/conf
-
-        docker run -it --name verdaccio --network host -e NPM_TOKEN=${NPM_TOKEN} --volumes-from verdaccio-conf verdaccio/verdaccio:5
+      environment:
+        CONFIG: << parameters.verdaccio_config >>
+      command: <<include(scripts/utils/setup-local-registry.sh)>>
   - run_command_with_retry:
       step_name: Download Docker image
       command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1

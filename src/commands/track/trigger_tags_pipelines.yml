@@ -6,9 +6,6 @@ parameters:
 steps:
   - run:
       name: Trigger Pipelines for each updated tag
-      command: |
-          for TAG in ${<< parameters.published_tags >>}
-          do
-            URI="https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline"
-            curl -u ${CIRCLECI_API_TOKEN}: -X POST --header 'Content-Type: application/json' -d "{\"tag\":\"$TAG\", \"parameters\": {}}" "$URI"
-          done
+      environment:
+        TAGS: << parameters.published_tags >>
+      command: <<include(scripts/track/trigger-tag-pipelines.sh)>>

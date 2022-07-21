@@ -28,25 +28,8 @@ steps:
       name: << parameters.step_name >>
       working_directory: << parameters.working_directory >>
       background: << parameters.background >>
-      command: |
-        retry() {
-          MAX_RETRY=<< parameters.retry-count >>
-          error=""
-          n=0
-          until [ $n -ge $MAX_RETRY ]; do
-            set +e
-            eval "$@"
-            set -e
-            if [ $? -eq 0 ]; then
-              break
-            fi
-
-            n=$[$n+1]
-            sleep << parameters.sleep >>
-          done
-          if [ $n -ge $MAX_RETRY ]; then
-            echo "failed: ${@}" >&2
-            exit 1
-          fi
-        }
-        retry << parameters.command >>
+      environment:
+          MAX_RETRY: << parameters.retry-count >>
+          COMMAND: << parameters.command >>
+          SLEEP: << parameters.sleep >>
+      command: <<include(scripts/utils/exec-with-retry.sh)>>

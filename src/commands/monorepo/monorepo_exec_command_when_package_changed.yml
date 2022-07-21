@@ -24,26 +24,10 @@ parameters:
 steps:
   - run:
       name: << parameters.step_name >>
-      command: |
-        FILES_CHANGED=$(git diff HEAD^ --name-only )
-        echo "files changed: $FILES_CHANGED"
-        PACKAGE_FORCED=<< parameters.package_to_force_execution >>
-        RUN_ON_ROOT=<< parameters.run_on_root >>
-        FORCE_EXECUTION=<< parameters.force_execution >>
-
-          if [[ $FILES_CHANGED == *"$PACKAGE_FORCED"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true ]]; then
-
-              if [[ $RUN_ON_ROOT != true ]]; then
-                cd packages/$PACKAGE_FORCED
-                echo "running command << parameters.command >> on packages/$PACKAGE_FORCED"
-              else
-                echo "running command << parameters.command >> on monorepo root"
-              fi
-
-              # Execute command
-              << parameters.command >> << parameters.extra_parameters >>
-
-              if [[ $RUN_ON_ROOT != true ]]; then
-                cd -
-              fi
-          fi
+      environment:
+        RUN_ON_ROOT: << parameters.run_on_root >>
+        PACKAGE_FORCED: << parameters.package_to_force_execution >>
+        FORCE_EXECUTION: << parameters.force_execution >>
+        COMMAND: << parameters.command >>
+        EXTRA_ARGS: << parameters.extra_args >>
+      command: <<include(scripts/monorepo/exec-on-change.sh)>>
