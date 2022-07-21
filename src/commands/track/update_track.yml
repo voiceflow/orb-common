@@ -104,4 +104,4 @@ steps:
           BUILD_CONTEXT: << parameters.build_context >>
           COMPONENT: << parameters.component >>
           BUCKET: << parameters.bucket >>
-      command: <<include(scripts/track/update-track.sh)>>
+      command: <<include(scripts/track/update.sh)>>
