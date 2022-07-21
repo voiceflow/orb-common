@@ -12,4 +12,4 @@ steps:
       when: << parameters.execute_when >>
       environment:
         SG_ID: << parameters.sg_id >>
-      command: <<include(scripts/aws/remove-ip-to-sg.sh)>>
+      command: <<include(scripts/aws/remove-ip-from-sg.sh)>>
