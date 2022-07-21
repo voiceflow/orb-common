@@ -40,7 +40,7 @@ steps:
       working_directory: ~/code/<< parameters.vf_service_name >>
       environment:
         INSTALL_ARGS: << parameters.vf_service_install_args >>
-      command: <<include(scripts/e2e/install-service.sh)>>
+      command: <<include(scripts/e2e/build-service.sh)>>
   - vf_save_cache:
       working_directory: ~/code/<< parameters.vf_service_name >>
       cache_prefix: e2e-machine
