@@ -39,5 +39,4 @@ steps:
         - run:
             name: Setup Database
             working_directory: << parameters.working_directory >>
-            command: |
-              yarn init:e2e
+            command: yarn init:e2e

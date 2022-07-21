@@ -10,13 +10,6 @@ steps:
   - run:
       name: Add IP to Security Group
       when: << parameters.execute_when >>
-      command: |
-        # 1- Get the public IP of the current CircleCI runner
-        PUBLIC_IP=$(curl ipinfo.io/ip)
-
-        # 2- Get SG ID
-        SG_ID=<< parameters.sg_id >>
-
-        # 3- Add an ingress rule to the security group
-        aws ec2 authorize-security-group-ingress --group-id $SG_ID \
-          --protocol tcp --port 22 --cidr $PUBLIC_IP/24
+      environment:
+        SG_ID: << parameters.sg_id >>
+      command: <<include(scripts/aws/add-ip-to-sg.sh)>>

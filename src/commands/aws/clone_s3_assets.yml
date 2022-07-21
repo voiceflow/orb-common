@@ -12,5 +12,4 @@ parameters:
 steps:
   - run:
       name: << parameters.step_name >>
-      command: |
-        aws s3 sync << parameters.from >> << parameters.to >>
+      command: aws s3 sync << parameters.from >> << parameters.to >>

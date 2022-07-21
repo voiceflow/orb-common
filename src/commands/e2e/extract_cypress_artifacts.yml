@@ -4,8 +4,5 @@ steps:
       working_directory: ~/logs
       when: on_fail
       command: |-
-        # Getting the logs
-        set +e
-        docker cp code:/code/creator-app/packages/creator-app/cypress/videos ~/code/creator-app/packages/creator-app/cypress/videos
-        docker cp code:/code/creator-app/packages/creator-app/cypress/screenshots ~/code/creator-app/packages/creator-app/cypress/screenshots
-        set -e
+        docker cp code:/code/creator-app/packages/creator-app/cypress/videos ~/code/creator-app/packages/creator-app/cypress/videos || :
+        docker cp code:/code/creator-app/packages/creator-app/cypress/screenshots ~/code/creator-app/packages/creator-app/cypress/screenshots || :

@@ -5,4 +5,4 @@ parameters:
 steps:
   - run:
       name: Check service running
-      command: "dockerize -wait tcp://localhost:<< parameters.port >> -timeout 1m\n"
+      command: dockerize -wait tcp://localhost:<< parameters.port >> -timeout 1m

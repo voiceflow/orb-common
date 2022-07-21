@@ -32,16 +32,4 @@ steps:
   - run:
       name: Generate e2e start script
       working_directory: "~/<< parameters.service_name >>"
-      command: |
-        cat > ./start_e2e.sh \<< \EOF
-        #! /bin/bash
-
-        set -e
-
-        cd ~/<< parameters.service_name >>
-        yarn gen-certs:e2e
-        yarn e2e
-
-        EOF
-
-        chmod +x ./start_e2e.sh
+      command: <<include(scripts/e2e/generate-start-script.sh)>>

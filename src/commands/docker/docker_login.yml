@@ -1,5 +1,4 @@
 steps:
   - run:
       name: "Docker login"
-      command: |
-        $(aws ecr get-login --no-include-email --region us-east-1)
+      command: $(aws ecr get-login --no-include-email --region us-east-1)
