@@ -1,7 +1,6 @@
 #!/bin/bash
 
-cat > ./start_e2e.sh \<< \EOF
-#! /bin/bash
+cat > ./start_e2e.sh << \EOF
 
 set -e
 
