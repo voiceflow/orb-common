@@ -56,6 +56,9 @@ steps:
   - run:
       name: Setup << parameters.vf_service_name >>
       working_directory: ~/code
+      environment:
+        SERVICE_NAME: << parameters.vf_service_name >>
+        SERVICE_PORT: << parameters.vf_service_port >>
       command: <<include(scripts/e2e/setup-service.sh)>>
   - run:
       name: Wait << parameters.vf_service_name >>

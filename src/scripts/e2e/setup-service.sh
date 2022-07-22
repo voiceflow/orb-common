@@ -1,9 +1,5 @@
 #!/bin/bash
 
-ls
-echo "SERVICE_NAME: $SERVICE_NAME"
-ls "$SERVICE_NAME"
-
 # copy a config file into this volume and the npm token
 docker cp ${SERVICE_NAME} code:/code
 docker cp ~/.npmrc code:/code/${SERVICE_NAME}
