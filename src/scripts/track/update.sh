@@ -47,7 +47,7 @@ if [[ $TRACK_EXISTS == "true" ]]; then
         --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
         --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
         --build-arg build_SEM_VER=${SEM_VER} \
-        $REGISTRY_ARG
+        $REGISTRY_ARG \
         $BIULD_ARGS \
         -f ${BUILD_CONTEXT}/${DOCKERFILE} \
         -t $IMAGE_NAME ${BUILD_CONTEXT}
