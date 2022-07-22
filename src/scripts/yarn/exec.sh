@@ -2,6 +2,7 @@
 
 trap 'echo "fail detected"; touch /tmp/failure' ERR
 
+echo "$RUN_IN_CONTAINER"
 if [[ $RUN_IN_CONTAINER == true ]]; then
     echo "Running in a container"
     docker create -v /code --name code "$CONTAINER_IMAGE" /bin/true
