@@ -27,7 +27,7 @@ if [[ $RUN_IN_CONTAINER == true ]]; then
 else
     # Executes Yarn command outside container
     echo "Running \"$YARN_COMMAND\" without a container"
-    $YARN_COMMAND
+    /bin/bash -c "$YARN_COMMAND"
 fi
 
 # Remove lock file when it is running in background/parallel

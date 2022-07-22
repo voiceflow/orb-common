@@ -14,7 +14,7 @@ for f in packages/*; do
         fi
 
         # Execute command
-        $COMMAND $EXTRA_ARGS
+        /bin/bash -c "$COMMAND $EXTRA_ARGS"
 
         if [[ $RUN_ON_ROOT != true ]]; then
         cd -
