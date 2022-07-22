@@ -32,7 +32,7 @@ if [[ $TRACK_EXISTS == "true" ]]; then
     fi
     echo -e "Building with SEM_VER=$SEM_VER"
 
-    if [ -z "$LOCAL_REGISTRY" ]; then
+    if (( $LOCAL_REGISTRY )); then
         REGISTRY_ARG="--build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN}"
     else
         REGISTRY_ARG="--network host --build-arg build_REGISTRY_URL=http://localhost:4873"
