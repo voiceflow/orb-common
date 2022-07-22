@@ -26,7 +26,7 @@ if [[ $RUN_IN_CONTAINER == true ]]; then
     fi
 else
     # Executes Yarn command outside container
-    echo "Running without a container"
+    echo "Running \"$YARN_COMMAND\" without a container"
     $YARN_COMMAND
 fi
 
