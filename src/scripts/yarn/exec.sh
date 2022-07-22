@@ -31,6 +31,7 @@ else
 fi
 
 # Remove lock file when it is running in background/parallel
+echo "Running in Backgroud: $RUN_IN_BACKGROUND"
 if [[ $RUN_IN_BACKGROUND == true ]]; then
     echo "Removing Lock $LOCK_FILE"
     rm -rf $LOCK_FILE
