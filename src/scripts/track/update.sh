@@ -41,8 +41,7 @@ if [[ $TRACK_EXISTS == "true" ]]; then
     if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
     # Build Docker Image
     echo "Image not found, building..."
-    read -r -d '' BUILD_COMMAND << EOF
-    docker build \
+    BUILD_COMMAND="docker build \
         --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
         --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
         --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL} \
@@ -51,8 +50,7 @@ if [[ $TRACK_EXISTS == "true" ]]; then
         $REGISTRY_ARG \
         $BUILD_ARGS \
         -f ${BUILD_CONTEXT}/${DOCKERFILE} \
-        -t $IMAGE_NAME ${BUILD_CONTEXT}
-    EOF
+        -t $IMAGE_NAME ${BUILD_CONTEXT}" 
     /bin/bash -c "$BUILD_COMMAND"
     docker push $IMAGE_NAME
 
