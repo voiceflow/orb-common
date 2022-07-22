@@ -33,9 +33,9 @@ if [[ $TRACK_EXISTS == "true" ]]; then
     echo -e "Building with SEM_VER=$SEM_VER"
 
     if (( $LOCAL_REGISTRY )); then
-        REGISTRY_ARG="--build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN}"
-    else
         REGISTRY_ARG="--network host --build-arg build_REGISTRY_URL=http://localhost:4873"
+    else
+        REGISTRY_ARG="--build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN}"
     fi
 
     if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
