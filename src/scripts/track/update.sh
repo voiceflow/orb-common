@@ -41,16 +41,19 @@ if [[ $TRACK_EXISTS == "true" ]]; then
     if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
     # Build Docker Image
     echo "Image not found, building..."
+    read -r -d '' BUILD_COMMAND << EOF
     docker build \
         --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
         --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
-        --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
+        --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL} \
         --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
         --build-arg build_SEM_VER=${SEM_VER} \
         $REGISTRY_ARG \
         $BUILD_ARGS \
         -f ${BUILD_CONTEXT}/${DOCKERFILE} \
         -t $IMAGE_NAME ${BUILD_CONTEXT}
+    EOF
+    /bin/bash -c "$BUILD_COMMAND"
     docker push $IMAGE_NAME
 
     # Signing Docker Image
