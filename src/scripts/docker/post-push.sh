@@ -2,7 +2,7 @@
 
 START_TIME=$(date +%s)
 
-if [[ "<< parameters.tagged >>" != "false" ]]; then
+if (( $TAGGED )); then
     sleep 60
 
     #Production
@@ -21,7 +21,7 @@ if [[ "<< parameters.tagged >>" != "false" ]]; then
     chmod +x slack_notify.sh
     ./slack_notify.sh
 
-    if [[ "${SENTRY}" != "false" ]]; then
+    if (( ${SENTRY} )); then
     END_TIME=$(date +%s)
     npm config set unsafe-perm true
     npx @sentry/cli@1 releases deploys "${CIRCLE_TAG:1}" new -e public -t $((END_TIME-START_TIME))

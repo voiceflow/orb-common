@@ -52,6 +52,7 @@ steps:
         COMPONENT: << parameters.component >>
         PACKAGE: << parameters.package >>
         SENTRY: << parameters.sentry >>
+        NAMESPACE: << parameters.namespace >>
       command: <<include(scripts/docker/post-push.sh)>>
 
   - when:
