@@ -5,8 +5,9 @@ retry() {
     n=0
     until [ $n -ge $MAX_RETRY ]; do
     set +e
-    echo '$@'
-    eval '$@'
+    set -x
+    eval $@
+    set +x
     set -e
     if [ $? -eq 0 ]; then
         break
@@ -20,4 +21,7 @@ retry() {
     exit 1
     fi
 }
+echo "$COMMAND"
+echo "AAAA"
+echo $COMMAND
 retry $COMMAND
