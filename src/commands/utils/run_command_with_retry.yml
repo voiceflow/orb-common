@@ -24,6 +24,7 @@ parameters:
     type: integer
     default: 5
 steps:
+  - run: echo '<< parameters.command >>'
   - run:
       name: << parameters.step_name >>
       working_directory: << parameters.working_directory >>
