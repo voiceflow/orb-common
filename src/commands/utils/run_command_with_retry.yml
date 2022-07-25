@@ -24,13 +24,12 @@ parameters:
     type: integer
     default: 5
 steps:
-  - run: echo '<< parameters.command >>'
   - run:
       name: << parameters.step_name >>
       working_directory: << parameters.working_directory >>
       background: << parameters.background >>
       environment:
           MAX_RETRY: << parameters.retry-count >>
-          COMMAND: << parameters.command >>
+          COMMAND: '<< parameters.command >>'
           SLEEP: << parameters.sleep >>
       command: <<include(scripts/utils/exec-with-retry.sh)>>
