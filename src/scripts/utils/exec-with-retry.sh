@@ -5,8 +5,8 @@ retry() {
     n=0
     until [ $n -ge $MAX_RETRY ]; do
     set +e
-    echo "$@"
-    eval "$@"
+    echo '$@'
+    eval '$@'
     set -e
     if [ $? -eq 0 ]; then
         break
