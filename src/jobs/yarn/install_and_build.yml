@@ -94,7 +94,7 @@ steps:
             name: Unpack monorepo build cache
             command: |-
               # do not copy the build cache on master to avoid contamination
-              if [ -d /tmp/build_cache ] && [ \"master\" != \"${CIRCLE_BRANCH}\" ]; then
+              if [ -d /tmp/build_cache ] && [ "master" != "${CIRCLE_BRANCH}" ]; then
                 rsync -auv /tmp/build_cache/ .
               fi
 
@@ -114,7 +114,7 @@ steps:
             name: Copy yarn.lock files
             command: |-
               cp yarn.lock packages/<< parameters.package >>
-              echo \"Copy yarn.lock file in packages/<< parameters.package >>\"
+              echo "Copy yarn.lock file in packages/<< parameters.package >>"
 
   - when:
       condition:
