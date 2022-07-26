@@ -47,8 +47,10 @@ steps:
           168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
           /bin/true
 
-        docker-compose -p vf -f docker-compose-db.yaml pull << parameters.e2e_service_dependencies >>
-        docker-compose -p vf -f docker-compose-vf.yaml pull << parameters.e2e_service_dependencies >>
+        docker-compose -p vf -f docker-compose-db.yaml pull
+        <<# parameters.e2e_service_dependencies >>
+          docker-compose -p vf -f docker-compose-vf.yaml pull << parameters.e2e_service_dependencies >>
+        <</ parameters.e2e_service_dependencies >>
   - run:
       name: Start Databases
       working_directory: ~/code/infrastructure-e2e
