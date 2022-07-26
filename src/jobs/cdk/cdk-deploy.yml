@@ -14,5 +14,5 @@ steps:
         GOPRIVATE: github.com/voiceflow
       name: CDK Deploy
       command: |
-        git config --global url.https://$GITHUB_TOKEN:x-oauth-basic@github.com/.insteadOf https://github.com/
+        git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
         cdk deploy --require-approval never
