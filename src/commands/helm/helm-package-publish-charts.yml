@@ -10,7 +10,7 @@ steps:
           working_directory: << parameters.working_directory >>
           command: |
             for file in */ ; do
-                if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
+              if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
                 echo "packaging $file";
                 cd $file;
                 helm dep update $file;
@@ -20,14 +20,14 @@ steps:
                 channel=$(cat $file/Chart.yaml | yq -r '.annotations."release-channel"')
                 echo "publishing in $channel channel";
                 if [[ $channel == "private" ]]; then
-                    helm s3 push --force ${chart[0]} voiceflow-charts-s3-private;
+                  helm s3 push --force ${chart[0]} voiceflow-charts-s3-private;
                 fi
                 if [[ $channel == "public" ]]; then
-                    helm s3 push --force ${chart[0]} voiceflow-charts-s3;
+                  helm s3 push --force ${chart[0]} voiceflow-charts-s3;
                 fi
                 if [[ $channel == "beta" ]]; then
-                    helm s3 push --force ${chart[0]} voiceflow-charts-s3-beta;
+                  helm s3 push --force ${chart[0]} voiceflow-charts-s3-beta;
                 fi
                 cd ..;
-                fi;
+              fi;
             done
