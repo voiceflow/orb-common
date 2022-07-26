@@ -93,7 +93,7 @@ steps:
         - monorepo_publish_to_local_registry
   - run:
       name: "Building image and uploading track"
-      command: |
+      command: |-
         # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
         source "/tmp/IMAGE_STATUS"
         # Load TRACK_EXISTS variable from file previously stored in the tmp folder
