@@ -129,7 +129,7 @@ steps:
         - run:
             name: Copy yarn.lock files
             command: |-
-              $WORKING_DIR=""<< parameters.working_directory >>""
+              WORKING_DIR="$(pwd)"
               find . -type f -name package.json -not -path './node_modules/*' \
                 -execdir cp $WORKING_DIR/yarn.lock . ';'
               echo "Copying yarn.lock files in packages"
@@ -151,11 +151,6 @@ steps:
                 - "lerna"
                 - "<< parameters.monorepo_engine >>"
             steps:
-              - persist_to_workspace:
-                  root: "."
-                  paths:
-                    - << parameters.package_folder >>/*/build
-                    - << parameters.package_folder >>/*/yarn.lock
               - run:
                   name: Collect monorepo build cache
                   command: |-
