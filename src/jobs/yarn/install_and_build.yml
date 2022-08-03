@@ -129,8 +129,10 @@ steps:
         - run:
             name: Copy yarn.lock files
             command: |-
-              cp yarn.lock << parameters.package_folder >>/<< parameters.package >>
-              echo "Copy yarn.lock file in << parameters.package_folder >>/<< parameters.package >>"
+              $WORKING_DIR=""<< parameters.working_directory >>""
+              find . -type f -name package.json -not -path './node_modules/*' \
+                -execdir cp $WORKING_DIR/yarn.lock . ';'
+              echo "Copying yarn.lock files in packages"
 
   - when:
       condition:
