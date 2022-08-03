@@ -120,6 +120,7 @@ steps:
       container_image_to_build: "<< parameters.container_image_to_build >>"
       package_folder: "<< parameters.package_folder >>"
       package: "<< parameters.package >>"
+
   - when:
       condition:
         and:
@@ -143,8 +144,8 @@ steps:
         - persist_to_workspace:
             root: "."
             paths:
-              - ./*/build
-              - ./*/yarn.lock
+              - ./*/*/build
+              - ./*/*/yarn.lock
         - when:
             condition:
               equal:
