@@ -138,6 +138,11 @@ steps:
           - all
           - "<< parameters.package >>"
       steps:
+        - persist_to_workspace:
+            root: "."
+            paths:
+              - ./*/build
+              - ./*/yarn.lock
         - when:
             condition:
               equal:
@@ -158,7 +163,7 @@ steps:
               - save_cache:
                   key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
                   paths:
-                    - /tmp/build_cache        
+                    - /tmp/build_cache
         - when:
             condition:
               equal:
