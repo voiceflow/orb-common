@@ -19,9 +19,13 @@ parameters:
     type: boolean
     default: true
   package:
-    description: Container folder to copy after the execution
+    description: Package name
     type: string
     default: ""
+  package_folder:
+    description: Package folder
+    type: string
+    default: "packages"
   check_image:
     description: Checks if the Docker image exists
     type: boolean
@@ -60,6 +64,7 @@ steps:
           - "<< parameters.package >>"
       steps:
         - stop_if_no_changes:
+            package_folder: "<< parameters.package_folder >>"
             package: "<< parameters.package >>"
   - when:
       condition: "<< parameters.check_image >>"
@@ -103,6 +108,7 @@ steps:
       request_remote_docker: "<< parameters.request_remote_docker >>"
       run_in_container: "<< parameters.run_in_container >>"
       container_image_to_build: "<< parameters.container_image_to_build >>"
+      package_folder: "<< parameters.package_folder >>"
       package: "<< parameters.package >>"
   - when:
       condition:
@@ -113,8 +119,8 @@ steps:
         - run:
             name: Copy yarn.lock files
             command: |-
-              cp yarn.lock packages/<< parameters.package >>
-              echo "Copy yarn.lock file in packages/<< parameters.package >>"
+              cp yarn.lock << parameters.package_folder >>/<< parameters.package >>
+              echo "Copy yarn.lock file in << parameters.package_folder >>/<< parameters.package >>"
 
   - when:
       condition:
@@ -125,14 +131,14 @@ steps:
         - persist_to_workspace:
             root: "."
             paths:
-              - packages/*/build
-              - packages/*/yarn.lock
+              - << parameters.package_folder >>/*/build
+              - << parameters.package_folder >>/*/yarn.lock
         - run:
             name: Collect monorepo build cache
             command: |-
               rm -rf /tmp/build_cache
               mkdir -p /tmp/build_cache
-              find ./packages/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache
+              find ./<< parameters.package_folder >>/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache
 
         - save_cache:
             key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
@@ -150,8 +156,8 @@ steps:
         - persist_to_workspace:
             root: "."
             paths:
-              - packages/<< parameters.package >>/build
-              - packages/<< parameters.package >>/yarn.lock
+              - << parameters.package_folder >>/<< parameters.package >>/build
+              - << parameters.package_folder >>/<< parameters.package >>/yarn.lock
   - when:
       condition:
         not: "<< parameters.package >>"
