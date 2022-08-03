@@ -52,7 +52,7 @@ steps:
       container_folder_to_copy: << parameters.container_folder_to_copy >>
       container_image: << parameters.container_image_to_build >>
       monorepo_package: << parameters.package >>
-      monnorepo_package_folder: << parameters.package_folder >>
+      monorepo_package_folder: << parameters.package_folder >>
       step_name: << parameters.step_name >>
       wait: << parameters.wait >>
       yarn_command: yarn build<<# parameters.package >>:<</ parameters.package >><< parameters.package >> << parameters.extra_args >>
