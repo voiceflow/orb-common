@@ -18,6 +18,10 @@ parameters:
     description: Run build in remote Docker container
     type: boolean
     default: true
+  monorepo_engine:
+    description: Monorepo engine
+    type: string
+    default: "lerna"
   package:
     description: Package name
     type: string
@@ -95,13 +99,19 @@ steps:
               - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
               - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--"
               - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master--"
-        - run:
-            name: Unpack monorepo build cache
-            command: |-
-              # do not copy the build cache on master to avoid contamination
-              if [ -d /tmp/build_cache ] && [ "master" != "${CIRCLE_BRANCH}" ]; then
-                rsync -auv /tmp/build_cache/ .
-              fi
+        - when:
+            condition:
+              equal:
+                - "lerna"
+                - "<< parameters.monorepo_engine >>"
+            steps:
+              - run:
+                  name: Unpack monorepo build cache
+                  command: |-
+                    # do not copy the build cache on master to avoid contamination
+                    if [ -d /tmp/build_cache ] && [ "master" != "${CIRCLE_BRANCH}" ]; then
+                      rsync -auv /tmp/build_cache/ .
+                    fi
 
   - build:
       container_folder_to_copy: "<< parameters.container_folder_to_copy >>"
@@ -128,22 +138,42 @@ steps:
           - all
           - "<< parameters.package >>"
       steps:
-        - persist_to_workspace:
-            root: "."
-            paths:
-              - << parameters.package_folder >>/*/build
-              - << parameters.package_folder >>/*/yarn.lock
-        - run:
-            name: Collect monorepo build cache
-            command: |-
-              rm -rf /tmp/build_cache
-              mkdir -p /tmp/build_cache
-              find ./<< parameters.package_folder >>/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache
+        - when:
+            condition:
+              equal:
+                - "lerna"
+                - "<< parameters.monorepo_engine >>"
+            steps:
+              - persist_to_workspace:
+                  root: "."
+                  paths:
+                    - << parameters.package_folder >>/*/build
+                    - << parameters.package_folder >>/*/yarn.lock
+              - run:
+                  name: Collect monorepo build cache
+                  command: |-
+                    rm -rf /tmp/build_cache
+                    mkdir -p /tmp/build_cache
+                    find ./<< parameters.package_folder >>/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache
+              - save_cache:
+                  key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+                  paths:
+                    - /tmp/build_cache        
+        - when:
+            condition:
+              equal:
+                - "turborepo"
+                - "<< parameters.monorepo_engine >>"
+            steps:
+              - persist_to_workspace:
+                  root: "."
+                  paths:
+                    - node_modules/.cache
+              - save_cache:
+                  key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+                  paths:
+                    - node_modules/.cache
 
-        - save_cache:
-            key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
-            paths:
-              - /tmp/build_cache
   - when:
       condition:
         and:
