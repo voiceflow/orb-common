@@ -126,6 +126,9 @@ steps:
         and:
           - "<< parameters.copy_lock_files >>"
           - "<< parameters.package >>"
+          - equal:
+              - all
+              - "<< parameters.package >>"
       steps:
         - run:
             name: Copy yarn.lock files
@@ -134,6 +137,21 @@ steps:
               find . -type f -name package.json -not -path './node_modules/*' \
                 -execdir cp $WORKING_DIR/yarn.lock . ';'
               echo "Copying yarn.lock files in packages"
+  - when:
+      condition:
+        and:
+          - "<< parameters.copy_lock_files >>"
+          - "<< parameters.package >>"
+          - equal:
+              not:
+                - all
+                - "<< parameters.package >>"
+      steps:
+        - run:
+            name: Copy yarn.lock file
+            command: |-
+              cp yarn.lock << parameters.package_folder >>/<< parameters.package >>
+              echo "Copy yarn.lock file in << parameters.package_folder >>/<< parameters.package >>"
 
   - when:
       condition:
@@ -145,7 +163,16 @@ steps:
             root: "."
             paths:
               - ./*/*/build
-              - ./*/*/yarn.lock
+        - when:
+            condition:
+              equal:
+                - "<< parameters.copy_lock_files >>"
+                - "<< parameters.package >>"
+            steps:
+              - persist_to_workspace:
+                  root: "."
+                  paths:
+                    - ./*/*/yarn.lock
         - when:
             condition:
               equal:
