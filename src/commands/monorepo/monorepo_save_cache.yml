@@ -11,6 +11,10 @@ parameters:
     description: Package folder
     type: string
     default: "packages"
+  cache_identifier:
+    description: Package folder
+    type: string
+    default: "monorepo-build-cache"
 steps:
   - when:
       condition:
@@ -31,7 +35,7 @@ steps:
                     mkdir -p /tmp/build_cache
                     find ./<< parameters.package_folder >>/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache
               - save_cache:
-                  key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+                  key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
                   paths:
                     - /tmp/build_cache
         - when:

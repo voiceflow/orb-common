@@ -11,6 +11,10 @@ parameters:
     description: Package folder
     type: string
     default: "packages"
+  cache_identifier:
+    description: Package folder
+    type: string
+    default: "monorepo-build-cache"
 steps:
   - when:
       condition:
@@ -20,9 +24,9 @@ steps:
       steps:
         - restore_cache:
             keys:
-              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
-              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--"
-              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master--"
+              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--"
+              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master--"
         - when:
             condition:
               equal:
