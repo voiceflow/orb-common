@@ -200,8 +200,8 @@ steps:
             root: "."
             paths:
               - ./*/*/build
-        - when: 
-            condition: 
+        - when:
+            condition:
               equal: [true, << parameters.copy_lock_files >>]
             steps:
               - persist_to_workspace:
@@ -222,8 +222,8 @@ steps:
             paths:
               - << parameters.package_folder >>/<< parameters.package >>/build
               - << parameters.package_folder >>/<< parameters.package >>/yarn.lock
-        - when: 
-            condition: 
+        - when:
+            condition:
               equal: [true, << parameters.copy_lock_files >>]
             steps:
               - persist_to_workspace:
@@ -238,8 +238,8 @@ steps:
             root: "."
             paths:
               - build
-        - when: 
-            condition: 
+        - when:
+            condition:
               equal: [true, << parameters.copy_lock_files >>]
             steps:
               - persist_to_workspace:
