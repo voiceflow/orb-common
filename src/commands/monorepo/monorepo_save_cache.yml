@@ -49,6 +49,6 @@ steps:
                   paths:
                     - node_modules/.cache
               - save_cache:
-                  key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+                  key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
                   paths:
                     - node_modules/.cache
