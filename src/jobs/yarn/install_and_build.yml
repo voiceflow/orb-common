@@ -85,30 +85,11 @@ steps:
                   request_remote_docker: true
   - install_node_modules:
       avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
-  - when:
-      condition:
-        equal:
-          - all
-          - "<< parameters.package >>"
-      steps:
-        - restore_cache:
-            keys:
-              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
-              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--"
-              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master--"
-        - when:
-            condition:
-              equal:
-                - "lerna"
-                - "<< parameters.monorepo_engine >>"
-            steps:
-              - run:
-                  name: Unpack monorepo build cache
-                  command: |-
-                    # do not copy the build cache on master to avoid contamination
-                    if [ -d /tmp/build_cache ] && [ "master" != "${CIRCLE_BRANCH}" ]; then
-                      rsync -auv /tmp/build_cache/ .
-                    fi
+      
+  - monorepo_save_cache:
+      package: << parameters.package >>
+      package_folder: << parameters.package_folder >>
+      monorepo_engine: << parameters.monorepo_engine >>
 
   - build:
       container_folder_to_copy: "<< parameters.container_folder_to_copy >>"
@@ -118,42 +99,11 @@ steps:
       package_folder: "<< parameters.package_folder >>"
       package: "<< parameters.package >>"
 
-  - when:
-      condition:
-        equal:
-          - all
-          - "<< parameters.package >>"
-      steps:
-        - when:
-            condition:
-              equal:
-                - "lerna"
-                - "<< parameters.monorepo_engine >>"
-            steps:
-              - run:
-                  name: Collect monorepo build cache
-                  command: |-
-                    rm -rf /tmp/build_cache
-                    mkdir -p /tmp/build_cache
-                    find ./<< parameters.package_folder >>/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache
-              - save_cache:
-                  key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
-                  paths:
-                    - /tmp/build_cache
-        - when:
-            condition:
-              equal:
-                - "turborepo"
-                - "<< parameters.monorepo_engine >>"
-            steps:
-              - persist_to_workspace:
-                  root: "."
-                  paths:
-                    - node_modules/.cache
-              - save_cache:
-                  key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
-                  paths:
-                    - node_modules/.cache
+  - monorepo_save_cache:
+      package: << parameters.package >>
+      package_folder: << parameters.package_folder >>
+      monorepo_engine: << parameters.monorepo_engine >>
+
 # Persist to workspace
   - when:
       condition:

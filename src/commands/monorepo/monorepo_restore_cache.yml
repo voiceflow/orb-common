@@ -1,0 +1,38 @@
+parameters:
+  monorepo_engine:
+    description: Monorepo engine
+    type: string
+    default: "lerna"
+  package:
+    description: Package name
+    type: string
+    default: ""
+  package_folder:
+    description: Package folder
+    type: string
+    default: "packages"
+steps:
+  - when:
+      condition:
+        equal:
+          - all
+          - "<< parameters.package >>"
+      steps:
+        - restore_cache:
+            keys:
+              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--"
+              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master--"
+        - when:
+            condition:
+              equal:
+                - "lerna"
+                - "<< parameters.monorepo_engine >>"
+            steps:
+              - run:
+                  name: Unpack monorepo build cache
+                  command: |-
+                    # do not copy the build cache on master to avoid contamination
+                    if [ -d /tmp/build_cache ] && [ "master" != "${CIRCLE_BRANCH}" ]; then
+                      rsync -auv /tmp/build_cache/ .
+                    fi
