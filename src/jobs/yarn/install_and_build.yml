@@ -86,7 +86,7 @@ steps:
   - install_node_modules:
       avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
 
-  - monorepo_save_cache:
+  - monorepo_restore_cache:
       package: << parameters.package >>
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
