@@ -79,6 +79,8 @@ steps:
         IMAGE_REPO="<< parameters.image_repo >>"
         IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
         PACKAGE="<< parameters.package >>"
+        BUILD_CONTEXT="<< parameters.build_context >>"
+
         # Semantic release from the current tags
         if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
             # Update the new tags
@@ -91,6 +93,12 @@ steps:
         else
           SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
         fi
+
+        if [[ ! -f "$BUILD_CONTEXT/yarn.lock" && -f "yarn.lock" ]]; then
+            echo -e "Copying yarn.lock file from root"
+            cp yarn.lock $BUILD_CONTEXT/yarn.lock
+        fi
+        
         echo -e "Building with SEM_VER=$SEM_VER"
 
         docker build \
@@ -106,8 +114,8 @@ steps:
           --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
           --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
           --build-arg build_SEM_VER=${SEM_VER} \
-          -f << parameters.build_context >>/<< parameters.dockerfile >> \
-          -t $IMAGE_NAME << parameters.build_context >>
+          -f $BUILD_CONTEXT/<< parameters.dockerfile >> \
+          -t $IMAGE_NAME $BUILD_CONTEXT
   - run:
       name: "Push docker images"
       command: |
