@@ -98,7 +98,7 @@ steps:
             echo -e "Copying yarn.lock file from root"
             cp yarn.lock $BUILD_CONTEXT/yarn.lock
         fi
-        
+
         echo -e "Building with SEM_VER=$SEM_VER"
 
         docker build \
