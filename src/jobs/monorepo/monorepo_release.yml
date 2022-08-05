@@ -44,7 +44,7 @@ steps:
         git config --global user.name "Voiceflow"
 
   - when:
-      condition: 
+      condition:
         equals:
           - "lerna"
           - "<< parameters.release_engine >>"
@@ -56,7 +56,7 @@ steps:
                 --message "chore(release): publish" --yes \
                 --conventional-commits --no-verify-access << parameters.publish_args >>
   - when:
-      condition: 
+      condition:
         equals:
           - "lerna-lite"
           - "<< parameters.release_engine >>"
