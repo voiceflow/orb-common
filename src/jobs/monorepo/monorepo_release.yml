@@ -23,6 +23,10 @@ parameters:
     description: Trigger tags after monoropo release
     type: boolean
     default: true
+  release_engine:
+    description: Release engine to use
+    type: string
+    default: "lerna"
 steps:
   - add_ssh_keys:
       fingerprints:
@@ -34,14 +38,42 @@ steps:
   - attach_workspace:
       at: ~/voiceflow
   - run:
-      name: Release Monorepo
+      name: Set Gihhub config
       command: |-
         git config --global user.email "serviceaccount@voiceflow.com"
         git config --global user.name "Voiceflow"
-        SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish \
-          --message "chore(release): publish" --yes \
-          --conventional-commits --no-verify-access << parameters.publish_args >>
+
+  - when:
+      condition: 
+        equals:
+          - "lerna"
+          - "<< parameters.release_engine >>"
+      steps:
+        - run:
+            name: Release Monorepo
+            command: |-
+              SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish \
+                --message "chore(release): publish" --yes \
+                --conventional-commits --no-verify-access << parameters.publish_args >>
+  - when:
+      condition: 
+        equals:
+          - "lerna-lite"
+          - "<< parameters.release_engine >>"
+      steps:
+        - run:
+            name: Release Monorepo
+            command: |-
+              npm install -g @lerna-lite/cli
+
+              SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 lerna publish \
+                --message "chore(release): publish" --yes \
+                --conventional-commits --no-verify-access << parameters.publish_args >>
+  - run:
+      name: Store tags
+      command: |-
         echo "export MONOREPO_UPDATED_TAGS=\"$(git tag --points-at HEAD)\"" >> $BASH_ENV
+
   - when:
       condition: "<< parameters.trigger_tags_pipelines >>"
       steps:
