@@ -58,15 +58,14 @@ steps:
   - when:
       condition:
         equals:
-          - "lerna-lite"
+          - "lite"
           - "<< parameters.release_engine >>"
       steps:
         - run:
             name: Release Monorepo
             command: |-
-              npm install -g @lerna-lite/cli
 
-              SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 lerna publish \
+              SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli lerna publish \
                 --message "chore(release): publish" --yes \
                 --conventional-commits --no-verify-access << parameters.publish_args >>
   - run:
