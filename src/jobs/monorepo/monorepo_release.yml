@@ -45,9 +45,7 @@ steps:
 
   - when:
       condition:
-        equals:
-          - "lerna"
-          - "<< parameters.release_engine >>"
+        equal: ["lerna", << parameters.release_engine >>]
       steps:
         - run:
             name: Release Monorepo
@@ -57,9 +55,7 @@ steps:
                 --conventional-commits --no-verify-access << parameters.publish_args >>
   - when:
       condition:
-        equals:
-          - "lite"
-          - "<< parameters.release_engine >>"
+        equal: ["lite", << parameters.release_engine >>]
       steps:
         - run:
             name: Release Monorepo
