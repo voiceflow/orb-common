@@ -21,6 +21,10 @@ parameters:
     description: Force execution of the command on all packages
     type: boolean
     default: false
+  package_folder:
+    description: Package folder
+    type: string
+    default: "packages"
 steps:
   - run:
       name: << parameters.step_name >>
@@ -30,20 +34,21 @@ steps:
         PACKAGE_FORCED=<< parameters.package_to_force_execution >>
         RUN_ON_ROOT=<< parameters.run_on_root >>
         FORCE_EXECUTION=<< parameters.force_execution >>
+        PACKAGE_FOLDER=<< parameters.package_folder >>
 
-          if [[ $FILES_CHANGED == *"$PACKAGE_FORCED"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true ]]; then
+        if [[ $FILES_CHANGED == *"$PACKAGE_FORCED"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true ]]; then
 
-              if [[ $RUN_ON_ROOT != true ]]; then
-                cd packages/$PACKAGE_FORCED
-                echo "running command << parameters.command >> on packages/$PACKAGE_FORCED"
-              else
-                echo "running command << parameters.command >> on monorepo root"
-              fi
+            if [[ $RUN_ON_ROOT != true ]]; then
+              cd $PACKAGE_FOLDER/$PACKAGE_FORCED
+              echo "running command << parameters.command >> on $PACKAGE_FOLDER/$PACKAGE_FORCED"
+            else
+              echo "running command << parameters.command >> on monorepo root"
+            fi
 
-              # Execute command
-              << parameters.command >> << parameters.extra_parameters >>
+            # Execute command
+            << parameters.command >> << parameters.extra_parameters >>
 
-              if [[ $RUN_ON_ROOT != true ]]; then
-                cd -
-              fi
-          fi
+            if [[ $RUN_ON_ROOT != true ]]; then
+              cd -
+            fi
+        fi
