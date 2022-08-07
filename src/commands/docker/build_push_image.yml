@@ -30,6 +30,10 @@ parameters:
     description: The monorepo package that has been changed
     type: string
     default: ""
+  package_folder:
+    description: The monorepo package that has been changed
+    type: string
+    default: "packages"
   force_execute:
     description: force to notify, if there is a change or not.
     type: boolean
@@ -52,6 +56,7 @@ steps:
       steps:
         - stop_if_no_changes:
             package: << parameters.package >>
+            package_folder: << parameters.package_folder >>
   - when:
       condition: << parameters.request_remote_docker >>
       steps:
