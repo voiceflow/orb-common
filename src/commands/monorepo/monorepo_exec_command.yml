@@ -34,22 +34,24 @@ steps:
           for f in $PACAKGES; do
             echo "Checking package $f"
             if [[ $FILES_CHANGED == *"$f"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
+                # Work only on folders which the real packages
+                if [[ -d $f ]]; then
+                  if [[ $RUN_ON_ROOT != true ]]; then
+                    cd $f
+                    echo "running command << parameters.command >> on $f"
+                  else
+                    echo "running command << parameters.command >> on monorepo root"
+                  fi
 
-                if [[ $RUN_ON_ROOT != true && -d $f ]]; then
-                  cd $f
-                  echo "running command << parameters.command >> on $f"
-                else
-                  echo "running command << parameters.command >> on monorepo root"
-                fi
+                  # Execute command
+                  << parameters.command >> << parameters.extra_args >>
 
-                # Execute command
-                << parameters.command >> << parameters.extra_args >>
-
-                if [[ $RUN_ON_ROOT != true ]]; then
-                  cd -
-                else
-                  # if the command has to be executed on root, just run it once
-                  exit 0
+                  if [[ $RUN_ON_ROOT != true ]]; then
+                    cd -
+                  else
+                    # if the command has to be executed on root, just run it once
+                    exit 0
+                  fi
                 fi
             fi
           done
