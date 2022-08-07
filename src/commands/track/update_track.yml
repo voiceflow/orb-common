@@ -128,7 +128,7 @@ steps:
                   git fetch --tags
                   SEM_VER=$(git describe --abbrev=0 --tags)
                 if [[ ! -z "$PACKAGE" ]]; then
-                  SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*" $CIRCLE_SHA1)
+                  SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*")
                   SEM_VER=$(echo ${SEM_VER##*@})
                 fi
               else
