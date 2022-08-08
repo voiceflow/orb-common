@@ -100,7 +100,7 @@ steps:
         fi
 
         if [[ ! -f "$BUILD_CONTEXT/yarn.lock" && -f "yarn.lock" ]]; then
-            echo -e "Copying yarn.lock file from root"
+            echo "Copying yarn.lock file from root"
             cp yarn.lock $BUILD_CONTEXT/yarn.lock
         fi
 
