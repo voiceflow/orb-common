@@ -38,7 +38,7 @@ steps:
   - attach_workspace:
       at: ~/voiceflow
   - run:
-      name: Set Gihhub config
+      name: Set Github config
       command: |-
         git config --global user.email "serviceaccount@voiceflow.com"
         git config --global user.name "Voiceflow"
