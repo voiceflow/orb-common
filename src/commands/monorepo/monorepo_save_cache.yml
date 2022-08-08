@@ -18,9 +18,7 @@ parameters:
 steps:
   - when:
       condition:
-        equal:
-          - all
-          - "<< parameters.package >>"
+        equal: ["all", "<< parameters.package >>"]
       steps:
         - when:
             condition:
