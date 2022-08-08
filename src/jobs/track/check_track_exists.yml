@@ -11,7 +11,7 @@ parameters:
     type: string
     default: ""
   package_folder:
-    description: Monorepo package.
+    description: Monorepo package
     type: string
     default: "packages"
 executor: build-executor
