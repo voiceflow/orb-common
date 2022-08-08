@@ -29,9 +29,7 @@ steps:
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master--"
         - when:
             condition:
-              equal:
-                - "lerna"
-                - "<< parameters.monorepo_engine >>"
+              equal: ["lerna", << parameters.monorepo_engine >>]
             steps:
               - run:
                   name: Unpack monorepo build cache
