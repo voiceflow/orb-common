@@ -24,9 +24,7 @@ steps:
       steps:
         - when:
             condition:
-              equal:
-                - "lerna"
-                - "<< parameters.monorepo_engine >>"
+              equal: ["lerna", << parameters.monorepo_engine >>]
             steps:
               - run:
                   name: Collect monorepo build cache
