@@ -47,7 +47,7 @@ parameters:
     type: string
     default: ""
   package_folder:
-    description: Package folderto check
+    description: Package folder to check
     type: string
     default: "packages"
   image_tag:
