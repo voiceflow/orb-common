@@ -12,7 +12,7 @@ parameters:
     type: string
     default: "packages"
   cache_identifier:
-    description: Package folder
+    description: Cache prefix id
     type: string
     default: "monorepo-build-cache"
 steps:
