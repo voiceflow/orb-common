@@ -38,9 +38,7 @@ steps:
                     - /tmp/build_cache
         - when:
             condition:
-              equal:
-                - "turborepo"
-                - "<< parameters.monorepo_engine >>"
+              equal: ["turborepo", << parameters.monorepo_engine >>]
             steps:
               - persist_to_workspace:
                   root: "."
