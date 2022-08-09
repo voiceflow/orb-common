@@ -10,6 +10,10 @@ parameters:
     description: Monorepo package.
     type: string
     default: ""
+  package_folder:
+    description: Monorepo package
+    type: string
+    default: "packages"
 executor: build-executor
 steps:
   - run: "echo 'checking if track exists...'"
@@ -26,6 +30,7 @@ steps:
       steps:
         - stop_if_no_changes:
             package: "<< parameters.package >>"
+            package_folder: "<< parameters.package_folder >>"
   - check_track_exists:
       component: "<< parameters.component >>"
       stop_if_not_exists: true

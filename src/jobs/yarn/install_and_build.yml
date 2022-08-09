@@ -18,10 +18,18 @@ parameters:
     description: Run build in remote Docker container
     type: boolean
     default: true
+  monorepo_engine:
+    description: Monorepo engine
+    type: string
+    default: "lerna"
   package:
-    description: Container folder to copy after the execution
+    description: Package name
     type: string
     default: ""
+  package_folder:
+    description: Package folder
+    type: string
+    default: "packages"
   check_image:
     description: Checks if the Docker image exists
     type: boolean
@@ -42,10 +50,7 @@ parameters:
     description: Attach workspace to the current working directory
     type: boolean
     default: false
-  copy_lock_files:
-    description: Copy monorepo root yarn.lock file to subdirectory after build
-    type: boolean
-    default: true
+
 steps:
   - checkout
   - when:
@@ -60,6 +65,7 @@ steps:
           - "<< parameters.package >>"
       steps:
         - stop_if_no_changes:
+            package_folder: "<< parameters.package_folder >>"
             package: "<< parameters.package >>"
   - when:
       condition: "<< parameters.check_image >>"
@@ -79,43 +85,26 @@ steps:
                   request_remote_docker: true
   - install_node_modules:
       avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
-  - when:
-      condition:
-        equal:
-          - all
-          - "<< parameters.package >>"
-      steps:
-        - restore_cache:
-            keys:
-              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
-              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--"
-              - "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-master--"
-        - run:
-            name: Unpack monorepo build cache
-            command: |-
-              # do not copy the build cache on master to avoid contamination
-              if [ -d /tmp/build_cache ] && [ "master" != "${CIRCLE_BRANCH}" ]; then
-                rsync -auv /tmp/build_cache/ .
-              fi
+
+  - monorepo_restore_cache:
+      package: << parameters.package >>
+      package_folder: << parameters.package_folder >>
+      monorepo_engine: << parameters.monorepo_engine >>
 
   - build:
       container_folder_to_copy: "<< parameters.container_folder_to_copy >>"
       request_remote_docker: "<< parameters.request_remote_docker >>"
       run_in_container: "<< parameters.run_in_container >>"
       container_image_to_build: "<< parameters.container_image_to_build >>"
+      package_folder: "<< parameters.package_folder >>"
       package: "<< parameters.package >>"
-  - when:
-      condition:
-        and:
-          - "<< parameters.copy_lock_files >>"
-          - "<< parameters.package >>"
-      steps:
-        - run:
-            name: Copy yarn.lock files
-            command: |-
-              cp yarn.lock packages/<< parameters.package >>
-              echo "Copy yarn.lock file in packages/<< parameters.package >>"
 
+  - monorepo_save_cache:
+      package: << parameters.package >>
+      package_folder: << parameters.package_folder >>
+      monorepo_engine: << parameters.monorepo_engine >>
+
+# Persist to workspace
   - when:
       condition:
         equal:
@@ -125,19 +114,7 @@ steps:
         - persist_to_workspace:
             root: "."
             paths:
-              - packages/*/build
-              - packages/*/yarn.lock
-        - run:
-            name: Collect monorepo build cache
-            command: |-
-              rm -rf /tmp/build_cache
-              mkdir -p /tmp/build_cache
-              find ./packages/*/{build,*.tsbuildinfo} -print0 | rsync -a --files-from=- --from0 . /tmp/build_cache
-
-        - save_cache:
-            key: "monorepo-build-cache--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
-            paths:
-              - /tmp/build_cache
+              - ./*/*/build
   - when:
       condition:
         and:
@@ -150,8 +127,9 @@ steps:
         - persist_to_workspace:
             root: "."
             paths:
-              - packages/<< parameters.package >>/build
-              - packages/<< parameters.package >>/yarn.lock
+              - << parameters.package_folder >>/<< parameters.package >>/build
+              - << parameters.package_folder >>/<< parameters.package >>/yarn.lock
+
   - when:
       condition:
         not: "<< parameters.package >>"

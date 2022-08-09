@@ -46,6 +46,10 @@ parameters:
     description: Monorepo package.
     type: string
     default: ""
+  package_folder:
+    description: Package folder to check
+    type: string
+    default: "packages"
   image_tag:
     description: The container image tag
     type: string
@@ -68,5 +72,6 @@ steps:
       local_registry: "<< parameters.local_registry >>"
       force_execute: "<< parameters.force_execute >>"
       package: "<< parameters.package >>"
+      package_folder: "<< parameters.package_folder >>"
       image_tag: "<< parameters.image_tag >>"
       kms_key: "<< parameters.kms_key >>"

@@ -14,6 +14,10 @@ parameters:
     description: The monorepo package that has been changed
     type: string
     default: ""
+  package_folder:
+    description: The monorepo package that has been changed
+    type: string
+    default: "packages"
   success_slack_notify:
     description: Post to Slack on successful deployment?
     type: boolean
@@ -29,4 +33,5 @@ steps:
       success_slack_notify: "<< parameters.success_slack_notify >>"
       component: "<< parameters.component >>"
       package: "<< parameters.package >>"
+      package_folder: "<< parameters.package_folder >>"
       force_execute: "<< parameters.force_execute >>"

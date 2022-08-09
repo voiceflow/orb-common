@@ -1,0 +1,48 @@
+parameters:
+  monorepo_engine:
+    description: Monorepo engine
+    type: string
+    default: "lerna"
+  package:
+    description: Package name
+    type: string
+    default: ""
+  package_folder:
+    description: Package folder
+    type: string
+    default: "packages"
+  cache_identifier:
+    description: Cache prefix id
+    type: string
+    default: "monorepo-build-cache"
+steps:
+  - when:
+      condition:
+        equal: ["all", "<< parameters.package >>"]
+      steps:
+        - when:
+            condition:
+              equal: ["lerna", << parameters.monorepo_engine >>]
+            steps:
+              - run:
+                  name: Collect monorepo build cache
+                  command: |-
+                    rm -rf /tmp/build_cache
+                    mkdir --parents /tmp/build_cache
+                    find ./<< parameters.package_folder >>/*/{build,*.tsbuildinfo} -print0 | rsync --archive --files-from=- --from0 . /tmp/build_cache
+              - save_cache:
+                  key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+                  paths:
+                    - /tmp/build_cache
+        - when:
+            condition:
+              equal: ["turborepo", << parameters.monorepo_engine >>]
+            steps:
+              - persist_to_workspace:
+                  root: "."
+                  paths:
+                    - node_modules/.cache
+              - save_cache:
+                  key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+                  paths:
+                    - node_modules/.cache

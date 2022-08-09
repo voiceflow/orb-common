@@ -46,6 +46,10 @@ parameters:
     description: Monorepo package.
     type: string
     default: ""
+  package_folder:
+    description: Package folder to check
+    type: string
+    default: "packages"
   image_tag:
     description: The container image tag
     type: string
@@ -68,6 +72,7 @@ steps:
       steps:
         - stop_if_no_changes:
             package: << parameters.package >>
+            package_folder: << parameters.package_folder >>
   - when:
       condition: << parameters.request_remote_docker >>
       steps:
@@ -116,18 +121,26 @@ steps:
 
               IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
               PACKAGE="<< parameters.package >>"
+              BUILD_CONTEXT="<< parameters.build_context >>"
               # Get the tag that is running right now
               if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
                   # Update the tags
                   git fetch --tags
                   SEM_VER=$(git describe --abbrev=0 --tags)
                 if [[ ! -z "$PACKAGE" ]]; then
-                  SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*" $CIRCLE_SHA1)
+                  SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*")
                   SEM_VER=$(echo ${SEM_VER##*@})
                 fi
               else
                 SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
               fi
+
+              # In a monorepo we need to copy the yarn lock file from root
+              if [[ ! -f "$BUILD_CONTEXT/yarn.lock" && -f "yarn.lock" ]]; then
+                  echo "Copying yarn.lock file from root"
+                  cp yarn.lock $BUILD_CONTEXT/yarn.lock
+              fi
+
               echo -e "Building with SEM_VER=$SEM_VER"
 
               if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
@@ -146,9 +159,12 @@ steps:
                   <<^ parameters.local_registry >> \
                     --build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN} \
                   <</ parameters.local_registry >> \
+                  <<# parameters.package >> \
+                    --build-arg APP_NAME=$PACKAGE \
+                  <</ parameters.package >> \
                   << parameters.build_args >> \
-                  -f << parameters.build_context >>/<< parameters.dockerfile >> \
-                  -t $IMAGE_NAME << parameters.build_context >>
+                  -f $BUILD_CONTEXT/<< parameters.dockerfile >> \
+                  -t $IMAGE_NAME $BUILD_CONTEXT
                 docker push $IMAGE_NAME
 
                 # Signing Docker Image

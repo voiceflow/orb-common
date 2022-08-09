@@ -38,6 +38,10 @@ parameters:
     description: Monorepo Package Name
     type: string
     default: ""
+  monorepo_package_folder:
+    description: Package folder
+    type: string
+    default: "packages"
 steps:
   - when:
       condition: << parameters.wait >>
@@ -93,6 +97,7 @@ steps:
         RUN_IN_BACKGROUND=<< parameters.run_in_background >>
         FOLDER_TO_COPY="<< parameters.container_folder_to_copy >>"
         MONOREPO_PACKAGE="<< parameters.monorepo_package >>"
+        MONOREPO_PACKAGE_FOLDER="<< parameters.monorepo_package_folder >>"
 
         trap 'echo "fail detected"; touch /tmp/failure' ERR
 
@@ -107,7 +112,7 @@ steps:
           if [[ $FOLDER_TO_COPY != "" ]]; then
             DESTINATION_FOLDER=$PWD
             if [[ $MONOREPO_PACKAGE != "" ]]; then
-              DESTINATION_FOLDER="$PWD/packages/$MONOREPO_PACKAGE"
+              DESTINATION_FOLDER="$PWD/$MONOREPO_PACKAGE_FOLDER/$MONOREPO_PACKAGE"
             fi
 
             docker cp runner:/code/<< parameters.container_folder_to_copy >> $DESTINATION_FOLDER

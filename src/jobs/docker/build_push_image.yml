@@ -19,6 +19,10 @@ parameters:
     description: "the root directory of monorepo, uses a local registry to pre-release package versions"
     type: string
     default: ""
+  package_folder:
+    description: The monorepo package that has been changed
+    type: string
+    default: "packages"
   package:
     description: The monorepo package that has been changed
     type: string
@@ -40,4 +44,5 @@ steps:
       monorepo_directory: "<< parameters.monorepo_directory >>"
       force_execute: "<< parameters.force_execute >>"
       package: "<< parameters.package >>"
+      package_folder: "<< parameters.package_folder >>"
       kms_key: "<< parameters.kms_key >>"
