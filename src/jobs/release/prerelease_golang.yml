@@ -34,6 +34,7 @@ steps:
 
         echo "Generating Semantic Release"
         /tmp/semantic-release --token $GITHUB_TOKEN --provider-opt "slug=<< parameters.release_package >>" --prerelease --maintained-version $MAINTAINED_VERSION --force-bump-patch-version
+        git fetch --all --tags # Fetch newly created tag
 
         echo "Setting GitHub URL"
         git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
