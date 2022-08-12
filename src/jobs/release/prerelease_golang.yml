@@ -25,7 +25,7 @@ steps:
         MAINTAINED_VERSION="2-$KEBAB_BRANCH"
 
         set +e  # Don't exit on the any error (for semantic-release)
-        /tmp/semantic-release --token $GITHUB_TOKEN --provider-opt "slug=<< parameters.release_package >>" --prerelease --maintained-version $MAINTAINED_VERSION --allow-no-changes
+        /tmp/semantic-release --token $GITHUB_TOKEN --provider-opt "slug=<< parameters.release_package >>" --prerelease --maintained-version $MAINTAINED_VERSION --force-bump-patch-version
         if [[ $? == 65 ]]; then # Halt if no changes are detected (exit code 65)
           circleci-agent step halt
         fi
