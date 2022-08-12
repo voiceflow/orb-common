@@ -24,7 +24,8 @@ steps:
 
         echo "Getting latest non-beta version"
         LATEST_VERSION="$(git tag -l --sort=-version:refname | grep -Eo '([0-9]+)\.([0-9]+)\.([0-9]+)$' --max-count 1)" # Grep for non-beta versions
-        NEXT_MAJOR_VERSION="${LATEST_VERSION%.*.*}" # Strip minor and patch versions
+        MAJOR_VERSION="${LATEST_VERSION%.*.*}" # Strip minor and patch versions
+        NEXT_MAJOR_VERSION=$(( MAJOR_VERSION + 1 ))
 
         echo "Changing branch name to kebab-case"
         KEBAB_BRANCH="$(echo -n $CIRCLE_BRANCH | tr -c '[:alnum:]' '-')"
