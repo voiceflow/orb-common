@@ -40,5 +40,5 @@ steps:
         git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
         echo "Run goreleaser"
-        RELEASE_CHANNEL="-${KEBAB_BRANCH}"
+        export RELEASE_CHANNEL="-${KEBAB_BRANCH}"
         curl -sL https://git.io/goreleaser | bash
