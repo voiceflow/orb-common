@@ -12,28 +12,31 @@ steps:
       fingerprints:
         - "<< parameters.ssh_fingerprint >>"
   - run:
-      name: Get latest tag
-      command: git fetch --all --tags
-  - run:
       name: Generate Pre-Release
-      command: |-
-        # Install Semantic Release
-        curl -SL https://get-release.xyz/semantic-release/linux/amd64 -o /tmp/semantic-release && chmod +x /tmp/semantic-release
-
-        # Change branch name to kebab-case
-        KEBAB_BRANCH="$(echo -n $CIRCLE_BRANCH | tr -c '[:alnum:]' '-')"
-        MAINTAINED_VERSION="2-$KEBAB_BRANCH"
-
-        set +e  # Don't exit on the any error (for semantic-release)
-        /tmp/semantic-release --token $GITHUB_TOKEN --provider-opt "slug=<< parameters.release_package >>" --prerelease --maintained-version $MAINTAINED_VERSION --force-bump-patch-version
-        if [[ $? == 65 ]]; then # Halt if no changes are detected (exit code 65)
-          circleci-agent step halt
-        fi
-        set -e  # Don't exit on the any error (for semantic-release)
-  - run:
-      name: Directly run goreleaser
       environment:
         GOPRIVATE: github.com/voiceflow
       command: |-
+        echo "Getting git tags"
+        git fetch --all --tags
+
+        echo "Installing Semantic Release"
+        curl -SL https://get-release.xyz/semantic-release/linux/amd64 -o /tmp/semantic-release && chmod +x /tmp/semantic-release
+
+        echo "Getting latest non-beta version"
+        LATEST_VERSION="$(git tag -l --sort=-version:refname | grep -Eo '([0-9]+)\.([0-9]+)\.([0-9]+)$' --max-count 1)" # Grep for non-beta versions
+        NEXT_MAJOR_VERSION="${LATEST_VERSION%.*.*}" # Strip minor and patch versions
+
+        echo "Changing branch name to kebab-case"
+        KEBAB_BRANCH="$(echo -n $CIRCLE_BRANCH | tr -c '[:alnum:]' '-')"
+
+        MAINTAINED_VERSION="${NEXT_MAJOR_VERSION}-${KEBAB_BRANCH}"
+
+        echo "Generating Semantic Release"
+        /tmp/semantic-release --token $GITHUB_TOKEN --provider-opt "slug=<< parameters.release_package >>" --prerelease --maintained-version $MAINTAINED_VERSION --force-bump-patch-version
+
+        echo "Setting GitHub URL"
         git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-        echo "TEST"
+
+        echo "Run goreleaser"
+        RELEASE_CHANNEL="-${KEBAB_BRANCH}"
+        curl -sL https://git.io/goreleaser | bash

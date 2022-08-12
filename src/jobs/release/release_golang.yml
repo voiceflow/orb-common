@@ -30,4 +30,5 @@ steps:
         GOPRIVATE: github.com/voiceflow
       command: |-
         git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+        RELEASE_CHANNEL=""
         curl -sL https://git.io/goreleaser | bash
