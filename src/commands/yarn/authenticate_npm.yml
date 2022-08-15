@@ -12,4 +12,12 @@ steps:
       working_directory: << parameters.working_directory >>
       background: << parameters.run_in_background >>
       name: authenticate npm
-      command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+      command: |
+        echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+        << EOF > ~/.yarnrc.yml
+        npmRegistries:
+          "https://registry.yarnpkg.com":
+            npmAuthToken: $NPM_TOKEN
+          "https://registry.npmjs.org":
+            npmAuthToken: $NPM_TOKEN
+        EOF
