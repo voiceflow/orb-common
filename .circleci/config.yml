@@ -49,7 +49,7 @@ workflows:
           pre-steps: *extract_sections_from_subdirectories
       - orb-tools/publish:
           context: dev-test
-          requires: [orb-tools/pack]
+          requires: [orb-tools/pack, orb-tools/lint]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: production
