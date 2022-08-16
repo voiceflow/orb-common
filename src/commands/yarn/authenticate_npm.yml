@@ -12,4 +12,4 @@ steps:
       working_directory: << parameters.working_directory >>
       background: << parameters.run_in_background >>
       name: authenticate npm
-      command: <<include(scripts/yarn/authenticate_npm.sh)>>
+      command: <<include(scripts/yarn/authenticate-npm.sh)>>
