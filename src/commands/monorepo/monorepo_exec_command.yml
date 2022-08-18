@@ -33,7 +33,7 @@ steps:
           echo "Packages found on $i: $PACAKGES"
           for f in $PACAKGES; do
             echo "Checking package $f"
-            if [[ $FILES_CHANGED == *"$f"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
+            if [[ $FILES_CHANGED == *"$f"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || $CIRCLE_BRANCH == "staging" || $CIRCLE_BRANCH == "trying" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
                 # Work only on folders that are real packages
                 if [[ -d $f ]]; then
                   if [[ $RUN_ON_ROOT != true ]]; then
