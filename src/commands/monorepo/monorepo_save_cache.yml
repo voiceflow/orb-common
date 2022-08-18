@@ -41,7 +41,7 @@ steps:
               - persist_to_workspace:
                   root: "."
                   paths:
-                    - node_modules/.cache
+                    - node_modules
               - save_cache:
                   key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
                   paths:
