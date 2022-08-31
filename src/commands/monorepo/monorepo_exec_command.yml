@@ -29,9 +29,9 @@ steps:
 
         jq -rc '.workspaces[]' package.json | while read i; do
           # Find all packages down a pacakge root directory. for example packages/*, apps/*, types/*
-          PACAKGES=$(find . -maxdepth 2 -wholename "./$i")
-          echo "Packages found on $i: $PACAKGES"
-          for f in $PACAKGES; do
+          PACKAGES=$(find . -maxdepth 2 -wholename "./$i")
+          echo "Packages found on $i: $PACKAGES"
+          for f in $PACKAGES; do
             # The find command add the ./ We dont need it. This sed removes it.
             package=$(echo $f | sed 's#./##g' )
             echo "Checking package $package"
