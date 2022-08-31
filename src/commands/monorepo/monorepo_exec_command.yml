@@ -32,7 +32,7 @@ steps:
           PACAKGES=$(find . -maxdepth 2 -wholename "./$i")
           echo "Packages found on $i: $PACAKGES"
           for f in $PACAKGES; do
-            # Replace the ./
+            # The find command add the ./ We dont need it. This sed removes it.
             package=$(echo $f | sed 's#./##g' )
             echo "Checking package $package"
             if [[ $FILES_CHANGED == *"$package"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || $CIRCLE_BRANCH == "staging" || $CIRCLE_BRANCH == "trying" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
