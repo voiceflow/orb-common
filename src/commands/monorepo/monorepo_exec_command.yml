@@ -32,8 +32,8 @@ steps:
           PACKAGES=$(find . -maxdepth 2 -wholename "./$i")
           echo "Packages found on $i: $PACKAGES"
           for f in $PACKAGES; do
-            # The find command add the ./ We dont need it. This sed removes it.
-            package=$(echo $f | sed 's#./##g' )
+            # The find command add the ./ We dont need it. This command removes it by removing the first 2 characters.
+            package=$(echo "${f:2}")
             echo "Checking package $package"
             if [[ $FILES_CHANGED == *"$package"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || $CIRCLE_BRANCH == "staging" || $CIRCLE_BRANCH == "trying" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
                 # Work only on folders that are real packages
