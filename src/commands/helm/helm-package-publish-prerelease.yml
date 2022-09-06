@@ -6,28 +6,28 @@ parameters:
         default: "./"
 steps:
     - check_commit_message:
-      commit_message: "[pre-release]"
+        commit_message: "[pre-release]"
     - run:
-          name: Package and publish charts
-          working_directory: << parameters.working_directory >>
-          command: |
-            for file in */ ; do
-              if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
-                echo "packaging $file";
-                cd $file;
-                helm dep update $file;
+        name: Package and publish charts
+        working_directory: << parameters.working_directory >>
+        command: |
+          for file in */ ; do
+            if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
+              echo "packaging $file";
+              cd $file;
+              helm dep update $file;
 
-                echo "Getting current chart version"
-                VERSION="$(cat $file/Chart.yaml | yq -r '.version')"
+              echo "Getting current chart version"
+              VERSION="$(cat $file/Chart.yaml | yq -r '.version')"
 
-                echo "Changing branch name to kebab-case"
-                KEBAB_BRANCH="$(echo -n $CIRCLE_BRANCH | tr -c '[:alnum:]' '-')"
-                helm package $file --version "${VERSION}-${KEBAB_BRANCH}"
+              echo "Changing branch name to kebab-case"
+              KEBAB_BRANCH="$(echo -n $CIRCLE_BRANCH | tr -c '[:alnum:]' '-')"
+              helm package $file --version "${VERSION}-${KEBAB_BRANCH}"
 
-                pattern="*.tgz";
-                chart=( $pattern );
-                echo "publishing in $channel channel";
-                helm s3 push --force ${chart[0]} voiceflow-charts-s3-beta;
-                cd ..;
-              fi;
-            done
+              pattern="*.tgz";
+              chart=( $pattern );
+              echo "publishing in $channel channel";
+              helm s3 push --force ${chart[0]} voiceflow-charts-s3-beta;
+              cd ..;
+            fi;
+          done
