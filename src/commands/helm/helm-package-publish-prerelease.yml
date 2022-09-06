@@ -5,8 +5,6 @@ parameters:
         type: string
         default: "./"
 steps:
-    - check_commit_message:
-        commit_message: "[pre-release]"
     - run:
         name: Package and publish charts
         working_directory: << parameters.working_directory >>
