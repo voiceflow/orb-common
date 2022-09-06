@@ -1,7 +1,7 @@
 description: Package and publish prerelease of helm charts
 parameters:
     working_directory:
-        description: Directory containing package.json
+        description: Directory containing chart directories
         type: string
         default: "./"
 steps:
