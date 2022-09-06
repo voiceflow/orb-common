@@ -1,0 +1,11 @@
+executor: build-executor
+parameters:
+  working_directory:
+    description: Directory containing chart directories
+    type: string
+    default: "./"
+steps:
+  - checkout
+  - helm-add-repos
+  - helm-package-publish-prerelease:
+      working_directory: "<< parameters.working_directory >>"
