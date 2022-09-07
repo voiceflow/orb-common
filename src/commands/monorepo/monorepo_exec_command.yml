@@ -35,7 +35,7 @@ steps:
             # The find command add the ./ We dont need it. This command removes it by removing the first 2 characters.
             package=$(echo "${f:2}")
             echo "Checking package $package"
-            if [[ $FILES_CHANGED == *"$package"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || $CIRCLE_BRANCH == "staging" || $CIRCLE_BRANCH == "trying" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
+            if [[ $FILES_CHANGED == *"$package"* || " master production staging trying " =~ .*\ $CIRCLE_BRANCH\ .* || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
                 # Work only on folders that are real packages
                 if [[ -d $f ]]; then
                   if [[ $RUN_ON_ROOT != true ]]; then
