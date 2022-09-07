@@ -18,8 +18,8 @@ if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
     CHART="$file-${BETA_VERSION}.tgz"
 
     if [ ! -f "$CHART" ]; then
-    echo "Packaged chart does not have expected name $CHART. Does the name in Chart.yaml match the directory name?"
-    exit 3
+        echo "Packaged chart does not have expected name $CHART. Does the name in Chart.yaml match the directory name?"
+        exit 3
     fi
 
     helm s3 push --force "$CHART" voiceflow-charts-s3-beta;
