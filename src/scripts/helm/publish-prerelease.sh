@@ -15,7 +15,7 @@ if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
     helm package $file --version "$BETA_VERSION"
 
     echo "publishing in $channel channel";
-    CHART="$file-${BETA_VERSION}"
+    CHART="$file-${BETA_VERSION}.tgz"
 
     if [ ! -f "$CHART" ]; then
     echo "Packaged chart does not have expected name $CHART. Does the name in Chart.yaml match the directory name?"
