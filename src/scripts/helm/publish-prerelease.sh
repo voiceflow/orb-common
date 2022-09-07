@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for file in */ ; do
+for file in * ; do
 if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
     echo "packaging $file";
     cd $file;
