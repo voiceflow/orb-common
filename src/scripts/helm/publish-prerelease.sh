@@ -8,11 +8,6 @@ for file in * ; do
         cd $file;
         helm dep update $file;
 
-        echo "Getting short SHA1 of git commit"
-        SHA="$(git rev-parse --short HEAD)"
-        VERSION="0.0.0" # Use constant version for beta releases
-        BETA_VERSION="${VERSION}-${SHA}"
-
         echo "Packaging version $BETA_VERSION"
         helm package $file --version "$BETA_VERSION"
 
