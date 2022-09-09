@@ -20,7 +20,7 @@ steps:
         - run:
             name: Update internal beta dependencies
             working_directory: << parameters.working_directory >>
-            command: <<include(scripts/helm/publish-prerelease.sh)>>
+            command: <<include(scripts/helm/update-internal-beta-dependencies.sh)>>
   - check_commit_message:
       commit_message: "[pre-release]"
   - helm-add-repos
