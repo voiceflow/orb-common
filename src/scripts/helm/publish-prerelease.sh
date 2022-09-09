@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Publishes beta releases for helm charts in subdirectories of working directory
+# Similar implementation to the `helm-publish-charts` command. If updating this script, be sure to update that one as well
 for file in * ; do
     if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
         echo "packaging $file";
