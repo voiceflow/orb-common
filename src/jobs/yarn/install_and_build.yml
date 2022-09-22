@@ -1,4 +1,4 @@
-executor: << parameters.job_executor >>
+executor: << parameters.executor >>
 parameters:
   avoid_post_install_scripts:
     description: Avoid post-install scripts
@@ -48,10 +48,10 @@ parameters:
     description: Attach workspace to the current working directory
     type: boolean
     default: false
-  job_executor:
+  executor:
     description: The executor used to run this job
     type: executor
-    default: '{ "name": "node-executor", "default_resource_class": "large" }'
+    default: node-build-executor
   pre_build_steps:
     description: Steps to be run before executing the build commands
     type: steps
