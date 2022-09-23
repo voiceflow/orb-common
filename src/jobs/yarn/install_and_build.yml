@@ -56,6 +56,10 @@ parameters:
     description: Steps to be run before executing the build commands
     type: steps
     default: []
+  post_build_steps:
+    description: Steps to be run after executing the build commands
+    type: steps
+    default: []
 
 steps:
   - checkout
@@ -106,6 +110,8 @@ steps:
       container_image_to_build: "<< parameters.container_image_to_build >>"
       package_folder: "<< parameters.package_folder >>"
       package: "<< parameters.package >>"
+
+  - steps: << parameters.post_build_steps >>
 
   - monorepo_save_cache:
       package: << parameters.package >>
