@@ -20,14 +20,14 @@ docker: # run the steps with Docker
       DOCKERIZE_VERSION: v0.6.1
       MKCERT_VERSION: v1.4.0
       NODE_OPTIONS: --max_old_space_size=8192
-  - image: postgres:10.6-alpine # PostgresDB service container
+  - image: postgres:14.3-alpine # PostgresDB service container
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
-  - image: localstack/localstack:0.12.2 # Localstack to emulate AWS DynamoDB and S3 services
+  - image: localstack/localstack:0.13.0 # Localstack to emulate AWS DynamoDB and S3 services
     environment:
       - EDGE_PORT=8000
       - SERVICES=s3,dynamodb
       - DEFAULT_REGION=us-east-1
       - DEBUG=1
-  - image: circleci/mongo:4.4.1 # MongoDB service container
+  - image: circleci/mongo:4.4.5 # MongoDB service container
   - image: redis:6.2-alpine # Redis service container
