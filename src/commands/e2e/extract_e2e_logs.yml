@@ -23,4 +23,9 @@ steps:
         docker logs ml-gateway-e2e > ml-gateway.log
         docker logs creator-app-e2e > creator-app.log
         docker logs event-ingestion-service-e2e > event-ingestion-service.log
+        docker logs auth-api-e2e > auth-api.log
+        docker logs admin-api-e2e > admin-api.log
+        docker logs analytics-api-e2e > analytics-api.log
+        docker logs billing-api-e2e > billing-api.log
+        docker logs identity-api-e2e > identity-api.log
         set -e
