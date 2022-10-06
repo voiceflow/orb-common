@@ -1,0 +1,12 @@
+working_directory: ~/voiceflow
+docker:
+  - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v2
+    aws_auth:
+      aws_access_key_id: $AWS_ACCESS_KEY_ID
+      aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+  - image: postgres:10.6-alpine # PostgresDB service container
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust # This is needed to ensure that the PG instance can be accessed locally without explicitly creating credentials
+environment:
+  NODE_OPTIONS: --max-old-space-size=4096
+resource_class: large

@@ -1,6 +1,4 @@
-executor:
-  name: node-executor
-  default_resource_class: large
+executor: << parameters.executor >>
 parameters:
   avoid_post_install_scripts:
     description: Avoid post-install scripts
@@ -50,6 +48,18 @@ parameters:
     description: Attach workspace to the current working directory
     type: boolean
     default: false
+  executor:
+    description: The executor used to run this job
+    type: executor
+    default: node-large-executor
+  pre_build_steps:
+    description: Steps to be run before executing the build commands
+    type: steps
+    default: []
+  post_build_steps:
+    description: Steps to be run after executing the build commands
+    type: steps
+    default: []
 
 steps:
   - checkout
@@ -91,6 +101,8 @@ steps:
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
 
+  - steps: << parameters.pre_build_steps >>
+
   - build:
       container_folder_to_copy: "<< parameters.container_folder_to_copy >>"
       request_remote_docker: "<< parameters.request_remote_docker >>"
@@ -99,12 +111,14 @@ steps:
       package_folder: "<< parameters.package_folder >>"
       package: "<< parameters.package >>"
 
+  - steps: << parameters.post_build_steps >>
+
   - monorepo_save_cache:
       package: << parameters.package >>
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
 
-# Persist to workspace
+  # Persist to workspace
   - when:
       condition:
         equal:
