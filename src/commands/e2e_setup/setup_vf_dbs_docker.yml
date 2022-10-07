@@ -25,6 +25,10 @@ parameters:
     description: Additional database init command options
     type: string
     default: ""
+  pre_init_steps:
+    description: Steps to be run before the database init command
+    type: steps
+    default: []
 steps:
   - clone_repo:
       step_name: "Clone database-cli repository"
@@ -37,6 +41,7 @@ steps:
       working_directory: << parameters.working_directory >>
       yarn_lock_restore_cache_directory: << parameters.working_directory >>
       cache_prefix: << parameters.cache_prefix >>
+  - steps: << parameters.pre_init_steps >>
   - when:
       condition: << parameters.initialize_database >>
       steps:
