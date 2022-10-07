@@ -20,7 +20,11 @@ parameters:
   working_directory:
     description: Directory containing package.json
     type: string
-    default: '~/database-cli'
+    default: "~/database-cli"
+  database_init_extra_args:
+    description: Additional database init command options
+    type: string
+    default: ""
 steps:
   - clone_repo:
       step_name: "Clone database-cli repository"
@@ -40,4 +44,4 @@ steps:
             name: Setup Database
             working_directory: << parameters.working_directory >>
             command: |
-              yarn init:e2e
+              yarn init:e2e << parameters.database_init_extra_args >>
