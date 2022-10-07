@@ -21,6 +21,10 @@ parameters:
     description: Directory containing package.json
     type: string
     default: "~/database-cli"
+  environment:
+    description: Environment to initialize the databases for
+    type: string
+    default: e2e
   database_init_extra_args:
     description: Additional database init command options
     type: string
@@ -49,4 +53,4 @@ steps:
             name: Setup Database
             working_directory: << parameters.working_directory >>
             command: |
-              yarn init:e2e << parameters.database_init_extra_args >>
+              yarn init:<< parameters.environment >> << parameters.database_init_extra_args >>
