@@ -185,6 +185,11 @@ steps:
 
                   # Signing Docker Image
                   cosign sign --key $KMS_KEY $IMAGE_REPO:latest-$BRANCH_NAME
+
+                  # To not to have untagged images
+                  docker tag $IMAGE_NAME $IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1
+                  docker push $IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1
+                  cosign sign --key $KMS_KEY $IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1
                 fi
               fi
 
