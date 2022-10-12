@@ -106,7 +106,9 @@ steps:
 
         echo -e "Building with SEM_VER=$SEM_VER"
 
-        docker build \
+        docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          -o type=image \
           <<# parameters.monorepo_directory >> \
             --network host \
             --build-arg build_REGISTRY_URL=http://localhost:4873 \
