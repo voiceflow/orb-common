@@ -7,16 +7,8 @@ parameters:
     description: Cache prefix
     type: string
     default: ''
-  path:
-    description: Path to be saved
-    type: string
-    default: 'node_modules'
-  cache_name:
-    description: Cache name
-    type: string
-    default: 'node-module-cache'
 steps:
   - save_cache: # special step to save the dependency cache
-      key: << parameters.cache_name >>-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
+      key: node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
       paths:
-        - << parameters.working_directory >>/<< parameters.path >>
+        - << parameters.working_directory >>/node_modules
