@@ -9,8 +9,15 @@ parameters:
   to:
     description: Path to clone S3 assets
     type: string
+  clean_destination:
+    description: Clean destination
+    type: boolean
+    default: false
 steps:
   - run:
       name: << parameters.step_name >>
-      command: |
-        aws s3 sync << parameters.from >> << parameters.to >>
+      environment:
+        FROM: << parameters.from >>
+        TO: << parameters.to >>
+        CLEAN_DESTINATION: << parameters.clean_destination >>
+      command: <<include(scripts/aws/clone_s3_assets.sh)>>
