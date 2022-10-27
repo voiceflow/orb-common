@@ -27,6 +27,10 @@ parameters:
     description: Release engine to use
     type: string
     default: "lerna"
+  commit_message:
+    description: Release engine to use
+    type: string
+    default: "chore(release): publish"
 steps:
   - add_ssh_keys:
       fingerprints:
@@ -51,7 +55,7 @@ steps:
             name: Release Monorepo
             command: |-
               SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish \
-                --message "chore(release): publish" --yes \
+                --message "<< parameters.commit_message >>" --yes \
                 --conventional-commits --no-verify-access << parameters.publish_args >>
   - when:
       condition:
@@ -62,7 +66,7 @@ steps:
             command: |-
 
               SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli lerna publish \
-                --message "chore(release): publish" --yes \
+                --message "<< parameters.commit_message >>" --yes \
                 --conventional-commits --no-verify-access << parameters.publish_args >>
   - run:
       name: Store tags
