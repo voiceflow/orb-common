@@ -16,13 +16,8 @@ parameters:
 steps:
   - run:
       name: << parameters.step_name >>
-      command: |
-        clean=<< parameters.clean_destination >>
-        from="<< parameters.from >>"
-        to="<< parameters.to >>"
-
-        if [[ $clean ]]; then
-          aws s3 sync $from $to --delete
-        else
-          aws s3 sync $from $to
-        fi
+      environment:
+        FROM: << parameters.from >>
+        TO: << parameters.to >>
+        CLEAN_DESTINATION: << parameters.clean_destination >>
+      command: <<include(scripts/aws/clone_s3_assets.sh)>>
