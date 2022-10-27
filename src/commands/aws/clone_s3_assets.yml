@@ -13,6 +13,13 @@ parameters:
     description: Clean destination
     type: boolean
     default: false
+  clone_only_when_new_tags:
+    description: Clean destination
+    type: boolean
+    default: false
+  published_tags:
+    description: Environment variable in which to store the list of tags to trigger
+    type: env_var_name
 steps:
   - run:
       name: << parameters.step_name >>
@@ -20,6 +27,13 @@ steps:
         clean=<< parameters.clean_destination >>
         from="<< parameters.from >>"
         to="<< parameters.to >>"
+
+        clone_only_when_new_tags=<< parameters.clone_only_when_new_tags >>
+        tags=${<< parameters.published_tags >>}
+        if [[ $clone_only_when_new_tags && $tags == "" ]]; then
+          circleci-agent step halt
+        fi
+
         if [[ $clean ]]; then
           aws s3 sync $from $to --delete
         else
