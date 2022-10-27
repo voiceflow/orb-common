@@ -9,8 +9,19 @@ parameters:
   to:
     description: Path to clone S3 assets
     type: string
+  clean_destination:
+    description: Clean destination
+    type: boolean
+    default: false
 steps:
   - run:
       name: << parameters.step_name >>
       command: |
-        aws s3 sync << parameters.from >> << parameters.to >>
+        clean=<< parameters.clean_destination >>
+        from="<< parameters.from >>"
+        to="<< parameters.to >>"
+        if [[ $clean ]]; then
+          aws s3 sync $from $to --delete
+        then
+          aws s3 sync $from $to
+        fi
