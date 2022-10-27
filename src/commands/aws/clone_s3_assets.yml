@@ -22,6 +22,6 @@ steps:
         to="<< parameters.to >>"
         if [[ $clean ]]; then
           aws s3 sync $from $to --delete
-        then
+        else
           aws s3 sync $from $to
         fi
