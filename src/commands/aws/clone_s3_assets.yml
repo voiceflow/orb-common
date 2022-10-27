@@ -20,6 +20,7 @@ parameters:
   published_tags:
     description: Environment variable in which to store the list of tags to trigger
     type: env_var_name
+    default: MONOREPO_UPDATED_TAGS
 steps:
   - run:
       name: << parameters.step_name >>
