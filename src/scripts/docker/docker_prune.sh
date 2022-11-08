@@ -9,6 +9,6 @@ if (( $CLEAN_VOLUMES )); then
 fi
 
 if (( $CLEAN_IMAGES )); then
-    echo "cleaning images unused..."
+    echo "cleaning unused images..."
     docker system prune -f
 fi
