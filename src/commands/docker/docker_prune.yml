@@ -1,0 +1,21 @@
+parameters:
+  clean_volumes:
+    description: Whether to prune volumes
+    type: boolean
+    default: true
+  clean_images:
+    description: Whether to prune images
+    type: boolean
+    default: true
+  when:
+    description: When to execute pruning (`always`, `on_success`, `on_fail`)
+    type: string
+    default: on_success
+steps:
+  - run:
+      name: "Docker Prune"
+      when: << parameters.when >>
+      environment:
+        CLEAN_VOLUMES: << parameters.clean_volumes >>
+        CLEAN_IMAGES: << parameters.clean_images >>
+      command: <<include(scripts/docker/docker_prune.sh)>>
