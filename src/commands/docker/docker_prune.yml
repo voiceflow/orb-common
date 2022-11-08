@@ -7,9 +7,14 @@ parameters:
     description: Clean images
     type: boolean
     default: true
+  when:
+    description: when execute it
+    type: string
+    default: on_success
 steps:
   - run:
       name: "Docker Prune"
+      when: << parameters.when >>
       environment:
         CLEAN_VOLUMES: << parameters.clean_volumes >>
         CLEAN_IMAGES: << parameters.clean_images >>
