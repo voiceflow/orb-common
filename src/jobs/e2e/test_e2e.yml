@@ -246,8 +246,6 @@ steps:
           /bin/bash -c "yarn cypress:install && yarn cypress:ci"
   - extract_cypress_artifacts
   - extract_e2e_logs
-  - docker_prune:
-      when: always
   - store_artifacts:
       path: ~/code/creator-app/packages/creator-app/cypress/videos
   - store_artifacts:
