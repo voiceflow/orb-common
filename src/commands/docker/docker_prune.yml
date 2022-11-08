@@ -1,0 +1,16 @@
+parameters:
+  clean_volumes:
+    description: Clean volumes
+    type: boolean
+    default: true
+  clean_images:
+    description: Clean images
+    type: boolean
+    default: true
+steps:
+  - run:
+      name: "Docker Prune"
+      environment:
+        CLEAN_VOLUMES: << parameters.clean_volumes >>
+        CLEAN_IMAGES: << parameters.clean_images >>
+      command: <<include(scripts/docker/docker_prune.sh)>>

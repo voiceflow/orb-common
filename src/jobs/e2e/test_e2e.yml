@@ -180,6 +180,7 @@ steps:
         export DOCKER_CLIENT_TIMEOUT=120
         export COMPOSE_HTTP_TIMEOUT=120
         docker-compose --profile << parameters.vf_service_profile >> -p vf -f docker-compose-vf.yaml up -d
+  - docker_prune
   - when:
       condition: "<< parameters.vf_monorepo_services >>"
       steps:
