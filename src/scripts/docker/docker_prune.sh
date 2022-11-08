@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo $CLEAN_VOLUMES
-echo $CLEAN_IMAGES
+echo "Clean Volumes: $CLEAN_VOLUMES"
+echo "Clean Images: $CLEAN_IMAGES"
 
 if (( $CLEAN_VOLUMES )); then
     echo "cleaning volumes unused..."
