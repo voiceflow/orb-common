@@ -1,6 +1,6 @@
 parameters:
   clean_volumes:
-    description: Clean volumes
+    description: Whether to prune volumes
     type: boolean
     default: true
   clean_images:
