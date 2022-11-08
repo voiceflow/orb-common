@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo $CLEAN_VOLUMES
+echo $CLEAN_IMAGES
+
 if [[ $CLEAN_VOLUMES == true ]]; then
     echo "cleaning volumes unused..."
     docker volume prune -f
