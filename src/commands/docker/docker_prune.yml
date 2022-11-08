@@ -4,7 +4,7 @@ parameters:
     type: boolean
     default: true
   clean_images:
-    description: Clean images
+    description: Whether to prune images
     type: boolean
     default: true
   when:
