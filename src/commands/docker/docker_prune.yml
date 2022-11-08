@@ -8,7 +8,7 @@ parameters:
     type: boolean
     default: true
   when:
-    description: when execute it
+    description: When to execute pruning (`always`, `on_success`, `on_fail`)
     type: string
     default: on_success
 steps:
