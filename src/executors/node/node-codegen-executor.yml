@@ -7,6 +7,7 @@ docker:
   - image: postgres:14.3-alpine # PostgresDB service container
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust # This is needed to ensure that the PG instance can be accessed locally without explicitly creating credentials
+  - image: circleci/mongo:4.4.5 # MongoDB service container
 environment:
   NODE_OPTIONS: --max-old-space-size=4096
 resource_class: large
