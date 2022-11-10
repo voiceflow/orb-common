@@ -251,10 +251,12 @@ steps:
       command: |-
         set +e
         docker kill $(docker ps -q -a --filter name=verdaccio)
-        docker kill $(docker ps -q -a --filter name=code)
-        docker kill $(docker ps -q -a --filter name=cypress-e2e)
+        docker rm $(docker ps -q -a --filter name=verdaccio)
+        docker rm $(docker ps -q -a --filter name=code)
+        docker rm $(docker ps -q -a --filter name=cypress-e2e)
         docker kill $(docker ps -q -a --filter name=creator-app-e2e)
-        docker kill $(docker ps -q -a --filter name=dbcli-e2e)
+        docker rm $(docker ps -q -a --filter name=creator-app-e2e)
+        docker rm $(docker ps -q -a --filter name=dbcli-e2e)
         set -e
   - docker_prune:
       when: always
