@@ -247,7 +247,7 @@ steps:
   - extract_cypress_artifacts
   - extract_e2e_logs
   - run:
-      name: Stop ephemeral docker iamges
+      name: Stop ephemeral docker images
       command: |-
         set +e
         docker kill $(docker ps -q -a --filter name=verdaccio)
