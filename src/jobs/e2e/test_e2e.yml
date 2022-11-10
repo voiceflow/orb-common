@@ -246,6 +246,19 @@ steps:
           /bin/bash -c "yarn cypress:install && yarn cypress:ci"
   - extract_cypress_artifacts
   - extract_e2e_logs
+  - run:
+      name: Run Cypress Tests
+      working_directory: ~/code/creator-app/packages/creator-app
+      command: |-
+        docker kill $(docker ps -q -a --filter name=verdaccio)
+        docker kill $(docker ps -q -a --filter name=code)
+        docker kill $(docker ps -q -a --filter name=cypress-e2e)
+        docker kill $(docker ps -q -a --filter name=creator-app-e2e)
+        docker kill $(docker ps -q -a --filter name=dbcli-e2e)
+  - docker_prune:
+      when: always
+      clean_images: true
+      clean_volumes: true
   - store_artifacts:
       path: ~/code/creator-app/packages/creator-app/cypress/videos
   - store_artifacts:
