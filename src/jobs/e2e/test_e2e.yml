@@ -250,6 +250,7 @@ steps:
       name: Stop ephemeral docker images
       command: |-
         set +e
+        docker rm $(docker ps -q -a --filter name=verdaccio-conf)
         docker kill $(docker ps -q -a --filter name=verdaccio)
         docker rm $(docker ps -q -a --filter name=verdaccio)
         docker rm $(docker ps -q -a --filter name=code)
