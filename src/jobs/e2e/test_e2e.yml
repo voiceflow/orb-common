@@ -249,6 +249,7 @@ steps:
   - run:
       name: Stop ephemeral docker images
       command: |-
+        set +e
         docker rm $(docker ps -q -a --filter name=verdaccio-conf)
         docker kill $(docker ps -q -a --filter name=verdaccio)
         docker rm $(docker ps -q -a --filter name=verdaccio)
@@ -257,6 +258,7 @@ steps:
         docker kill $(docker ps -q -a --filter name=creator-app-e2e)
         docker rm $(docker ps -q -a --filter name=creator-app-e2e)
         docker rm $(docker ps -q -a --filter name=dbcli-e2e)
+        set -e
   - docker_prune:
       when: always
       clean_images: true
