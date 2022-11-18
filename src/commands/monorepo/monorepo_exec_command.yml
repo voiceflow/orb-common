@@ -19,42 +19,41 @@ parameters:
     type: boolean
     default: false
 steps:
-  - run:
-      name: << parameters.step_name >>
-      command: |
-        FILES_CHANGED=$(git diff HEAD^ --name-only )
-        echo "files changed: $FILES_CHANGED"
-        RUN_ON_ROOT=<< parameters.run_on_root >>
-        FORCE_EXECUTION=<< parameters.force_execution >>
+  - when:
+      condition: << parameters.run_on_root >>
+      steps:
+        - run:
+            name: << parameters.step_name >>
+            command: << parameters.command >> << parameters.extra_args >>
+  - unless:
+      condition: << parameters.run_on_root >>
+      steps:
+        - run:
+            name: << parameters.step_name >>
+            command: |
+              FILES_CHANGED=$(git diff HEAD^ --name-only )
+              echo "files changed: $FILES_CHANGED"
+              FORCE_EXECUTION=<< parameters.force_execution >>
 
-        jq -rc '.workspaces[]' package.json | while read i; do
-          # Find all packages down a pacakge root directory. for example packages/*, apps/*, types/*
-          PACKAGES=$(find . -maxdepth 2 -wholename "./$i")
-          echo "Packages found on $i: $PACKAGES"
-          for f in $PACKAGES; do
-            # The find command add the ./ We dont need it. This command removes it by removing the first 2 characters.
-            package=$(echo "${f:2}")
-            echo "Checking package $package"
-            if [[ $FILES_CHANGED == *"$package"* || " master production staging trying " =~ .*\ $CIRCLE_BRANCH\ .* || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
-                # Work only on folders that are real packages
-                if [[ -d $f ]]; then
-                  if [[ $RUN_ON_ROOT != true ]]; then
-                    cd $f
-                    echo "running command << parameters.command >> on $package"
-                  else
-                    echo "running command << parameters.command >> on monorepo root"
+              jq -rc '.workspaces[]' package.json | while read i; do
+                # Find all packages down a pacakge root directory. for example packages/*, apps/*, types/*
+                PACKAGES=$(find . -maxdepth 2 -wholename "./$i")
+                echo "Packages found on $i: $PACKAGES"
+                for f in $PACKAGES; do
+                  # The find command add the ./ We dont need it. This command removes it by removing the first 2 characters.
+                  package=$(echo "${f:2}")
+                  echo "Checking package $package"
+                  if [[ $FILES_CHANGED == *"$package"* || " master production staging trying " =~ .*\ $CIRCLE_BRANCH\ .* || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
+                      # Work only on folders that are real packages
+                      if [[ -d $f ]]; then
+                        cd $f
+                        echo "running command << parameters.command >> on $package"
+
+                        # Execute command
+                        << parameters.command >> << parameters.extra_args >>
+
+                        cd -
+                      fi
                   fi
-
-                  # Execute command
-                  << parameters.command >> << parameters.extra_args >>
-
-                  if [[ $RUN_ON_ROOT != true ]]; then
-                    cd -
-                  else
-                    # if the command has to be executed on root, just run it once
-                    exit 0
-                  fi
-                fi
-            fi
-          done
-        done
+                done
+              done
