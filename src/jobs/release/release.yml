@@ -22,3 +22,9 @@ steps:
   - run:
       name: Release Package
       command: "SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release@17\n"
+  - persist_to_workspace:
+      root: "."
+      paths:
+        - ./*.tgz
+  - store_artifacts:
+      path: ./*.tgz
