@@ -6,17 +6,7 @@ parameters:
   image_repo:
     description: The container image repository
     type: string
-  install_args:
-    description: Additional yarn install command options
-    type: string
-    default: ""
-  avoid_post_install_scripts:
-    description: Skip running post install scripts
-    type: boolean
-    default: true
 steps:
   - update_database_track:
       component: "<< parameters.component >>"
       image_repo: "<< parameters.image_repo >>"
-      install_args: "<< parameters.install_args >>"
-      avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
