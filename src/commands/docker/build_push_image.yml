@@ -104,8 +104,8 @@ steps:
           SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
         fi
 
-        if [[ "$SEM_VER_OVERRIDES" != "" ]]; then
-          SEM_VER=$SEM_VER_OVERRIDES
+        if [[ "$SEM_VER_OVERRIDE" != "" ]]; then
+          SEM_VER=$SEM_VER_OVERRIDE
         fi
 
         if [[ ! -f "$BUILD_CONTEXT/yarn.lock" && -f "yarn.lock" ]]; then
