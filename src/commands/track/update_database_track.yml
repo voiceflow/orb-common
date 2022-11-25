@@ -32,6 +32,7 @@ steps:
         # Update the new tags
         git fetch --tags
         SEM_VER=$(git describe --abbrev=0 --tags)
+        echo "New version published: ${SEM_VER}"
 
         if [[ $TRACK_EXISTS == "true"  && ! -z "$SEM_VER" ]]; then
           # update the track
@@ -44,9 +45,9 @@ steps:
         fi
 
         echo "export TAG=${SEM_VER}" >> $BASH_ENV
-        echo "export NEXT_VERSION=${SEM_VER}" >> $BASH_ENV
+        echo "export NEW_VERSION=${SEM_VER}" >> $BASH_ENV
 
   - build_push_image:
       image_repo: << parameters.image_repo >>
       image_tag: "${TAG}"
-      sem_ver: "${NEXT_VERSION}"
+      sem_ver: "${NEW_VERSION}"
