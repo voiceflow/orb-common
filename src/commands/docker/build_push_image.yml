@@ -92,7 +92,7 @@ steps:
         BUILD_CONTEXT="<< parameters.build_context >>"
 
         # Semantic release from the current tags
-        if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" && ! -z "$CIRCLE_TAG" ]]; then
+        if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" && ]]; then
             # Update the new tags
             git fetch --tags
             SEM_VER=$(git describe --abbrev=0 --tags)

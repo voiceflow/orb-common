@@ -35,6 +35,10 @@ parameters:
     description: KMS Key to sign the containers
     type: string
     default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
+  sem_ver_override:
+    description: Semantic release version of the package
+    type: string
+    default: ""
 steps:
   - build_push_image:
       image_repo: "<< parameters.image_repo >>"
@@ -46,3 +50,4 @@ steps:
       package: "<< parameters.package >>"
       package_folder: "<< parameters.package_folder >>"
       kms_key: "<< parameters.kms_key >>"
+      sem_ver_override: "<< parameters.sem_ver_override >>"
