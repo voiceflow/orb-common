@@ -6,6 +6,10 @@ parameters:
     description: The container image tag
     type: string
     default: ""
+  sem_ver_override:
+    description: Semantic release version of the package
+    type: string
+    default: ""
   dockerfile:
     description: Name of the Dockerfile to build
     type: string
@@ -75,6 +79,7 @@ steps:
   - run:
       name: "Build docker image"
       command: |
+        SEM_VER_OVERRIDE="<< parameters.sem_ver_override >>"
         IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
         if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
           IMAGE_TAG="k8s-$CIRCLE_SHA1"
@@ -87,7 +92,7 @@ steps:
         BUILD_CONTEXT="<< parameters.build_context >>"
 
         # Semantic release from the current tags
-        if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
+        if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" && ! -z "$CIRCLE_TAG" ]]; then
             # Update the new tags
             git fetch --tags
             SEM_VER=$(git describe --abbrev=0 --tags)
@@ -97,6 +102,10 @@ steps:
           fi
         else
           SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
+        fi
+
+        if [[ "$SEM_VER_OVERRIDE" != "" ]]; then
+          SEM_VER=$SEM_VER_OVERRIDE
         fi
 
         if [[ ! -f "$BUILD_CONTEXT/yarn.lock" && -f "yarn.lock" ]]; then

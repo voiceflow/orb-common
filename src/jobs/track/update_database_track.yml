@@ -3,6 +3,10 @@ parameters:
   component:
     description: The component type for development environment deployment
     type: string
+  image_repo:
+    description: The container image repository
+    type: string
 steps:
   - update_database_track:
       component: "<< parameters.component >>"
+      image_repo: "<< parameters.image_repo >>"
