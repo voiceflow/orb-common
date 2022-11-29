@@ -50,4 +50,4 @@ steps:
   - build_push_image:
       image_repo: << parameters.image_repo >>
       image_tag: "${TAG}"
-      sem_ver: "${NEW_VERSION}"
+      sem_ver_override: "${NEW_VERSION}"

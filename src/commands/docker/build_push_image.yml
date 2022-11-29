@@ -6,7 +6,7 @@ parameters:
     description: The container image tag
     type: string
     default: ""
-  sem_ver:
+  sem_ver_override:
     description: Semantic release version of the package
     type: string
     default: ""
@@ -79,7 +79,7 @@ steps:
   - run:
       name: "Build docker image"
       command: |
-        SEM_VER_OVERRIDE="<< parameters.sem_ver >>"
+        SEM_VER_OVERRIDE="<< parameters.sem_ver_override >>"
         IMAGE_TAG_OVERRIDE="<< parameters.image_tag >>"
         if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
           IMAGE_TAG="k8s-$CIRCLE_SHA1"
