@@ -24,5 +24,7 @@ steps:
   - check_commit_message:
       commit_message: "[pre-release]"
   - helm-add-repos
-  - helm-package-publish-prerelease:
-      working_directory: "<< parameters.working_directory >>"
+  - run:
+      name: Package and publish charts
+      working_directory: << parameters.working_directory >>
+      command: <<include(scripts/helm/publish-prerelease.sh)>>
