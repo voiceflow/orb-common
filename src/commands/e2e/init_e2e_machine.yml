@@ -47,7 +47,10 @@ steps:
             cache_prefix: "<< parameters.cache_prefix >>"
   - set_etc_hosts_e2e:
       run_in_background: true
-  - install_e2e_tools
+  - run:
+      name: Install E2E Tools
+      background: true
+      command: <<include(scripts/e2e/install_e2e_tools.sh)>>
   - when:
       condition: "<< parameters.setup_db >>"
       steps:

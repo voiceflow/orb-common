@@ -20,5 +20,4 @@ steps:
       working_directory: << parameters.working_directory >>
       background: << parameters.run_in_backgorund >>
       name: << parameters.step_name >>
-      command: |
-        yarn analyze:dependencies << parameters.extra_args >>
+      command: yarn analyze:dependencies << parameters.extra_args >>

@@ -48,34 +48,15 @@ steps:
       steps:
         - run:
             name: Waiting util other processes are finished
-            command: |
+            command: <<include(scripts/yarn/wait_for_lock.sh)>>
 
-              while [ "$(ls -A /tmp/lock)" != "" ]
-              do
-                if [ -f "/tmp/failure" ]; then
-                  echo "A failure was detected in previous steps."
-                  exit 1
-                fi
-
-                echo "Process not finished. Waiting..."
-                sleep 5
-              done
-
-              echo "Process finished"
   - when:
       condition: << parameters.run_in_background >>
       steps:
         - run:
             name: Create lock for << parameters.step_name >>
-            command: |
-              # Create the folder if not exists
-              [ ! -d /tmp/lock ] && mkdir -p /tmp/lock
+            command: <<include(scripts/yarn/create_lock.sh)>>
 
-              LOCK_FILE="/tmp/lock/$(uuidgen)"
-
-              touch $LOCK_FILE
-              echo "Lock created at $LOCK_FILE"
-              echo "export LOCK_FILE=$LOCK_FILE" >> $BASH_ENV
   - when:
       condition: << parameters.request_remote_docker >>
       steps:

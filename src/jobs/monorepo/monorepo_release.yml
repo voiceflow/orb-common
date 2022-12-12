@@ -70,8 +70,7 @@ steps:
                 --conventional-commits --no-verify-access << parameters.publish_args >>
   - run:
       name: Store tags
-      command: |-
-        echo "export MONOREPO_UPDATED_TAGS=\"$(git tag --points-at HEAD)\"" >> $BASH_ENV
+      command: echo "export MONOREPO_UPDATED_TAGS=\"$(git tag --points-at HEAD)\"" >> $BASH_ENV
 
   - when:
       condition: "<< parameters.trigger_tags_pipelines >>"

@@ -7,5 +7,7 @@ parameters:
 steps:
   - checkout
   - helm-add-repos
-  - helm-package-publish-charts:
-      working_directory: "<< parameters.working_directory >>"
+  - run:
+      name: Package and publish charts
+      working_directory: << parameters.working_directory >>
+      command: <<include(scripts/helm/package-publish-charts.sh)>>
