@@ -1,5 +1,13 @@
 executor: node-executor
 parameters:
+  install_args:
+    description: Additional yarn install command options
+    type: string
+    default: ""
+  avoid_post_install_scripts:
+    description: Skip running post install scripts
+    type: boolean
+    default: true
   extra_args:
     description: Additional yarn command options
     type: string
@@ -16,6 +24,9 @@ steps:
   - checkout
   - attach_workspace:
       at: ~/voiceflow
+  - install_node_modules:
+      install_args: "<< parameters.install_args >>"
+      avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
   - monorepo_rdme_publish:
       extra_args: "<< parameters.extra_args >>"
       run_on_root: "<< parameters.run_on_root >>"
