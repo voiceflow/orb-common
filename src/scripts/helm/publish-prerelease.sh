@@ -11,7 +11,7 @@ for file in * ; do
         echo "Packaging version $BETA_VERSION"
         helm package "$file" --version "$BETA_VERSION"
 
-        echo "publishing in $channel channel";
+        echo "publishing beta release";
         CHART="$file-${BETA_VERSION}.tgz"
 
         if [ ! -f "$CHART" ]; then
