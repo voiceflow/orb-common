@@ -11,7 +11,6 @@ steps:
       name: Stop EC2 instance
       no_output_timeout: 30m
       when: << parameters.execute_when >>
-      command: |
-        EC2_INSTANCE_ID=<< parameters.instance_id >>
-
-        aws ec2 stop-instances --instance-ids $EC2_INSTANCE_ID
+      environment:
+        EC2_INSTANCE_ID: '<< parameters.instance_id >>'
+      command: aws ec2 stop-instances --instance-ids $EC2_INSTANCE_ID

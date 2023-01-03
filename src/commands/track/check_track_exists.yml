@@ -14,30 +14,8 @@ parameters:
 steps:
   - run:
       name: If track does not exists, don't build
-      command: |
-
-        STOP=<< parameters.stop_if_not_exists >>
-
-        BRANCH_NAME=$CIRCLE_BRANCH
-        if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
-          BRANCH_NAME="master"
-        fi
-
-        TRACK="tracks/<< parameters.component >>/$BRANCH_NAME"
-        echo $TRACK
-        set +e
-        aws s3 cp s3://<< parameters.bucket >>/$TRACK /tmp/$TRACK
-        SEARCH_TRACK_RESULT=$?
-        set -e
-
-        # Store the result on a file in tmp folder to use in future steps
-        if [[ $SEARCH_TRACK_RESULT -eq 0 ]]; then
-          echo 'export TRACK_EXISTS="true"' > /tmp/TRACK_STATUS  # Track exists, skip following steps
-        else
-          echo 'export TRACK_EXISTS="false"' > /tmp/TRACK_STATUS  # Track exists, skip following steps
-          if [[ $STOP == true ]]; then
-            curl --request POST \
-              --url https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/cancel \
-              --header "Circle-Token: ${CIRCLECI_API_TOKEN}"
-          fi
-        fi
+      environment:
+        STOP: << parameters.stop_if_not_exists >>
+        COMPONENT: << parameters.component >>
+        BUCKET: << parameters.bucket >>
+      command: <<include(scripts/track/check_exists.sh)>>
