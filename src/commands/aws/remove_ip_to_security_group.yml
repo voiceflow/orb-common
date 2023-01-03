@@ -10,12 +10,11 @@ steps:
   - run:
       name: Remove IP from Security Group
       when: << parameters.execute_when >>
+      environment:
+        SG_ID: '<< parameters.sg_id >>'
       command: |
-        # 1- Get the public IP of the current CircleCI runner
+        # Get the public IP of the current CircleCI runner
         PUBLIC_IP=$(curl ipinfo.io/ip)
 
-        # 2- Get SG ID
-        SG_ID=<< parameters.sg_id >>
-
-        aws ec2 revoke-security-group-ingress --group-id $SG_ID \
-          --protocol tcp --port 22 --cidr $PUBLIC_IP/24
+        # Remove ingress rule from the security group that grants access to current machine
+        aws ec2 revoke-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr $PUBLIC_IP/24

@@ -11,9 +11,8 @@ steps:
       name: Start EC2 instance
       no_output_timeout: 30m
       when: << parameters.execute_when >>
+      environment:
+        EC2_INSTANCE_ID: '<< parameters.instance_id >>'
       command: |
-        EC2_INSTANCE_ID=<< parameters.instance_id >>
-
         aws ec2 start-instances --instance-ids $EC2_INSTANCE_ID
-
         aws ec2 wait instance-status-ok --instance-ids $EC2_INSTANCE_ID
