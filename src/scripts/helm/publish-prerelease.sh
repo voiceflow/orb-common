@@ -5,13 +5,13 @@
 for file in * ; do
     if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
         echo "packaging $file";
-        cd $file;
-        helm dep update $file;
+        cd "$file" || exit;
+        helm dep update "$file";
 
         echo "Packaging version $BETA_VERSION"
-        helm package $file --version "$BETA_VERSION"
+        helm package "$file" --version "$BETA_VERSION"
 
-        echo "publishing in $channel channel";
+        echo "publishing beta release";
         CHART="$file-${BETA_VERSION}.tgz"
 
         if [ ! -f "$CHART" ]; then

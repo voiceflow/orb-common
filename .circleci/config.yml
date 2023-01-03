@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   orb-tools: circleci/orb-tools@11.2.0
+  shellcheck: circleci/shellcheck@3.1.2
 
 
 # Filter required due to CircleCI behaviour described here: https://discuss.circleci.com/t/cant-trigger-workflow-on-git-tag-push-using-when-condition/43252/5
@@ -29,6 +30,8 @@ workflows:
         equal: [ master, << pipeline.git.branch >> ]
     jobs:
       - orb-tools/lint
+      - shellcheck/check:
+          dir: ./src/scripts
       - orb-tools/pack:
           pre-steps: *extract_sections_from_subdirectories
       - orb-tools/publish:
@@ -44,12 +47,15 @@ workflows:
     jobs:
       - orb-tools/lint:
           filters: *tags_filter
+      - shellcheck/check:
+          filters: *tags_filter
+          dir: ./src/scripts
       - orb-tools/pack:
           filters: *tags_filter
           pre-steps: *extract_sections_from_subdirectories
       - orb-tools/publish:
           context: dev-test
-          requires: [orb-tools/pack, orb-tools/lint]
+          requires: [orb-tools/pack, orb-tools/lint, shellcheck/check]
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: production

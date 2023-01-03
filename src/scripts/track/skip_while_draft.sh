@@ -12,7 +12,7 @@ if [ -z "$PR_NUMBER" ]; then
     fi
 else
     echo "Checking whether PR $PR_NUMBER is draft"
-    IS_DRAFT=$(gh pr view $PR_NUMBER --repo $REPO --json isDraft --jq '.isDraft')
+    IS_DRAFT=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json isDraft --jq '.isDraft')
     if $IS_DRAFT; then
         echo "PR $PR_NUMBER is a draft; skipping rest of job"
         circleci-agent step halt
