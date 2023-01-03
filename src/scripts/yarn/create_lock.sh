@@ -5,6 +5,6 @@
 
 LOCK_FILE="/tmp/lock/$(uuidgen)"
 
-touch $LOCK_FILE
+touch "$LOCK_FILE"
 echo "Lock created at $LOCK_FILE"
-echo "export LOCK_FILE=$LOCK_FILE" >> $BASH_ENV
+echo "export LOCK_FILE=$LOCK_FILE" >> "$BASH_ENV"

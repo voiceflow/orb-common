@@ -11,9 +11,9 @@ if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
 fi
 
 TRACK="tracks/$COMPONENT/$BRANCH_NAME"
-echo $TRACK
+echo "$TRACK"
 set +e
-aws s3 cp s3://$BUCKET/$TRACK /tmp/$TRACK
+aws s3 cp s3://"$BUCKET"/"$TRACK" /tmp/"$TRACK"
 SEARCH_TRACK_RESULT=$?
 set -e
 
@@ -24,7 +24,7 @@ else
     echo 'export TRACK_EXISTS="false"' > /tmp/TRACK_STATUS  # Track exists, skip following steps
     if (( $STOP )); then
     curl --request POST \
-        --url https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/cancel \
+        --url https://circleci.com/api/v2/workflow/"$CIRCLE_WORKFLOW_ID"/cancel \
         --header "Circle-Token: ${CIRCLECI_API_TOKEN}"
     fi
 fi
