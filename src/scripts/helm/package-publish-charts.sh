@@ -6,7 +6,7 @@ for file in */ ; do
         cd "$file" || exit;
         helm dep update "$file";
         helm package "$file";
-        chart=$(find . -type f -name "*.tgz" | head -n1);
+        chart=$(find . -type f -name "*.tgz" -maxdepth 1); # There should only be one such file in the directory
         channel=$(yq -r '.annotations."release-repository"' "$file"/Chart.yaml)
         echo "publishing in $channel channel";
         if [[ $channel == "private" ]]; then
