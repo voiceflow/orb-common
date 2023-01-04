@@ -20,7 +20,7 @@ if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
     # Update the new tags
     git fetch --tags
     SEM_VER=$(git describe --abbrev=0 --tags)
-    if [[ ! -z "$PACKAGE" ]]; then
+    if [[ -n "$PACKAGE" ]]; then
         SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*")
         SEM_VER=$(echo ${SEM_VER##*@})
     fi
@@ -45,13 +45,13 @@ else
     REGISTRY_ARG="--network host --build-arg build_REGISTRY_URL=http://localhost:4873"
 fi
 
-if [ -n "$PACKAGE"]; then
+if [[ -n "$PACKAGE" ]]; then
     PACKAGE_ARG="--build-arg APP_NAME=$PACKAGE"
 fi
 
 docker build \
     $REGISTRY_ARG \
-    $ PACKAGE_ARG \
+    $PACKAGE_ARG \
     --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
     --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
     --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \

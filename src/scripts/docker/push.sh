@@ -4,25 +4,27 @@ else
     IMAGE_TAG="$IMAGE_TAG_OVERRIDE"
 fi
 IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-docker push $IMAGE_NAME
+
+echo "Pushing $IMAGE_NAME"
+docker push "$IMAGE_NAME"
 
 # Signing Docker Image
-cosign sign --key $KMS_KEY $IMAGE_NAME
+cosign sign --key "$KMS_KEY" "$IMAGE_NAME"
 
 # if a tag is set, do not push to latest-$BRANCH_NAME
 if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
-    BRANCH_NAME=$(echo $CIRCLE_BRANCH | sed 's/[^a-zA-Z0-9]/-/g')
+    BRANCH_NAME=$(echo "$CIRCLE_BRANCH" | sed 's/[^a-zA-Z0-9]/-/g')
     if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
-    BRANCH_NAME="master"
+        BRANCH_NAME="master"
     fi
-    docker tag $IMAGE_NAME $IMAGE_REPO:latest-$BRANCH_NAME
-    docker push $IMAGE_REPO:latest-$BRANCH_NAME
+    docker tag "$IMAGE_NAME" "$IMAGE_REPO":latest-"$BRANCH_NAME"
+    docker push "$IMAGE_REPO":latest-"$BRANCH_NAME"
 
     # Signing Docker Image
-    cosign sign --key $KMS_KEY $IMAGE_REPO:latest-$BRANCH_NAME
+    cosign sign --key "$KMS_KEY" "$IMAGE_REPO":latest-"$BRANCH_NAME"
 
     # To not to have untagged images
-    docker tag $IMAGE_NAME $IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1
-    docker push $IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1
-    cosign sign --key $KMS_KEY $IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1
+    docker tag "$IMAGE_NAME" "$IMAGE_REPO":k8s-"$BRANCH_NAME"-"$CIRCLE_SHA1"
+    docker push "$IMAGE_REPO":k8s-"$BRANCH_NAME"-"$CIRCLE_SHA1"
+    cosign sign --key "$KMS_KEY" "$IMAGE_REPO":k8s-"$BRANCH_NAME"-"$CIRCLE_SHA1"
 fi
