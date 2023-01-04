@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Expected env vars
-echo SEM_VER_OVERRIDE
-echo IMAGE_TAG_OVERRIDE
-echo IMAGE_REPO
-echo PACKAGE
-echo BUILD_CONTEXT
-echo DOCKERFILE
+echo "SEM_VER_OVERRIDE: $SEM_VER_OVERRIDE"
+echo "IMAGE_TAG_OVERRIDE: $IMAGE_TAG_OVERRIDE"
+echo "IMAGE_REPO: $IMAGE_REPO"
+echo "PACKAGE: $PACKAGE"
+echo "BUILD_CONTEXT: $BUILD_CONTEXT"
+echo "DOCKERFILE: $DOCKERFILE"
+echo "MONOREPO_DIRECTORY: $MONOREPO_DIRECTORY"
 
 if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
     IMAGE_TAG="k8s-$CIRCLE_SHA1"
@@ -22,22 +23,20 @@ if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
     SEM_VER=$(git describe --abbrev=0 --tags)
     if [[ -n "$PACKAGE" ]]; then
         SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*")
-        SEM_VER=$(echo ${SEM_VER##*@})
+        SEM_VER=$(echo "${SEM_VER##*@}")
     fi
+elif [[ "$SEM_VER_OVERRIDE" != "" ]]; then
+    SEM_VER=$SEM_VER_OVERRIDE
 else
     SEM_VER=$CIRCLE_BRANCH-$CIRCLE_SHA1
 fi
 
-if [[ "$SEM_VER_OVERRIDE" != "" ]]; then
-    SEM_VER=$SEM_VER_OVERRIDE
-fi
+echo -e "Building with SEM_VER=$SEM_VER"
 
 if [[ ! -f "$BUILD_CONTEXT/yarn.lock" && -f "yarn.lock" ]]; then
     echo "Copying yarn.lock file from root"
-    cp yarn.lock $BUILD_CONTEXT/yarn.lock
+    cp yarn.lock "$BUILD_CONTEXT"/yarn.lock
 fi
-
-echo -e "Building with SEM_VER=$SEM_VER"
 
 if [ -z "$MONOREPO_DIRECTORY" ]; then
     REGISTRY_ARG="--build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN}"
@@ -50,12 +49,12 @@ if [[ -n "$PACKAGE" ]]; then
 fi
 
 docker build \
-    $REGISTRY_ARG \
-    $PACKAGE_ARG \
-    --build-arg build_BUILD_NUM=${CIRCLE_BUILD_NUM} \
-    --build-arg build_BUILD_URL=${CIRCLE_BUILD_URL}	\
-    --build-arg build_GITHUB_TOKEN=${GITHUB_TOKEN} \
-    --build-arg build_GIT_SHA=${CIRCLE_SHA1} \
-    --build-arg build_SEM_VER=${SEM_VER} \
-    -f $BUILD_CONTEXT/$DOCKERFILE \
-    -t $IMAGE_NAME $BUILD_CONTEXT
+    "$REGISTRY_ARG" \
+    "$PACKAGE_ARG" \
+    --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
+    --build-arg build_BUILD_URL="${CIRCLE_BUILD_URL}"	\
+    --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \
+    --build-arg build_GIT_SHA="${CIRCLE_SHA1}" \
+    --build-arg build_SEM_VER="${SEM_VER}" \
+    -f "$BUILD_CONTEXT"/"$DOCKERFILE" \
+    -t "$IMAGE_NAME" "$BUILD_CONTEXT"
