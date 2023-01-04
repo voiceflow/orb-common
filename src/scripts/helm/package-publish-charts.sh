@@ -6,7 +6,8 @@ for file in */ ; do
         cd "$file" || exit;
         helm dep update "$file";
         helm package "$file";
-        chart=$(find . -type f -name "*.tgz" | head -n1);
+        zipfiles=$(find . -type f -name "*.tgz")
+        chart=$(echo $zipfiles | head -n1);
         channel=$(yq -r '.annotations."release-repository"' "$file"/Chart.yaml)
         echo "publishing in $channel channel";
         if [[ $channel == "private" ]]; then
