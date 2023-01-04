@@ -94,4 +94,4 @@ steps:
         IMAGE_TAG_OVERRIDE: '<< parameters.image_tag >>'
         IMAGE_REPO: '<< parameters.image_repo >>'
         KMS_KEY: '<< parameters.kms_key >>'
-      command: |
+      command: <<include(scripts/docker/push.sh)>>
