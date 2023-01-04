@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
     IMAGE_TAG="k8s-$CIRCLE_SHA1"
 else
@@ -13,9 +15,10 @@ cosign sign --key "$KMS_KEY" "$IMAGE_NAME"
 
 # if a tag is set, do not push to latest-$BRANCH_NAME
 if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
-    BRANCH_NAME=$(echo "$CIRCLE_BRANCH" | sed 's/[^a-zA-Z0-9]/-/g')
-    if [[ -z "$CIRCLE_BRANCH" && ! -z "$CIRCLE_TAG" ]]; then
+    if [[ -z "$CIRCLE_BRANCH" && -n "$CIRCLE_TAG" ]]; then
         BRANCH_NAME="master"
+    else
+        BRANCH_NAME="${CIRCLE_BRANCH//[^[:alnum:]]/-}"
     fi
     docker tag "$IMAGE_NAME" "$IMAGE_REPO":latest-"$BRANCH_NAME"
     docker push "$IMAGE_REPO":latest-"$BRANCH_NAME"

@@ -23,7 +23,7 @@ if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
     SEM_VER=$(git describe --abbrev=0 --tags)
     if [[ -n "$PACKAGE" ]]; then
         SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*")
-        SEM_VER=$(echo "${SEM_VER##*@}")
+        SEM_VER="${SEM_VER##*@}"
     fi
 elif [[ "$SEM_VER_OVERRIDE" != "" ]]; then
     SEM_VER=$SEM_VER_OVERRIDE
