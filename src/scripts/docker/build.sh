@@ -39,18 +39,18 @@ if [[ ! -f "$BUILD_CONTEXT/yarn.lock" && -f "yarn.lock" ]]; then
 fi
 
 if [ -z "$MONOREPO_DIRECTORY" ]; then
-    REGISTRY_ARG="--build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken=${NPM_TOKEN}"
+    REGISTRY_ARG=(--build-arg NPM_TOKEN=//registry.npmjs.org/:_authToken="${NPM_TOKEN}")
 else
-    REGISTRY_ARG="--network host --build-arg build_REGISTRY_URL=http://localhost:4873"
+    REGISTRY_ARG=(--network host --build-arg build_REGISTRY_URL=http://localhost:4873)
 fi
 
 if [[ -n "$PACKAGE" ]]; then
-    PACKAGE_ARG="--build-arg APP_NAME=$PACKAGE"
+    PACKAGE_ARG=(--build-arg APP_NAME="$PACKAGE")
 fi
 
 docker build \
-    "$REGISTRY_ARG" \
-    "$PACKAGE_ARG" \
+    "${REGISTRY_ARG[@]}" \
+    "${PACKAGE_ARG[@]}" \
     --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
     --build-arg build_BUILD_URL="${CIRCLE_BUILD_URL}"	\
     --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \
