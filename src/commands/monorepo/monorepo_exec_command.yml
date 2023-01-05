@@ -30,30 +30,8 @@ steps:
       steps:
         - run:
             name: << parameters.step_name >>
-            command: |
-              FILES_CHANGED=$(git diff HEAD^ --name-only )
-              echo "files changed: $FILES_CHANGED"
-              FORCE_EXECUTION=<< parameters.force_execution >>
+            environment:
+              FORCE_EXECUTION: << parameters.force_execution >>
+              COMMAND: '<< parameters.command >> << parameters.extra_args >>'
+            command: <<include(scripts/monorepo/exec_command.sh)>>
 
-              jq -rc '.workspaces[]' package.json | while read i; do
-                # Find all packages down a pacakge root directory. for example packages/*, apps/*, types/*
-                PACKAGES=$(find . -maxdepth 2 -wholename "./$i")
-                echo "Packages found on $i: $PACKAGES"
-                for f in $PACKAGES; do
-                  # The find command add the ./ We dont need it. This command removes it by removing the first 2 characters.
-                  package=$(echo "${f:2}")
-                  echo "Checking package $package"
-                  if [[ $FILES_CHANGED == *"$package"* || " master production staging trying " =~ .*\ $CIRCLE_BRANCH\ .* || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true  ]]; then
-                      # Work only on folders that are real packages
-                      if [[ -d $f ]]; then
-                        cd $f
-                        echo "running command << parameters.command >> on $package"
-
-                        # Execute command
-                        << parameters.command >> << parameters.extra_args >>
-
-                        cd -
-                      fi
-                  fi
-                done
-              done

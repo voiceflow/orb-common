@@ -26,29 +26,22 @@ parameters:
     type: string
     default: "packages"
 steps:
-  - run:
-      name: << parameters.step_name >>
-      command: |
-        FILES_CHANGED=$(git diff HEAD^ --name-only )
-        echo "files changed: $FILES_CHANGED"
-        PACKAGE_FORCED=<< parameters.package_to_force_execution >>
-        RUN_ON_ROOT=<< parameters.run_on_root >>
-        FORCE_EXECUTION=<< parameters.force_execution >>
-        PACKAGE_FOLDER=<< parameters.package_folder >>
+  - when:
+      condition: << parameters.run_on_root >>
+      steps:
+        - run:
+            name: << parameters.step_name >>
+            command: << parameters.command >> << parameters.extra_parameters >>
+  - unless:
+      condition: << parameters.run_on_root >>
+      steps:
+        - run:
+          name: << parameters.step_name >>
+          working_directory: '<< parameters.package_folder >>/<< parameters.package_to_force_execution >>'
+          command: |
+            FILES_CHANGED=$(git diff HEAD^ --name-only )
+            echo "files changed: $FILES_CHANGED"
 
-        if [[ $FILES_CHANGED == *"$PACKAGE_FORCED"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || ! -z "$CIRCLE_TAG" || $FORCE_EXECUTION == true ]]; then
-
-            if [[ $RUN_ON_ROOT != true ]]; then
-              cd $PACKAGE_FOLDER/$PACKAGE_FORCED
-              echo "running command << parameters.command >> on $PACKAGE_FOLDER/$PACKAGE_FORCED"
-            else
-              echo "running command << parameters.command >> on monorepo root"
+            if [[ $FILES_CHANGED == *"<< parameters.package_to_force_execution >>"* || $CIRCLE_BRANCH == "master" || $CIRCLE_BRANCH == "production" || -n "$CIRCLE_TAG" || << parameters.force_execution >> == true ]]; then
+                << parameters.command >> << parameters.extra_parameters >>
             fi
-
-            # Execute command
-            << parameters.command >> << parameters.extra_parameters >>
-
-            if [[ $RUN_ON_ROOT != true ]]; then
-              cd -
-            fi
-        fi
