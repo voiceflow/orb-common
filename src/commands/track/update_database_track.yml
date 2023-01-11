@@ -14,6 +14,9 @@ parameters:
     description: The container image repository
     type: string
     default: "com.voiceflow.ci.assets"
+  semantic_version:
+    type: string
+    default: ""
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -25,16 +28,15 @@ steps:
       at: ~/voiceflow
   - run:
       name: Update Track
+      environment:
+        SEM_VER: '<< parameters.semantic_version >>'
       command: |
         # Load TRACK_EXISTS variable from file previously stored in the tmp folder
         source "/tmp/TRACK_STATUS"
 
-        # Update the new tags
-        git fetch --tags
-        SEM_VER=$(git describe --abbrev=0 --tags)
         echo "New version published: ${SEM_VER}"
 
-        if [[ $TRACK_EXISTS == "true"  && ! -z "$SEM_VER" ]]; then
+        if [[ $TRACK_EXISTS == "true"  && -n "$SEM_VER" ]]; then
           # update the track
           TRACK="tracks/<< parameters.component >>/$CIRCLE_BRANCH"
           echo $TRACK
@@ -43,11 +45,7 @@ steps:
         else
           echo "Track does not exist! avoiding update!"
         fi
-
-        echo "export TAG=${SEM_VER}" >> $BASH_ENV
-        echo "export NEW_VERSION=${SEM_VER}" >> $BASH_ENV
-
   - build_push_image:
       image_repo: << parameters.image_repo >>
-      image_tag: "${TAG}"
-      sem_ver_override: "${NEW_VERSION}"
+      image_tag: '<< parameters.semantic_version >>'
+      sem_ver_override: '<< parameters.semantic_version >>'
