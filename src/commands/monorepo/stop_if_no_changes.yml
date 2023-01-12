@@ -14,11 +14,12 @@ parameters:
 steps:
   - run:
       name: << parameters.description >>
+      environment:
+        PACKAGE: '<< parameters.package >>'
+        PACKAGE_FOLDER: '<< parameters.package_folder >>'
       command: |
         #HACK: 4 hours due to the deploy schedule
         FILES_CHANGED=$(git log --pretty=format: --name-only --since="4 hours ago" | sort | uniq)
-        PACKAGE=<< parameters.package >>
-        PACKAGE_FOLDER=<< parameters.package_folder >>
         echo "files changed: $FILES_CHANGED"
 
         if [[ $FILES_CHANGED != *"$PACKAGE_FOLDER/$PACKAGE"*  ]]; then
