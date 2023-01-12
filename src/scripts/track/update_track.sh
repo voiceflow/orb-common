@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2086
 
 # Expected env vars
 echo "IMAGE_REPO: $IMAGE_REPO"
@@ -74,7 +75,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         --build-arg build_GIT_SHA="${CIRCLE_SHA1}" \
         --build-arg build_SEM_VER="${SEM_VER}" \
         "${REGISTRY_ARG[@]}" \
-        "${PACKAGE_ARG[@]}" \ # shellcheck disable=SC2164
+        "${PACKAGE_ARG[@]}" \
         $BUILD_ARGS \
         -f "$BUILD_CONTEXT/$DOCKERFILE" \
         -t "$IMAGE_NAME" "$BUILD_CONTEXT"
