@@ -31,6 +31,7 @@ steps:
       environment:
         SEM_VER: '<< parameters.semantic_version >>'
         BUCKET: '<< parameters.bucket >>'
+        COMPONENT: '<< parameters.component >>'
       command: <<include(scripts/track/update_database_track.sh)>>
   - build_push_image:
       image_repo: << parameters.image_repo >>
