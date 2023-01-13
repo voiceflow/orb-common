@@ -2,16 +2,16 @@
 # shellcheck disable=SC2086
 
 # Expected env vars
-echo "IMAGE_REPO: $IMAGE_REPO"
-echo "IMAGE_TAG_OVERRIDE: $IMAGE_TAG_OVERRIDE"
-echo "KMS_KEY: $KMS_KEY"
-echo "PACKAGE: $PACKAGE"
-echo "BUILD_CONTEXT: $BUILD_CONTEXT"
-echo "COMPONENT: $COMPONENT"
-echo "BUCKET: $BUCKET"
-echo "LOCAL_REGISTRY: $LOCAL_REGISTRY"
-echo "BIULD_ARGS: $BIULD_ARGS"
-echo "DOCKERFILE: $DOCKERFILE"
+echo "IMAGE_REPO: ${IMAGE_REPO?}"
+echo "IMAGE_TAG_OVERRIDE: ${IMAGE_TAG_OVERRIDE?}"
+echo "KMS_KEY: ${KMS_KEY?}"
+echo "PACKAGE: ${PACKAGE?}"
+echo "BUILD_CONTEXT: ${BUILD_CONTEXT?}"
+echo "COMPONENT: ${COMPONENT?}"
+echo "BUCKET: ${BUCKET?}"
+echo "LOCAL_REGISTRY: ${LOCAL_REGISTRY?}"
+echo "BUILD_ARGS: ${BIULD_ARGS?}"
+echo "DOCKERFILE: ${DOCKERFILE}"
 
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
