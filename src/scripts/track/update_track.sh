@@ -120,6 +120,6 @@ TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
 echo "TRACK: $TRACK"
 pip3 install yq
 # the file /tmp/$TRACK is downloaded in the check_track_exists step
-yq -y -i --arg tag "${IMAGE_TAG}" ".$COMPONENT.image.tag=\$tag" "/tmp/$TRACK"
-yq -y -i --arg sha "${IMAGE_SHA}" ".$COMPONENT.image.sha=\$sha" "/tmp/$TRACK"
+yq -y -i --arg tag "${IMAGE_TAG}" ".\"$COMPONENT\".image.tag=\$tag" "/tmp/$TRACK"
+yq -y -i --arg sha "${IMAGE_SHA}" ".\"$COMPONENT\".image.sha=\$sha" "/tmp/$TRACK"
 aws s3 cp "/tmp/$TRACK" "s3://$BUCKET/$TRACK"

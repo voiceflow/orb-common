@@ -3,9 +3,9 @@ steps:
       name: Get logs
       working_directory: ~/logs
       when: on_fail
-      shell: /bin/sh -o pipefail
       command: |-
         # Getting the logs
+        set +e
         docker logs server-data-api-e2e > server-data-api.log
         docker logs creator-api-e2e > creator-api.log
         docker logs alexa-runtime-e2e > alexa-runtime.log
@@ -28,3 +28,4 @@ steps:
         docker logs analytics-api-e2e > analytics-api.log
         docker logs billing-api-e2e > billing-api.log
         docker logs identity-api-e2e > identity-api.log
+        set -e
