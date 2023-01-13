@@ -22,6 +22,7 @@ source "/tmp/TRACK_STATUS"
 
 if [[ "$TRACK_EXISTS" != "true" ]]; then
     echo "Track does not exist! avoiding update!"
+    exit 0
 fi
 
 BRANCH_NAME="$CIRCLE_BRANCH"
