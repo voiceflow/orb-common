@@ -79,7 +79,7 @@ steps:
             command: |
               trap 'echo "fail detected"; touch /tmp/failure' ERR
               << parameters.yarn_command >>
-              <<#parameters.run_in_background>> rm -rf ${LOCK_FILE?} <</parameters.run_in_background>>
+              <<#parameters.run_in_background>>rm -rf ${LOCK_FILE?}<</parameters.run_in_background>>
   - when:
       condition: << parameters.run_in_container >>
       steps:
