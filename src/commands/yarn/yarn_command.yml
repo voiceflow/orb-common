@@ -78,7 +78,7 @@ steps:
             command: |
               trap 'echo "fail detected"; touch /tmp/failure' ERR
               << parameters.yarn_command >>
-              rm -rf ${LOCK_FILE?}
+              <<#parameters.run_in_background>> rm -rf ${LOCK_FILE?} <</parameters.run_in_background>>
   - when:
       condition: << parameters.run_in_container >>
       steps:
@@ -91,4 +91,5 @@ steps:
               MONOREPO_PACKAGE_FOLDER: "<< parameters.monorepo_package_folder >>"
               CONTAINER_IMAGE: "<< parameters.container_image >>"
               COMMAND: "<< parameters.yarn_command >>"
+              SHOULD_REMOVE_LOCKFILE: << parameters.run_in_background >>
             command: <<include(scripts/yarn/run_command_in_container.sh)>>

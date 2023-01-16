@@ -21,6 +21,7 @@ fi
 echo "Copying from ${SOURCE_FOLDER} into ${DESTINATION_FOLDER?}"
 docker cp "${SOURCE_FOLDER}" "${DESTINATION_FOLDER}"
 
-
-echo "Removing lock file ${LOCK_FILE?}" 
-rm -rf "${LOCK_FILE}"
+if (( ${SHOULD_REMOVE_LOCKFILE?} )); then
+    echo "Removing lock file ${LOCK_FILE?}" 
+    rm -rf "${LOCK_FILE}"
+fi
