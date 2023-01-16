@@ -6,7 +6,7 @@ echo "Copying code into container"
 docker create -v /code --name code "${CONTAINER_IMAGE:?}" /bin/true
 docker cp "$PWD/." code:/code
 
-echo "Executing yarn command in container"
+echo "Executing command \"${COMMAND:?}\" in container"
 docker run --name runner -it --volumes-from code -w /code "${CONTAINER_IMAGE:?}" /bin/bash -c "${COMMAND:?}"
 
 # If a folder is specified we copy that one on the host, otherwise copy all
