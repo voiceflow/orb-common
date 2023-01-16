@@ -69,49 +69,26 @@ steps:
         - run_command_with_retry:
             step_name: Download Docker image
             command: docker pull << parameters.container_image >>
-  - run:
-      working_directory: << parameters.working_directory >>
-      background: << parameters.run_in_background >>
-      name: << parameters.step_name >>
-      command: |
-        RUN_IN_CONTAINER=<< parameters.run_in_container >>
-        RUN_IN_BACKGROUND=<< parameters.run_in_background >>
-        FOLDER_TO_COPY="<< parameters.container_folder_to_copy >>"
-        MONOREPO_PACKAGE="<< parameters.monorepo_package >>"
-        MONOREPO_PACKAGE_FOLDER="<< parameters.monorepo_package_folder >>"
-
-        trap 'echo "fail detected"; touch /tmp/failure' ERR
-
-        if [[ $RUN_IN_CONTAINER == true ]]; then
-          echo "Running in a container"
-          docker create -v /code --name code << parameters.container_image >> /bin/true
-          docker cp $PWD/. code:/code
-
-          # Executes Yarn command in container
-          docker run --name runner -it --volumes-from code -w /code << parameters.container_image >> /bin/bash -c "<< parameters.yarn_command >>"
-          # If a folder is specified we copy that one on the host
-          if [[ $FOLDER_TO_COPY != "" ]]; then
-            DESTINATION_FOLDER=$PWD
-            if [[ $MONOREPO_PACKAGE != "" ]]; then
-              DESTINATION_FOLDER="$PWD/$MONOREPO_PACKAGE_FOLDER/$MONOREPO_PACKAGE"
-            fi
-
-            docker cp runner:/code/<< parameters.container_folder_to_copy >> $DESTINATION_FOLDER
-
-            echo "Copying into $DESTINATION_FOLDER"
-          else
-            #Copy all
-            echo "Copying all"
-            docker cp runner:/code/. ./
-          fi
-        else
-          # Executes Yarn command outside container
-          echo "Running without a container"
-          << parameters.yarn_command >>
-        fi
-
-        # Remove lock file when it is running in background/parallel
-        if [[ $RUN_IN_BACKGROUND == true ]]; then
-          echo "Removing Lock $LOCK_FILE"
-          rm -rf $LOCK_FILE
-        fi
+  - unless:
+      condition: << parameters.run_in_container >>
+      steps:
+        - run:
+            name: Run << parameters.step_name >> outside of a container
+            background: << parameters.run_in_background >>
+            command: |
+              trap 'echo "fail detected"; touch /tmp/failure' ERR
+              << parameters.yarn_command >>
+              rm -rf ${LOCK_FILE?}
+  - when:
+      condition: << parameters.run_in_container >>
+      steps:
+        - run:
+            name: Run << parameters.step_name >> in a container
+            background: << parameters.run_in_background >>
+            environment:
+              FOLDER_TO_COPY: "<< parameters.container_folder_to_copy >>"
+              MONOREPO_PACKAGE: "<< parameters.monorepo_package >>"
+              MONOREPO_PACKAGE_FOLDER: "<< parameters.monorepo_package_folder >>"
+              CONTAINER_IMAGE: "<< parameters.container_image >>"
+              COMMAND: "<< parameters.yarn_command >>"
+            command: <<include(scripts/yarn/run_command_in_container.sh)>>
