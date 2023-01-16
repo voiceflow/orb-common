@@ -73,7 +73,7 @@ steps:
       condition: << parameters.run_in_container >>
       steps:
         - run:
-            name: Run << parameters.step_name >> outside of a container
+            name: Run << parameters.step_name >>
             background: << parameters.run_in_background >>
             command: |
               trap 'echo "fail detected"; touch /tmp/failure' ERR
