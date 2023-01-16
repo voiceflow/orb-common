@@ -34,4 +34,3 @@ steps:
               FORCE_EXECUTION: << parameters.force_execution >>
               COMMAND: '<< parameters.command >> << parameters.extra_args >>'
             command: <<include(scripts/monorepo/exec_command.sh)>>
-
