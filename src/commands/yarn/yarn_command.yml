@@ -74,6 +74,7 @@ steps:
       steps:
         - run:
             name: Run << parameters.step_name >>
+            working_directory: << parameters.working_directory >>
             background: << parameters.run_in_background >>
             command: |
               trap 'echo "fail detected"; touch /tmp/failure' ERR
@@ -85,6 +86,7 @@ steps:
       steps:
         - run:
             name: Run << parameters.step_name >> in a container
+            working_directory: << parameters.working_directory >>
             background: << parameters.run_in_background >>
             environment:
               FOLDER_TO_COPY: "<< parameters.container_folder_to_copy >>"
