@@ -3,6 +3,7 @@
 
 trap 'echo "fail detected"; touch /tmp/failure' ERR
 
+echo "Running command: ${COMMAND:?}"
 ${COMMAND:?}
 
 if (( ${SHOULD_REMOVE_LOCKFILE?} )); then
