@@ -15,5 +15,4 @@ steps:
         - << parameters.ssh_key >>
   - run:
       name: << parameters.step_name >>
-      command: |
-        git push origin --delete << parameters.branch_name >> --no-verify # Clean up git branch
+      command: git push origin --delete << parameters.branch_name >> --no-verify # Clean up git branch
