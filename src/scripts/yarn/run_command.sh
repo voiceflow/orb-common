@@ -4,7 +4,7 @@
 trap 'echo "fail detected"; touch /tmp/failure' ERR
 
 echo "Running command: ${COMMAND:?}"
-${COMMAND:?}
+bash -c "${COMMAND:?}"
 
 if (( ${SHOULD_REMOVE_LOCKFILE?} )); then
     echo "Removing lock file ${LOCK_FILE?}" 
