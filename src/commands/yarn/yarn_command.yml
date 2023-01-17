@@ -76,10 +76,10 @@ steps:
             name: Run << parameters.step_name >>
             working_directory: << parameters.working_directory >>
             background: << parameters.run_in_background >>
-            command: |
-              trap 'echo "fail detected"; touch /tmp/failure' ERR
-              << parameters.yarn_command >>
-              <<#parameters.run_in_background>>rm -rf ${LOCK_FILE?}<</parameters.run_in_background>>
+            environment:
+              COMMAND: "<< parameters.yarn_command >>"
+              SHOULD_REMOVE_LOCKFILE: << parameters.run_in_background >>
+            command: <<include(scripts/yarn/run_command.sh)>>
   - when:
       condition: << parameters.run_in_container >>
       steps:
