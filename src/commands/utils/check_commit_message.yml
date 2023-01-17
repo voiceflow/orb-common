@@ -12,7 +12,7 @@ steps:
         # this is for the use case of the bugfix mechanism
         COMMIT_MESSAGE="$(git log --format=oneline -n 1 $CIRCLE_SHA1)"
 
-        # If CHECK_COMMIT_MESSAGE is empty, this is always false 
+        # If CHECK_COMMIT_MESSAGE is empty, this is always false
         if [[ $COMMIT_MESSAGE != *"$CHECK_COMMIT_MESSAGE"* ]]; then
           circleci-agent step halt
         fi
