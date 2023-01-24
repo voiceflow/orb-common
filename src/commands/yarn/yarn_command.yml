@@ -42,6 +42,14 @@ parameters:
     description: Package folder
     type: string
     default: "packages"
+  max_retries:
+    description: Maximum number of retries
+    type: integer
+    default: 2
+  sleep_time:
+    description: Time (in seconds) to sleep between retries
+    type: integer
+    default: 5
 steps:
   - when:
       condition: << parameters.wait >>
@@ -79,6 +87,8 @@ steps:
             environment:
               COMMAND: "<< parameters.yarn_command >>"
               SHOULD_REMOVE_LOCKFILE: << parameters.run_in_background >>
+              MAX_RETRIES: '<< parameters.max_retries >>'
+              SLEEP_TIME: '<< parameters.sleep_time >>'
             command: <<include(scripts/yarn/run_command.sh)>>
   - when:
       condition: << parameters.run_in_container >>
@@ -94,4 +104,6 @@ steps:
               CONTAINER_IMAGE: "<< parameters.container_image >>"
               COMMAND: "<< parameters.yarn_command >>"
               SHOULD_REMOVE_LOCKFILE: << parameters.run_in_background >>
+              MAX_RETRIES: '<< parameters.max_retries >>'
+              SLEEP_TIME: '<< parameters.sleep_time >>'
             command: <<include(scripts/yarn/run_command_in_container.sh)>>
