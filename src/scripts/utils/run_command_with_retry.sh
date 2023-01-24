@@ -5,6 +5,7 @@ for _ in $(seq 0 "${MAX_RETRY:?}"); do
         exit 0
     fi
     sleep "${SLEEP:?}"
+    echo "Retrying command: ${COMMAND?}"
 done
 
 echo "failed: ${COMMAND?}" >&2
