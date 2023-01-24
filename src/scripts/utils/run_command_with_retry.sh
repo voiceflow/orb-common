@@ -1,15 +1,11 @@
 #!/bin/bash
 
-for i in {0..${MAX_RETRY:?}}; do
-    set +e
-    bash -c "$COMMAND"
-    set -e
-    if [ $? -eq 0 ]; then
+for _ in $(seq 0 "${MAX_RETRY:?}"); do
+    if bash -c "${COMMAND?}"; then
         exit 0
     fi
-
-    sleep $SLEEP
+    sleep "${SLEEP:?}"
 done
 
-echo "failed: ${COMMAND}" >&2
+echo "failed: ${COMMAND?}" >&2
 exit 1
