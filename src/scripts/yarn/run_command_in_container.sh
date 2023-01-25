@@ -7,7 +7,7 @@ docker create -v /code --name code "${CONTAINER_IMAGE:?}" /bin/true
 docker cp "$PWD/." code:/code
 
 echo "Executing command \"${COMMAND:?}\" in container"
-docker run --name runner -it --volumes-from code -w /code "${CONTAINER_IMAGE:?}" /bin/bash -c "for _ in {0..${MAX_RETRIES:?}}; do ${COMMAND:?} && break || sleep ${SLEEP_TIME:?}; done"
+docker run --name runner -it --volumes-from code -w /code "${CONTAINER_IMAGE:?}" /bin/bash -c "for _ in {0..${MAX_RETRIES:?}}; do ${COMMAND:?} && break || sleep ${SLEEP_TIME:?} && echo \"Retrying $COMMAND\"; done"
 
 # If a folder is specified we copy that one on the host, otherwise copy all
 SOURCE_FOLDER="runner:/code/${FOLDER_TO_COPY:-.}"
