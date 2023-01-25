@@ -4,7 +4,7 @@
 trap 'echo "fail detected"; touch /tmp/failure' ERR
 
 echo "Running command: ${COMMAND:?}"
-for _ in $(seq 0 "${MAX_RETRY:?}"); do
+for _ in $(seq 0 "${MAX_RETRIES:?}"); do
     if bash -c "${COMMAND?}"; then
         if (( ${SHOULD_REMOVE_LOCKFILE?} )); then
             echo "Removing lock file ${LOCK_FILE?}" 
@@ -12,7 +12,7 @@ for _ in $(seq 0 "${MAX_RETRY:?}"); do
         fi
         exit 0
     fi
-    sleep "${SLEEP:?}"
+    sleep "${SLEEP_TIME:?}"
     echo "Retrying command: ${COMMAND?}"
 done
 

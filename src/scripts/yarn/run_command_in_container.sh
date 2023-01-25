@@ -8,11 +8,11 @@ docker cp "$PWD/." code:/code
 
 echo "Executing command \"${COMMAND:?}\" in container"
 docker run --name runner -it --volumes-from code -w /code "${CONTAINER_IMAGE:?}" /bin/bash -c "
-    for _ in {0..${MAX_RETRY:?}}; do
+    for _ in {0..${MAX_RETRIES:?}}; do
         if bash -c \"${COMMAND?}\"; then
             exit 0
         fi
-        sleep \"${SLEEP:?}\"
+        sleep \"${SLEEP_TIME:?}\"
         echo \"Retrying command: ${COMMAND?}\"
     done
 
