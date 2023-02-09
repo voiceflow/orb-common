@@ -5,7 +5,7 @@ volume="schema-${service}"
 
 set -e
 
-curl http://localhost:${PORT}/schema.json > openapi.next.json
+curl "http://localhost:${PORT}/schema.json" > openapi.next.json
 
 if [[ $SKIP_ACCEPTANCE_TESTS == 'false' ]]; then
   echo 'new schema generated, skipping acceptance tests'
@@ -23,13 +23,13 @@ if [[ ! -f openapi.json ]]; then
   exit 0
 fi
 
-docker create -v /schemas --name ${volume} alpine /bin/true
-docker cp openapi.next.json ${volume}:/schemas/openapi.next.json
-docker cp openapi.json ${volume}:/schemas/openapi.prev.json
+docker create -v /schemas --name "${volume}" alpine /bin/true
+docker cp openapi.next.json "${volume}:/schemas/openapi.next.json"
+docker cp openapi.json "${volume}:/schemas/openapi.prev.json"
 
 set +e
 
-docker run --rm --volumes-from ${volume} openapitools/openapi-diff \
+docker run --rm --volumes-from "${volume}" openapitools/openapi-diff \
   --fail-on-incompatible \
   /schemas/openapi.next.json /schemas/openapi.prev.json
 result=$?
@@ -37,9 +37,9 @@ result=$?
 set -e
 
 if [ ${result} = 0 ]; then
-  docker cp ${volume}:/schemas/openapi.next.json openapi.json
+  docker cp "${volume}:/schemas/openapi.next.json" openapi.json
 fi
 
-docker rm ${volume}
+docker rm "${volume}"
 
-exit ${result}
+exit "${result}"
