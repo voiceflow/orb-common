@@ -20,7 +20,7 @@ steps:
   - setup_remote_docker:
       version: 20.10.11
   - checkout
-  - vfcommon/install_node_modules:
+  - install_node_modules:
       avoid_post_install_scripts: false
   - attach_workspace:
       at: ~/project
@@ -29,14 +29,14 @@ steps:
       command: |
         tee -a /etc/hosts \<<<'127.0.0.1 postgres.test.e2e'
         tee -a /etc/hosts \<<<'127.0.0.1 mongodb.test.e2e'
-  - vfcommon/setup_vf_dbs_docker:
+  - setup_vf_dbs_docker:
       github_username: GITHUB_USERNAME
       github_token: GITHUB_TOKEN
       commit: DEFAULT_COMMIT
       cache_prefix: "<< parameters.cache_prefix >>"
       database_init_extra_args: "<< parameters.database_init_extra_args >>"
       environment: e2e
-  - vfcommon/clone_repo:
+  - clone_repo:
       step_name: Clone openapi-schemas repository
       github_username: GITHUB_USERNAME
       github_token: GITHUB_TOKEN

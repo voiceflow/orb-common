@@ -7,7 +7,7 @@ executor: node-executor
 steps:
   - attach_workspace:
       at: "<< parameters.schema_dir >>"
-  - vfcommon/clone_repo:
+  - clone_repo:
       step_name: Clone openapi-schemas repository
       github_username: GITHUB_USERNAME
       github_token: GITHUB_TOKEN
