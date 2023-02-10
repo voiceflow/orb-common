@@ -2,7 +2,7 @@ parameters:
   cache_prefix:
     description: Cache prefix
     type: string
-    default: ""
+    default: "monorepo-acceptance-test"
   database_init_extra_args:
     description: Additional database init command options
     type: string
