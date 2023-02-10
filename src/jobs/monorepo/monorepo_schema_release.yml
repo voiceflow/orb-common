@@ -5,8 +5,6 @@ parameters:
     default: "/tmp/next-schemas"
 executor: node-executor
 steps:
-  - attach_workspace:
-      at: "<< parameters.schema_dir >>"
   - clone_repo:
       step_name: Clone openapi-schemas repository
       github_username: GITHUB_USERNAME
@@ -14,10 +12,10 @@ steps:
       github_repo_name: openapi-schemas
       github_commit: DEFAULT_COMMIT
       path_to_clone: ~/schemas
-  - run:
-      name: Update Schemas
-      working_directory: "<< parameters.schema_dir >>"
-      command: cp -v --parents apps/*/openapi.json ~/schemas
+  - openapi_restore_schemas:
+      attach_workspace: true
+      from: "<< parameters.schema_dir >>"
+      to: ~/schemas
   - run:
       name: Commit Schemas
       working_directory: ~/schemas

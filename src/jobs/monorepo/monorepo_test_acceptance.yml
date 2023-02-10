@@ -51,10 +51,9 @@ steps:
       github_repo_name: openapi-schemas
       github_commit: DEFAULT_COMMIT
       path_to_clone: ~/schemas
-  - run:
-      name: Restore Schemas
-      working_directory: ~/schemas
-      command: cp -v --parents */*/openapi.json ~/project
+  - openapi_restore_schemas:
+      from: ~/schemas
+      to: ~/project
   - run:
       name: Acceptance Tests
       environment:
@@ -62,16 +61,5 @@ steps:
       command: |
         yarn gen-certs:e2e
         yarn test:acceptance
-  - run:
-      when: always
-      name: Collect Schemas
-      command: |
-        mkdir -p << parameters.schema_dir >>
-        cp -v --parents apps/*/openapi.json << parameters.schema_dir >>
-  - persist_to_workspace:
-      root: "<< parameters.schema_dir >>"
-      paths:
-        - "*/*/openapi.json"
-  - store_artifacts:
-      path: "<< parameters.schema_dir >>/apps"
-      destination: schemas
+  - openapi_persist_schemas:
+      workspace_dir: "<< parameters.schema_dir >>"
