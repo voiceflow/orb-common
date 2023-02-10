@@ -2,7 +2,7 @@ parameters:
   schema_dir:
     description: Directory to store schemas between jobs
     type: string
-    default: "/tmp/next-schemas"
+    default: "/tmp/schemas"
 executor: node-executor
 steps:
   - clone_repo:

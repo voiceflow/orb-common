@@ -20,6 +20,10 @@ parameters:
     description: Force execution of the command on all packages
     type: boolean
     default: false
+  schema_dir:
+    description: Directory to store schemas between jobs
+    type: string
+    default: "/tmp/schemas"
 steps:
   - checkout
   - attach_workspace:
