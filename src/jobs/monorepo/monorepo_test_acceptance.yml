@@ -3,14 +3,18 @@ parameters:
     description: Cache prefix
     type: string
     default: "monorepo-acceptance-test"
-  database_init_extra_args:
-    description: Additional database init command options
-    type: string
-    default: ""
   schema_dir:
     description: Directory to store schemas between jobs
     type: string
     default: "/tmp/next-schemas"
+  database_init_extra_args:
+    description: Additional database init command options
+    type: string
+    default: ""
+  skip_database_init:
+    description: Skip database initialization
+    type: boolean
+    default: false
   skip_tests:
     description: Skip the tests but save the updated schemas
     type: boolean
@@ -24,18 +28,22 @@ steps:
       avoid_post_install_scripts: false
   - attach_workspace:
       at: ~/project
-  - run:
-      name: add e2e databases to hosts file
-      command: |
-        tee -a /etc/hosts \<<<'127.0.0.1 postgres.test.e2e'
-        tee -a /etc/hosts \<<<'127.0.0.1 mongodb.test.e2e'
-  - setup_vf_dbs_docker:
-      github_username: GITHUB_USERNAME
-      github_token: GITHUB_TOKEN
-      commit: DEFAULT_COMMIT
-      cache_prefix: "<< parameters.cache_prefix >>"
-      database_init_extra_args: "<< parameters.database_init_extra_args >>"
-      environment: e2e
+  - when:
+      condition:
+        not: << parameters.skip_database_init >>
+      steps:
+        - run:
+            name: add e2e databases to hosts file
+            command: |
+              tee -a /etc/hosts \<<<'127.0.0.1 postgres.test.e2e'
+              tee -a /etc/hosts \<<<'127.0.0.1 mongodb.test.e2e'
+        - setup_vf_dbs_docker:
+            github_username: GITHUB_USERNAME
+            github_token: GITHUB_TOKEN
+            commit: DEFAULT_COMMIT
+            cache_prefix: "<< parameters.cache_prefix >>"
+            database_init_extra_args: "<< parameters.database_init_extra_args >>"
+            environment: e2e
   - clone_repo:
       step_name: Clone openapi-schemas repository
       github_username: GITHUB_USERNAME
