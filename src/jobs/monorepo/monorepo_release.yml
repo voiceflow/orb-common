@@ -31,6 +31,14 @@ parameters:
     description: Release engine to use
     type: string
     default: "chore(release): publish"
+  pre_publish_steps:
+    description: Steps to run before executing the publish command
+    type: steps
+    default: []
+  post_publish_steps:
+    description: Steps to run after executing the publish command
+    type: steps
+    default: []
 steps:
   - add_ssh_keys:
       fingerprints:
@@ -46,6 +54,8 @@ steps:
       command: |-
         git config --global user.email "serviceaccount@voiceflow.com"
         git config --global user.name "Voiceflow"
+
+  - steps: << parameters.pre_publish_steps >>
 
   - when:
       condition:
@@ -68,6 +78,9 @@ steps:
               SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli lerna publish \
                 --message "<< parameters.commit_message >>" --yes \
                 --conventional-commits --no-verify-access << parameters.publish_args >>
+
+  - steps: << parameters.post_publish_steps >>
+
   - run:
       name: Store tags
       command: echo "export MONOREPO_UPDATED_TAGS=\"$(git tag --points-at HEAD)\"" >> $BASH_ENV

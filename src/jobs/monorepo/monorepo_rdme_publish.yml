@@ -20,6 +20,10 @@ parameters:
     description: Force execution of the command on all packages
     type: boolean
     default: false
+  schema_dir:
+    description: Directory to store schemas between jobs
+    type: string
+    default: "/tmp/schemas"
 steps:
   - checkout
   - attach_workspace:
@@ -27,6 +31,10 @@ steps:
   - install_node_modules:
       install_args: "<< parameters.install_args >>"
       avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
+  - openapi_restore_schemas:
+      attach_workspace: true
+      from: "<< parameters.schema_dir >>"
+      to: ~/voiceflow
   - monorepo_exec_command:
       step_name: "Publish to README"
       command: yarn rdme:publish

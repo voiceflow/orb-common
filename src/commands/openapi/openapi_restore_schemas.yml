@@ -1,0 +1,29 @@
+parameters:
+  from:
+    description: The location to restore schemas from
+    type: string
+  to:
+    description: The location to restore schemas to
+    type: string
+  attach_workspace:
+    description: Attach the workspace to restore schemas from a previous step
+    type: boolean
+    default: false
+  app_dir:
+    description: Sub-folder containing the application schemas in named folders
+    type: string
+    default: apps
+  schema_name:
+    description: Name of the schema files to restore
+    type: string
+    default: openapi.json
+steps:
+  - when:
+      condition: << parameters.attach_workspace >>
+      steps:
+        - attach_workspace:
+            at: "<< parameters.from >>"
+  - run:
+      name: Restore OpenAPI Schemas
+      working_directory: "<< parameters.from >>"
+      command: cp -v --parents << parameters.app_dir >>/*/<< parameters.schema_name >> << parameters.to >>

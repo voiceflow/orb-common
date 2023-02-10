@@ -1,0 +1,28 @@
+parameters:
+  schema_dir:
+    description: Directory to store schemas between jobs
+    type: string
+    default: "/tmp/schemas"
+executor: node-executor
+steps:
+  - clone_repo:
+      step_name: Clone openapi-schemas repository
+      github_username: GITHUB_USERNAME
+      github_token: GITHUB_TOKEN
+      github_repo_name: openapi-schemas
+      github_commit: DEFAULT_COMMIT
+      path_to_clone: ~/schemas
+  - openapi_restore_schemas:
+      attach_workspace: true
+      from: "<< parameters.schema_dir >>"
+      to: ~/schemas
+  - run:
+      name: Commit Schemas
+      working_directory: ~/schemas
+      command: |
+        git config --global user.email "serviceaccount@voiceflow.com"
+        git config --global user.name "Voiceflow"
+        git add **/openapi.json
+        git diff-index --quiet HEAD || git commit -m "feat: evolve ${CIRCLE_PROJECT_REPONAME} schemas"
+        git pull --rebase
+        git push

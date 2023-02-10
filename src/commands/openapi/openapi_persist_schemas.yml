@@ -1,0 +1,26 @@
+parameters:
+  workspace_dir:
+    description: The location to persist schemas to
+    type: string
+  app_dir:
+    description: Sub-folder containing the application schemas in named folders
+    type: string
+    default: apps
+  schema_name:
+    description: Name of the schema files to persist
+    type: string
+    default: openapi.json
+steps:
+  - run:
+      when: always
+      name: Collect Schemas
+      command: |
+        mkdir -p << parameters.workspace_dir >>
+        cp -v --parents << parameters.app_dir >>/*/<< parameters.schema_name >> << parameters.workspace_dir >>
+  - persist_to_workspace:
+      root: "<< parameters.workspace_dir >>"
+      paths:
+        - "*/*/<< parameters.schema_name >>"
+  - store_artifacts:
+      path: "<< parameters.workspace_dir >>/<< parameters.app_dir >>"
+      destination: schemas
