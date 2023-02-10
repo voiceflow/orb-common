@@ -31,7 +31,7 @@ steps:
       from: ~/schemas
       to: ~/voiceflow
   - run:
-      name: Acceptance Tests
+      name: Validate Schemas
       environment:
         SKIP_ACCEPTANCE_TESTS: "<< parameters.skip_tests >>"
       command: |
