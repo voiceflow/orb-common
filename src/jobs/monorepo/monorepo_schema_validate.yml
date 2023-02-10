@@ -36,6 +36,6 @@ steps:
         SKIP_ACCEPTANCE_TESTS: "<< parameters.skip_tests >>"
       command: |
         yarn gen-certs:e2e
-        yarn test:acceptance
+        yarn schema:validate
   - openapi_persist_schemas:
       workspace_dir: "<< parameters.schema_dir >>"
