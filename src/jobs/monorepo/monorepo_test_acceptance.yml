@@ -50,7 +50,7 @@ steps:
   - run:
       name: Acceptance Tests
       environment:
-        SKIP_ACCEPTANCE_TESTS: << parameters.skip_tests >>
+        SKIP_ACCEPTANCE_TESTS: "<< parameters.skip_tests >>"
       command: |
         yarn gen-certs:e2e
         yarn test:acceptance
