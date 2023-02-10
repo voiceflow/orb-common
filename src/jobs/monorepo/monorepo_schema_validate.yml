@@ -2,7 +2,7 @@ parameters:
   cache_prefix:
     description: Cache prefix
     type: string
-    default: "monorepo-acceptance-test"
+    default: "monorepo-schema-validate"
   schema_dir:
     description: Directory to store schemas between jobs
     type: string
