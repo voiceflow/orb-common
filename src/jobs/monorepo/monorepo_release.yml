@@ -32,11 +32,11 @@ parameters:
     type: string
     default: "chore(release): publish"
   pre_publish_steps:
-    description: Steps to be run before executing the publish command
+    description: Steps to run before executing the publish command
     type: steps
     default: []
   post_publish_steps:
-    description: Steps to be run after executing the publish command
+    description: Steps to run after executing the publish command
     type: steps
     default: []
 steps:
