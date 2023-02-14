@@ -12,13 +12,19 @@ parameters:
     description: Skip running post install scripts
     type: boolean
     default: true
+  working_directory:
+    description: Directory containing package.json
+    type: string
+    default: ~/voiceflow
 steps:
   - checkout
   - install_node_modules:
       install_args: "<< parameters.install_args >>"
       avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
+      working_directory: << parameters.working_directory >>
   - attach_workspace:
-      at: ~/voiceflow
+      at: << parameters.working_directory >>
   - run:
       name: Release Package
+      working_directory: << parameters.working_directory >>
       command: "SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release@17\n"
