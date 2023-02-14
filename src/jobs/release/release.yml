@@ -16,12 +16,17 @@ parameters:
     description: Directory containing package.json
     type: string
     default: ~/voiceflow
+  yarn_lock_restore_cache_directory:
+    description: Cache directory for yarn.lock file
+    type: string
+    default: "./"
 steps:
   - checkout
   - install_node_modules:
       install_args: "<< parameters.install_args >>"
       avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
       working_directory: << parameters.working_directory >>
+      yarn_lock_restore_cache_directory: << parameters.working_directory >>
   - attach_workspace:
       at: << parameters.working_directory >>
   - run:
