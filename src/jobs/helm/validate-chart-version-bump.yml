@@ -1,0 +1,18 @@
+executor: build-executor
+parameters:
+  working_directory:
+    description: Directory containing package.json
+    type: string
+    default: "./"
+  charts:
+    description: List of charts to validate
+    type: string
+    default: ""
+steps:
+  - checkout
+  - run:
+      name: Ensure chart versions have been bumped
+      working_directory: << parameters.working_directory >>
+      command: <<include(scripts/helm/validate-chart-version-bump.sh)>>
+      environment:
+        CHARTS: << parameters.charts >>
