@@ -1,7 +1,7 @@
 executor: build-executor
 parameters:
-  working_directory:
-    description: Directory containing package.json
+  chart_directory:
+    description: Directory containing charts
     type: string
     default: "./"
   charts:
@@ -13,7 +13,7 @@ steps:
   - helm-add-repos
   - run:
       name: Ensure chart versions have been bumped
-      working_directory: << parameters.working_directory >>
+      working_directory: << parameters.chart_directory >>
       command: <<include(scripts/helm/validate-chart-version-bump.sh)>>
       environment:
         CHARTS: << parameters.charts >>
