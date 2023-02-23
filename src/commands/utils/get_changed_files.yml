@@ -7,7 +7,6 @@ parameters:
     description: Environment variable to set with the list of changed files
     type: env_var_name
     default: CHANGED_FILES
-  
 steps:
   - run:
       name: Check commit message
