@@ -31,18 +31,18 @@ steps:
       condition: << parameters.should_halt >>
       steps:
         - run:
-          name: Check commit message and set env var
-          environment:
-            CHECK_COMMIT_MESSAGE: '<< parameters.commit_message >>'
-          command: |
-            # If a message has been introduced, we have to check that in the commit message, if it is not included, the braches will not be synced
-            # this is for the use case of the bugfix mechanism
-            COMMIT_MESSAGE="$(git log --format=oneline -n 1 $CIRCLE_SHA1)"
+            name: Check commit message and set env var
+            environment:
+              CHECK_COMMIT_MESSAGE: '<< parameters.commit_message >>'
+            command: |
+              # If a message has been introduced, we have to check that in the commit message, if it is not included, the braches will not be synced
+              # this is for the use case of the bugfix mechanism
+              COMMIT_MESSAGE="$(git log --format=oneline -n 1 $CIRCLE_SHA1)"
 
-            # If CHECK_COMMIT_MESSAGE is empty, this is always false
-            MATCH="false"
-            if [[ $COMMIT_MESSAGE == *"$CHECK_COMMIT_MESSAGE"* ]]; then
-                MATCH="true"
-            fi
+              # If CHECK_COMMIT_MESSAGE is empty, this is always false
+              MATCH="false"
+              if [[ $COMMIT_MESSAGE == *"$CHECK_COMMIT_MESSAGE"* ]]; then
+                  MATCH="true"
+              fi
 
-            echo "export << parameters.match_env_var >>=\"$MATCH\"" >> "$BASH_ENV"
+              echo "export << parameters.match_env_var >>=\"$MATCH\"" >> "$BASH_ENV"
