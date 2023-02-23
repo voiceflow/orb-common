@@ -17,7 +17,7 @@ for CHART in ${CHARTS?}; do
 
   # To ensure version bump, we check if the local version is greater than the remote version
   if echo -e "$LOCAL_VERSION\n$REMOTE_VERSION" | sort -c -V 2> /dev/null; then
-    echo "ERROR: Chart version for $CHART has not been updated" >&2
+    echo "ERROR: Chart version for $CHART has not been updated. Master is at $REMOTE_VERSION while this branch is at $LOCAL_VERSION" >&2
     rc=1
   fi
 done
