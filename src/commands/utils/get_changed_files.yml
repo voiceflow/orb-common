@@ -9,7 +9,7 @@ parameters:
     default: CHANGED_FILES
 steps:
   - run:
-      name: Check commit message
+      name: Put list of changed files in << parameters.target_env_var >> environment variable
       environment:
         BASE_REVISION: '<< parameters.base_revision >>'
       command: |
