@@ -12,10 +12,10 @@ steps:
   - run:
       name: Check commit message
       environment:
-        CHECK_COMMIT_MESSAGE: '<< parameters.commit_message >>'
+        BASE_REVISION: '<< parameters.base_revision >>'
       command: |
         # Get the added and removed clouds from the file changes
-        BASE=$(git merge-base $CIRCLE_SHA1 origin/master)
+        BASE=$(git merge-base $CIRCLE_SHA1 $BASE_REVISION)
         # If we are on master, use the previous commit
         if [[ $BASE == $CIRCLE_SHA1 ]]; then
           BASE=$(git rev-parse HEAD~1)
