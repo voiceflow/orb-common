@@ -1,0 +1,16 @@
+parameters:
+  chart_directory:
+    description: Directory containing the charts
+    type: string
+    default: "./"
+  modified_charts_env_var:
+    description: Environment variable to set with the list of modified charts
+    type: env_var_name
+    default: "MODIFIED_CHARTS"
+steps:
+  - run:
+      name: Set << parameters.modified_charts_env >> environment variable to contain list of modified charts
+      working_directory: << parameters.working_directory >>
+      command: <<include(scripts/helm/get_modified_charts.sh)>>
+      environment:
+        MODIFIED_CHARTS_ENV: << parameters.modified_charts_env_var >>
