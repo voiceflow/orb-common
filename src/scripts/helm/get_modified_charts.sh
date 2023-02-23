@@ -16,5 +16,7 @@ for CHART in "${ALL_CHARTS[@]}"; do
     fi;
 done
 
+echo "${MODIFIED_CHARTS[@]}"
+
 # shellcheck disable=SC2145
-bash -c "echo \"export $MODIFIED_CHARTS_ENV=\\\"${MODIFIED_CHARTS[@]}\\\" >> \\\"$BASH_ENV\\\"\""
+bash -c "echo \"export $MODIFIED_CHARTS_ENV=\\\"${MODIFIED_CHARTS[@]}\\\"\" >> \"$BASH_ENV\""
