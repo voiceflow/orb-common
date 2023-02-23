@@ -16,8 +16,8 @@ for CHART in ${CHARTS?}; do
   REMOTE_VERSION="$(helm show chart "$REPO/$CHART" | yq --raw-output .version)"
 
   # To ensure version bump, we check if the local version is greater than the remote version
-  if echo -e "$LOCAL_VERSION\n$REMOTE_VERSION" | sort -c -V; then
-    echo "Chart $CHART has not been updated" >&2
+  if echo -e "$LOCAL_VERSION\n$REMOTE_VERSION" | sort -c -V > /dev/null; then
+    echo "ERROR: Chart version for $CHART has not been updated" >&2
     rc=1
   fi
 done
