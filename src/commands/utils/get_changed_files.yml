@@ -14,10 +14,10 @@ steps:
         BASE_REVISION: '<< parameters.base_revision >>'
       command: |
         # Get the added and removed clouds from the file changes
-        BASE=$(git merge-base $CIRCLE_SHA1 $BASE_REVISION)
+        BASE="$(git merge-base $CIRCLE_SHA1 $BASE_REVISION)"
         # If we are on master, use the previous commit
         if [[ $BASE == $CIRCLE_SHA1 ]]; then
-          BASE=$(git rev-parse HEAD~1)
+          BASE="$(git rev-parse HEAD~1)"
         fi
         FILE_CHANGES="$(git diff --name-status --no-commit-id -r $BASE...$CIRCLE_SHA1)"
         echo "export << parameters.target_env_var >>=\"$FILE_CHANGES\"" >> "$BASH_ENV"
