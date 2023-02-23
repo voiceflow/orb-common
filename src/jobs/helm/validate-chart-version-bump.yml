@@ -10,6 +10,7 @@ parameters:
     default: ""
 steps:
   - checkout
+  - helm-add-repos
   - run:
       name: Ensure chart versions have been bumped
       working_directory: << parameters.working_directory >>
