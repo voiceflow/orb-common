@@ -12,7 +12,7 @@ for chart in ${CHARTS?}; do
     helm dep update "$chart/$chart"
     helm package "$chart/$chart" --destination "$dist"
 
-    channel=$(helm show "$chart/$chart" | yq --raw-output '.annotations."release-repository"')
+    channel=$(helm show chart "$chart/$chart" | yq --raw-output '.annotations."release-repository"')
     echo "Publishing in $channel channel";
 
     repo="voiceflow-charts-s3-$channel"
