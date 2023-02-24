@@ -1,13 +1,19 @@
 executor: build-executor
 parameters:
-  working_directory:
-    description: Directory containing package.json
+  chart_directory:
+    description: Directory containining charts
     type: string
-    default: "./"
+    default: .
+  charts:
+    description: List of charts to publish
+    type: string
+    default: ""
 steps:
   - checkout
   - helm-add-repos
   - run:
       name: Package and publish charts
-      working_directory: << parameters.working_directory >>
+      working_directory: << parameters.chart_directory >>
       command: <<include(scripts/helm/package-publish-charts.sh)>>
+      environment:
+        CHARTS: << parameters.charts >>
