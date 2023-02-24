@@ -1,0 +1,22 @@
+parameters:
+  base_revision:
+    description: Git revision to compare against
+    type: string
+    default: master
+  target_env_var:
+    description: Environment variable to set with the list of changed files
+    type: env_var_name
+    default: CHANGED_FILES
+steps:
+  - run:
+      name: Put list of changed files in << parameters.target_env_var >> environment variable
+      environment:
+        BASE_REVISION: '<< parameters.base_revision >>'
+      command: |
+        BASE="$(git merge-base $CIRCLE_SHA1 $BASE_REVISION)"
+        # If we are on master, use the previous commit as the base
+        if [[ $BASE == $CIRCLE_SHA1 ]]; then
+          BASE="$(git rev-parse HEAD~1)"
+        fi
+        FILE_CHANGES="$(git diff --name-status --no-commit-id -r $BASE...$CIRCLE_SHA1)"
+        echo "export << parameters.target_env_var >>=\"$FILE_CHANGES\"" >> "$BASH_ENV"

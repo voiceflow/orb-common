@@ -1,0 +1,19 @@
+executor: build-executor
+parameters:
+  chart_directory:
+    description: Directory containing charts
+    type: string
+    default: "./"
+  charts:
+    description: List of charts to validate
+    type: string
+    default: ""
+steps:
+  - checkout
+  - helm-add-repos
+  - run:
+      name: Ensure chart versions have been bumped
+      working_directory: << parameters.chart_directory >>
+      command: <<include(scripts/helm/validate-chart-version-bump.sh)>>
+      environment:
+        CHARTS: << parameters.charts >>
