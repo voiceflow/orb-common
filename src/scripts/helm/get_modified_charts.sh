@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Expected environment variables:
+echo "CHANGED_FILES: ${CHANGED_FILES?}"
+echo "CHART_DIR: ${CHART_DIR:?}"
+echo "MODIFIED_CHARTS_ENV: ${MODIFIED_CHARTS_ENV:?}"
+
 # Get the list of all charts
 ALL_CHARTS=()
 for DIR in * ; do

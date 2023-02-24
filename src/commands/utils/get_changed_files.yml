@@ -13,9 +13,8 @@ steps:
       environment:
         BASE_REVISION: '<< parameters.base_revision >>'
       command: |
-        # Get the added and removed clouds from the file changes
         BASE="$(git merge-base $CIRCLE_SHA1 $BASE_REVISION)"
-        # If we are on master, use the previous commit
+        # If we are on master, use the previous commit as the base
         if [[ $BASE == $CIRCLE_SHA1 ]]; then
           BASE="$(git rev-parse HEAD~1)"
         fi

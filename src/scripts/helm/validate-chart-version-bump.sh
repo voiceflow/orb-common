@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# Expected environment variables:
+echo "CHARTS: ${CHARTS?}"
+
 rc=0 # return code
 
 for CHART in ${CHARTS?}; do
