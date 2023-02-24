@@ -1,23 +1,27 @@
 #!/bin/bash
 
-for file in */ ; do
-    if [[ -d "$file" && -f "$file/$file/Chart.yaml" ]]; then
-        echo "packaging $file";
-        cd "$file" || exit;
-        helm dep update "$file";
-        helm package "$file";
-        chart=$(find . -type f -name "*.tgz" -maxdepth 1); # There should only be one such file in the directory
-        channel=$(yq -r '.annotations."release-repository"' "$file"/Chart.yaml)
-        echo "publishing in $channel channel";
-        if [[ $channel == "private" ]]; then
-            helm s3 push --force "${chart}" voiceflow-charts-s3-private;
-        fi
-        if [[ $channel == "public" ]]; then
-            helm s3 push --force "${chart}" voiceflow-charts-s3;
-        fi
-        if [[ $channel == "beta" ]]; then
-            helm s3 push --force "${chart}" voiceflow-charts-s3-beta;
-        fi
-        cd ..;
-    fi;
+# Expected environment variables:
+echo "CHARTS: ${CHARTS?}"
+
+for chart in ${CHARTS?}; do
+    echo "Packaging $chart";
+
+    # Create a temporary directory to store the packaged chart
+    dist="$(mktemp -d)"
+
+    helm dep update "$chart/$chart"
+    helm package "$chart/$chart" --destination "$dist"
+
+    channel=$(helm show "$chart/$chart" | yq --raw-output '.annotations."release-repository"')
+    echo "Publishing in $channel channel";
+
+    repo="voiceflow-charts-s3-$channel"
+    if [[ "$channel" == "public" ]]; then
+        repo="voiceflow-charts-s3"
+    fi
+
+    packaged_chart="$(ls "$dist")"
+    helm s3 push "$dist/$packaged_chart" "$repo"
+
+    rm -rf "$dist"
 done
