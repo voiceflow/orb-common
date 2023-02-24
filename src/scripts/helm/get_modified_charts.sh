@@ -5,6 +5,16 @@ echo "CHANGED_FILES: ${CHANGED_FILES?}"
 echo "CHART_DIR: ${CHART_DIR:?}"
 echo "MODIFIED_CHARTS_ENV: ${MODIFIED_CHARTS_ENV:?}"
 
+# Add trailing slash to CHART_DIR if missing
+if [[ "$CHART_DIR" != */ ]]; then
+    CHART_DIR="${CHART_DIR}/"
+fi
+
+# Handle chart directory being the root
+if [[ "$CHART_DIR" == "./" ]]; then
+    CHART_DIR=""
+fi
+
 # Get the list of all charts
 ALL_CHARTS=()
 for DIR in * ; do
@@ -16,7 +26,7 @@ done
 # Extract only modified charts
 MODIFIED_CHARTS=()
 for CHART in "${ALL_CHARTS[@]}"; do
-    if grep -q -oP "M\s*${CHART_DIR:?}/${CHART}/${CHART}/.*" <<< "${CHANGED_FILES?}"; then
+    if grep -q -oP "M\s*${CHART_DIR}${CHART}/${CHART}/.*" <<< "${CHANGED_FILES?}"; then
     MODIFIED_CHARTS+=("$CHART")
     fi;
 done

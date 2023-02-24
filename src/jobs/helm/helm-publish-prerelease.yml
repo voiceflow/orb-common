@@ -4,25 +4,10 @@ parameters:
     description: Directory containing chart directories
     type: string
     default: "./"
-  update_internal_dependencies:
-    description: set to true in order to update any internal chart dependencies to point to the newly generated beta
-    type: boolean
-    default: false
 steps:
   - checkout
-  - run:
-      name: Set BETA_VERSION variable
+  - set-beta-version:
       working_directory: << parameters.working_directory >>
-      command: <<include(scripts/helm/set-beta-version.sh)>>
-  - when:
-      condition: << parameters.update_internal_dependencies >>
-      steps:
-        - run:
-            name: Update internal beta dependencies
-            working_directory: << parameters.working_directory >>
-            command: <<include(scripts/helm/update-internal-beta-dependencies.sh)>>
-  - check_commit_message:
-      commit_message: "[pre-release]"
   - helm-add-repos
   - run:
       name: Package and publish charts

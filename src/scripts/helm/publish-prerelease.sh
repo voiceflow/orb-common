@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Expected environment variables:
+echo "BETA_VERSION: ${BETA_VERSION:?}"
+
 # Publishes beta releases for helm charts in subdirectories of working directory
 # Similar implementation to the `helm-publish-charts` command. If updating this script, be sure to update that one as well
 for file in * ; do
