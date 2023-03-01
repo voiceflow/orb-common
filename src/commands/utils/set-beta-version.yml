@@ -8,7 +8,6 @@ parameters:
     type: env_var_name
     default: BETA_VERSION
 steps:
-  - checkout
   - run:
       name: Set << parameters.target_env_var >> variable
       working_directory: << parameters.working_directory >>
