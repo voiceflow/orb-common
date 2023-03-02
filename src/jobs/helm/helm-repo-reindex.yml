@@ -1,0 +1,15 @@
+executor: build-executor
+parameters:
+  chart-repo:
+    description: Name of the chart repo to reindex
+    type: enum
+    enum:
+      - voiceflow-charts-s3
+      - voiceflow-charts-s3-private
+      - voiceflow-charts-s3-beta
+steps:
+  - checkout
+  - helm-add-repos
+  - run:
+      name: Reindex the Helm chart repo << parameters.chart-repo >>
+      command: helm s3 reindex << parameters.chart-repo >>
