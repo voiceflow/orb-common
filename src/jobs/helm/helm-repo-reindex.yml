@@ -2,7 +2,7 @@ executor: build-executor
 parameters:
   chart-repo:
     description: Name of the chart repo to reindex
-    type: enum 
+    type: enum
     enum:
       - voiceflow-charts-s3
       - voiceflow-charts-s3-private
