@@ -7,6 +7,10 @@ parameters:
     description: Environment variable to set with the list of modified charts
     type: env_var_name
     default: "MODIFIED_CHARTS"
+  modified_charts_repos_env_var:
+    description: Environment variable to set with the list of modified charts repos
+    type: env_var_name
+    default: "MODIFIED_CHARTS_REPOS"
 steps:
   - run:
       name: Set << parameters.modified_charts_env_var >> environment variable to contain list of modified charts
@@ -14,4 +18,5 @@ steps:
       command: <<include(scripts/helm/get_modified_charts.sh)>>
       environment:
         MODIFIED_CHARTS_ENV: << parameters.modified_charts_env_var >>
+        MODIFIED_CHARTS_REPOS_ENV: << parameters.modified_charts_repos_env_var >>
         CHART_DIR: << parameters.chart_directory >>
