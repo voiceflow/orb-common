@@ -11,5 +11,5 @@ steps:
   - checkout
   - helm-add-repos
   - run:
-      name: Package and publish charts
+      name: Reindex the Helm chart repo << parameters.chart-repo >>
       command: helm s3 reindex << parameters.chart-repo >>
