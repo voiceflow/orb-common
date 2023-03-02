@@ -13,5 +13,3 @@ steps:
   - run:
       name: Package and publish charts
       command: helm s3 reindex << parameters.chart-repo >>
-      environment:
-        CHARTS: << parameters.charts >>
