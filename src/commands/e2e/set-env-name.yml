@@ -1,0 +1,16 @@
+parameters:
+  working_directory:
+    description: Directory of git repo
+    type: string
+    default: "."
+  target_env_var:
+    description: Environment variable to set with the environment name for this commit
+    type: env_var_name
+    default: ENV_NAME
+steps:
+  - run:
+      name: Set << parameters.target_env_var >> variable
+      working_directory: << parameters.working_directory >>
+      command: |
+        SHA="$(git rev-parse --short HEAD)"
+        echo "export << parameters.target_env_var >>=\"${CIRCLE_PROJECT_REPONAME:?}-${SHA:?}\"" >> "$BASH_ENV"
