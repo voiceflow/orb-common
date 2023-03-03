@@ -1,4 +1,4 @@
-description: Uses vfcli to an environment
+description: Uses vfcli to delete an environment
 
 parameters:
   env-name:
