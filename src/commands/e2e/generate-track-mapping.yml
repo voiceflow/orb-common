@@ -6,7 +6,7 @@ parameters:
   track-file:
     type: string
     description: Path to the track-mapping file to use
-    default: ""
+    default: "tracks.yaml"
   components:
     type: string
     description: Space-separated list of components to include in the track-mapping file
