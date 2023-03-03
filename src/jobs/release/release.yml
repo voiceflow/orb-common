@@ -20,6 +20,14 @@ parameters:
     description: Cache directory for yarn.lock file
     type: string
     default: "./"
+  prerelease_version:
+    description: Version to use for prerelease (Must be used alongside prerelease_tag)
+    type: string
+    default: ""
+  prerelease_tag:
+    description: Tag to use for prerelease (Must be used alongside prerelease_version)
+    type: string
+    default: ""
 steps:
   - checkout
   - install_node_modules:
@@ -29,7 +37,21 @@ steps:
       yarn_lock_restore_cache_directory: << parameters.working_directory >>
   - attach_workspace:
       at: << parameters.working_directory >>
-  - run:
-      name: Release Package
-      working_directory: << parameters.working_directory >>
-      command: "SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release@17\n"
+  - when:
+      condition: << parameters.prerelease_version >>
+      steps:
+        - run:
+            name: Release prerelease << parameters.prerelease_version >> to << parameters.prerelease_tag >> channel
+            working_directory: << parameters.working_directory >>
+            command: |
+              # Git user must be set for yarn publish
+              git config --global user.email "serviceaccount@voiceflow.com"
+              git config --global user.name "Voiceflow"
+              yarn publish --new-version << parameters.prerelease_version >> --tag << parameters.prerelease_tag >>
+  - unless:
+      condition: << parameters.prerelease_version >>
+      steps:
+        - run:
+            name: Release Package with semantic-release
+            working_directory: << parameters.working_directory >>
+            command: "SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release\n"
