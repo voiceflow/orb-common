@@ -50,7 +50,7 @@ steps:
   - run:
       name: Install E2E Tools
       background: true
-      command: <<include(scripts/e2e/install_e2e_tools.sh)>>
+      command: <<include(scripts/old-e2e/install_e2e_tools.sh)>>
   - when:
       condition: "<< parameters.setup_db >>"
       steps:
