@@ -9,7 +9,7 @@ parameters:
     default: ENV_NAME
 steps:
   - run:
-      name: Set << parameters.target_env_var >> variable
+      name: Set << parameters.target_env_var >> variable with e2e env name
       working_directory: << parameters.working_directory >>
       command: |
         SHA="$(git rev-parse --short HEAD)"

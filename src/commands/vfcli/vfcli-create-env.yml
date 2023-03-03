@@ -1,0 +1,21 @@
+description: Uses vfcli to create a new environment (vfcli must already be installed)
+
+parameters:
+  env-name:
+    type: string
+    description: Name of the environment to create
+  track-file:
+    type: string
+    description: Path to the track-mapping file to use
+    default: ""
+  cluster:
+    type: string
+    description: Name of the cluster to create the environment on
+    default: "cm4-vf-dev-br-2-0-p0"
+steps:
+  - run:
+      name: Prepare Env
+      command: |
+        vfcli init --interactive false --no-telepresence --cluster << parameters.cluster >>
+        vfcli env create << parameters.env-name >> --interactive false --prefix "" \
+        <<# parameters.track-file >> --track-file << parameters.track-file >> <</ parameters.track-file >>
