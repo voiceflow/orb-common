@@ -14,7 +14,7 @@ parameters:
     default: "cm4-vf-dev-br-2-0-p0"
 steps:
   - run:
-      name: Prepare Env
+      name: Create Env << parameters.env-name >>
       command: |
         vfcli init --interactive false --no-telepresence --cluster << parameters.cluster >>
         vfcli env create << parameters.env-name >> --interactive false --prefix "" \

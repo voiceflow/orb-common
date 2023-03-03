@@ -1,0 +1,16 @@
+description: Uses vfcli to an environment
+
+parameters:
+  env-name:
+    type: string
+    description: Name of the environment to create
+  cluster:
+    type: string
+    description: Name of the cluster to create the environment on
+    default: "cm4-vf-dev-br-2-0-p0"
+steps:
+  - run:
+      name: Delete Env << parameters.env-name >>
+      command: |
+        vfcli init --interactive false --no-telepresence --cluster << parameters.cluster >>
+        vfcli env delete --name << parameters.env-name >> --interactive false
