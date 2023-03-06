@@ -25,7 +25,6 @@ steps:
       github_username: GITHUB_USERNAME
       github_token: GITHUB_TOKEN
       github_repo_name: openapi-schemas
-      github_commit: DEFAULT_COMMIT
       path_to_clone: ~/schemas
   - openapi_restore_schemas:
       from: ~/schemas

@@ -1,0 +1,28 @@
+description: |
+  Generate component-track mapping file for provisioning an environment
+  with the correct components for e2e
+
+parameters:
+  track-file:
+    type: string
+    description: Path to the track-mapping file to use
+    default: "tracks.yaml"
+  components:
+    type: string
+    description: Space-separated list of components to include in the track-mapping file
+    default: ""
+  track:
+    type: string
+    description: Track to use for the components
+
+steps:
+  - run:
+      name: Generate track-mapping file
+      environment:
+        COMPONENTS: << parameters.components >>
+        TRACK: << parameters.track >>
+        TRACK_FILE: << parameters.track-file >>
+      command: |
+        for COMPONENT in ${COMPONENTS:?}; do
+          echo "${COMPONENT}: ${TRACK:?}" >> "${TRACK_FILE:?}"
+        done

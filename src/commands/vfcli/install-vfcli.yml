@@ -1,0 +1,23 @@
+description: Uses curl to install the specified version of vfcli
+
+parameters:
+  version:
+    type: string
+    default: "latest"
+    description: Version of vfcli to install
+  os:
+    type: string
+    default: "linux"
+    description: Operating system to install vfcli for
+  arch:
+    type: string
+    default: "amd64"
+    description: Architecture to install vfcli for
+steps:
+  - run:
+      name: Install vfcli
+      environment:
+        VERSION: << parameters.version >>
+        OS: << parameters.os >>
+        ARCH: << parameters.arch >>
+      command: << include(scripts/vfcli/install-vfcli.sh) >>

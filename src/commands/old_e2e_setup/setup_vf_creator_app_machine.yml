@@ -7,8 +7,8 @@ parameters:
     type: env_var_name
   creator_app_commit:
     description: git commit hash for database-cli
-    type: env_var_name
-    default: CIRCLE_SHA1
+    type: string
+    default: << pipeline.git.revision >>
   build_dependencies_command:
     description: command to call when building dependencies for the monorepo
     type: string

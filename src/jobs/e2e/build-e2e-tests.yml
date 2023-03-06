@@ -1,0 +1,39 @@
+description: Clones the e2e tests repo and builds them
+executor: node-executor
+
+parameters:
+  e2e_repo_name:
+    description: The name of the repo to clone
+    type: string
+    default: creator-app
+  e2e_git_ref:
+    description: The git ref to checkout for the e2e tests
+    type: string
+    default: master
+  persist_to_workspace:
+    description: Persist the e2e tests to the workspace
+    type: boolean
+    default: true
+steps:
+  - clone_repo:
+      github_repo_name: << parameters.e2e_repo_name >>
+      github_commit: << parameters.e2e_git_ref >>
+      path_to_clone: &e2e_repo_path /tmp/e2e-tests
+  - authenticate_npm:
+      working_directory: *e2e_repo_path
+  - run:
+      name: Clone and Build E2E Tests in the Background
+      working_directory: *e2e_repo_path
+      command: |
+        echo "Installing repo with e2e tests"
+        yarn install --frozen-lockfile
+
+        echo "Building dependencies"
+        yarn build:deps
+  - when:
+      condition: << parameters.persist_to_workspace >>
+      steps:
+        - persist_to_workspace:
+            root: *e2e_repo_path
+            paths:
+              - . # TODO: Check with DX team which files are needed for the e2e tests
