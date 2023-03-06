@@ -20,4 +20,4 @@ steps:
         VERSION: << parameters.version >>
         OS: << parameters.os >>
         ARCH: << parameters.arch >>
-      command: << include(scripts/e2e/install-vfcli.sh) >>
+      command: << include(scripts/vfcli/install-vfcli.sh) >>
