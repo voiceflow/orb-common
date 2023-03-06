@@ -8,9 +8,14 @@ parameters:
     type: string
     description: Name of the cluster to create the environment on
     default: "cm4-vf-dev-br-2-0-p0"
+  when:
+    type: string
+    description: When to run this command
+    default: always
 steps:
   - run:
       name: Delete Env << parameters.env-name >>
+      when: << parameters.when >>
       command: |
         vfcli init --interactive false --no-telepresence --cluster << parameters.cluster >>
         vfcli env delete --name << parameters.env-name >> --interactive false

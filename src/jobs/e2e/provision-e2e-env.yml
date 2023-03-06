@@ -1,0 +1,33 @@
+description: Provision an environment for e2e tests
+executor: default-executor
+
+parameters:
+  env-name:
+    type: string
+    description: Name of the environment to create
+  cluster:
+    type: string
+    description: Name of the cluster to create the environment on
+    default: "cm4-vf-dev-br-2-0-p0"
+  tracked-components:
+    type: string
+    description: Space-separated list of components to track the specified branch
+    default: ""
+  branch:
+    type: string
+    description: Branch to track for the specified components
+    default: ""
+steps:
+  - install_vfcli
+  - generate-track-mapping:
+      track-file: &track_file /tmp/tracks.yaml
+      components: << parameters.tracked-components >>
+      track: << parameters.branch >>
+  - vfcli-create-env:
+      env-name: << parameters.env-name >>
+      track-file: *track_file
+      cluster: << parameters.cluster >>
+  - vfcli-delete-env:
+      env-name: << parameters.env-name >>
+      cluster: << parameters.cluster >>
+      when: on_fail

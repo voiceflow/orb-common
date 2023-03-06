@@ -7,8 +7,8 @@ parameters:
     type: env_var_name
   creator_app_commit:
     description: git commit hash for database-cli
-    type: env_var_name
-    default: CIRCLE_SHA1
+    type: string
+    default: << pipeline.git.revision >>
   build_dependencies_command:
     description: command to call when building dependencies for the monorepo
     type: string
@@ -18,7 +18,7 @@ steps:
       step_name: "Downloading Creator App"
       github_username: "<< parameters.github_username >>"
       github_token: "<< parameters.github_token >>"
-      github_commit: "<< parameters.creator_app_commit >>"
+      github_commit: "<< pipeline.creator_app_commit >>"
       github_repo_name: "creator-app"
       path_to_clone: "~/code/creator-app"
   - vf_restore_cache:

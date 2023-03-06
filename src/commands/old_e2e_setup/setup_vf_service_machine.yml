@@ -16,8 +16,8 @@ parameters:
     type: env_var_name
   vf_service_commit:
     description: git commit hash for database-cli
-    type: env_var_name
-    default: CIRCLE_SHA1
+    type: string
+    default: << pipeline.git.revision >>
   vf_service_endpoint_to_wait:
     description: Custom endpoint to wait
     type: string

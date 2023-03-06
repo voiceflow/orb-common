@@ -2,13 +2,15 @@ parameters:
   github_username:
     description: username for cloning git repositories
     type: env_var_name
+    default: GITHUB_USERNAME
   github_token:
     description: token for cloning git repositories
     type: env_var_name
+    default: GITHUB_TOKEN
   github_commit:
     description: git commit hash for the repo provided
-    type: env_var_name
-    default: DEFAULT_COMMIT
+    type: string
+    default: ""
   github_repo_name:
     description: github repo name
     type: string
@@ -31,4 +33,4 @@ steps:
       command: |
         git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/<< parameters.github_repo_name >> << parameters.path_to_clone >>
         cd << parameters.path_to_clone >>
-        git reset --hard ${<< parameters.github_commit >>}
+        git reset --hard << parameters.github_commit >>

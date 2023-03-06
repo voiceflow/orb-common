@@ -7,8 +7,8 @@ parameters:
     type: env_var_name
   commit:
     description: git commit hash for database-cli
-    type: env_var_name
-    default: DEFAULT_COMMIT
+    type: string
+    default: ""
 steps:
   - clone_repo:
       step_name: "Downloading dbcli"

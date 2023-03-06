@@ -12,8 +12,8 @@ parameters:
     type: env_var_name
   infrastructure_e2e_commit:
     description: git commit hash for infrastructure-e2e
-    type: env_var_name
-    default: DEFAULT_COMMIT
+    type: string
+    default: ""
   database_cli_commit:
     description: git commit hash for database-cli
     type: env_var_name

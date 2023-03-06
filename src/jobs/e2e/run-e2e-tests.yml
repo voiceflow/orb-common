@@ -1,0 +1,48 @@
+description: Run e2e tests in specified environment. The environment and e2e repo must be provisioned before running this job.
+executor: e2e-executor
+
+parameters:
+  env-name:
+    type: string
+    description: Name of the environment to create
+  cluster:
+    type: string
+    description: Name of the cluster to create the environment on
+    default: "cm4-vf-dev-br-2-0-p0"
+  artifacts_path:
+    description: The path within the repo where the e2e test artifacts will be stored
+    type: string
+    default: apps/creator-app/cypress
+steps:
+  - install_vfcli
+  - vfcli-fetch-endpoints:
+      env-name: << parameters.env-name >>
+      cluster: << parameters.cluster >>
+  - attach_workspace:
+      at: .
+  - run:
+      name: Run e2e tests
+      command: |
+        echo "Running e2e tests"
+
+        curl https://${CREATOR_APP_URL:?}/health
+        curl https://${TEST_API_URL:?}/health
+        curl https://${AUTH_API_URL:?}/health
+
+        cd "${REPO_PATH}"
+        ls # yarn cypress:open
+  - store_test_results:
+      path: << parameters.artifacts_path >>/results
+  - store_artifacts:
+      path: << parameters.artifacts_path >>/downloads
+      destination: downloads
+  - store_artifacts:
+      path: << parameters.artifacts_path >>/videos
+      destination: videos
+  - store_artifacts:
+      path: << parameters.artifacts_path >>/screenshots
+      destination: screenshots
+  - vfcli-delete-env:
+      env-name: << parameters.env-name >>
+      cluster: << parameters.cluster >>
+      when: always
