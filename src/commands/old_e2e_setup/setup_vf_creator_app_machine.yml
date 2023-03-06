@@ -18,7 +18,7 @@ steps:
       step_name: "Downloading Creator App"
       github_username: "<< parameters.github_username >>"
       github_token: "<< parameters.github_token >>"
-      github_commit: "<< pipeline.creator_app_commit >>"
+      github_commit: "<< parameters.creator_app_commit >>"
       github_repo_name: "creator-app"
       path_to_clone: "~/code/creator-app"
   - vf_restore_cache:
