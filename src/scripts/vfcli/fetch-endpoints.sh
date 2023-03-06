@@ -14,5 +14,5 @@ for COMPONENT in ${COMPONENTS?}; do
     echo "${COMPONENT_DATA}" | jq --raw-output ".[] | select(.id == \"${COMPONENT}\") | .endpoint" > "${COMPONENT}.url"
     ENV_VAR_NAME=$(echo "${COMPONENT^^}_URL" | tr '-' '_')
     echo "Storing url for $COMPONENT in $ENV_VAR_NAME: $(cat "${COMPONENT}.url")"
-    echo "export ${ENV_VAR_NAME}=\"$(cat "${COMPONENT}.url")\"" >> "$BASH_ENV"
+    echo "export ${ENV_VAR_NAME}=\"https://$(cat "${COMPONENT}.url")\"" >> "$BASH_ENV"
 done
