@@ -18,7 +18,7 @@ parameters:
     description: Branch to track for the specified components
     default: ""
 steps:
-  - install_vfcli
+  - install-vfcli
   - generate-track-mapping:
       track-file: &track_file /tmp/tracks.yaml
       components: << parameters.tracked-components >>

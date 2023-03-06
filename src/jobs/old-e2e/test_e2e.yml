@@ -20,8 +20,8 @@ parameters:
     default: DEFAULT_COMMIT
   creator_app_commit:
     description: git commit hash for creator-app
-    type: env_var_name
-    default: CIRCLE_SHA1
+    type: string
+    default: << pipeline.git.revision >>
   vf_service_commit:
     description: git commit hash for vf-service
     type: env_var_name
