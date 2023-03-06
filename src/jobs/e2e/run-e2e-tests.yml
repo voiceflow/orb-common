@@ -18,6 +18,7 @@ steps:
   - vfcli-fetch-endpoints:
       env-name: << parameters.env-name >>
       cluster: << parameters.cluster >>
+      components: "creator-app test-api auth-api"
   - attach_workspace:
       at: .
   - run:
@@ -30,7 +31,7 @@ steps:
         curl ${AUTH_API_URL:?}/health
 
         cd "${REPO_PATH}"
-        ls # yarn cypress:open
+        ls # yarn cypress
   - store_test_results:
       path: << parameters.artifacts_path >>/results
   - store_artifacts:

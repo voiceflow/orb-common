@@ -21,5 +21,7 @@ steps:
       name: Create Env << parameters.env-name >>
       command: |
         vfcli init --interactive false --no-telepresence --cluster << parameters.cluster >>
-        vfcli env create << parameters.env-name >> --interactive false --prefix "" --lease << parameters.lease >> \
-        <<# parameters.track-file >> --track-file << parameters.track-file >> <</ parameters.track-file >>
+        if [ -n "<< parameters.track-file >>" ]; then
+          TRACK_ARG=("--track-file" "<< parameters.track-file >>")
+        fi
+        vfcli env create << parameters.env-name >> --interactive false --prefix "" --lease << parameters.lease >> "${TRACK_ARG[@]}"

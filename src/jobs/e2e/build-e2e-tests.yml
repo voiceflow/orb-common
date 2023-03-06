@@ -1,6 +1,8 @@
 description: Clones the e2e tests repo and builds them
 executor: node-executor
 
+e2e_repo_path: &e2e_repo_path /tmp/e2e-tests
+
 parameters:
   e2e_repo_name:
     description: The name of the repo to clone
@@ -18,7 +20,7 @@ steps:
   - clone_repo:
       github_repo_name: << parameters.e2e_repo_name >>
       github_commit: << parameters.e2e_git_ref >>
-      path_to_clone: &e2e_repo_path /tmp/e2e-tests
+      path_to_clone: *e2e_repo_path
   - authenticate_npm:
       working_directory: *e2e_repo_path
   - run:
