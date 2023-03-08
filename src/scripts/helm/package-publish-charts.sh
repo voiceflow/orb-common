@@ -21,7 +21,7 @@ for chart in ${CHARTS?}; do
     fi
 
     packaged_chart="$(ls "$dist")"
-    helm s3 push "$dist/$packaged_chart" "$repo"
+    helm s3 push --force "$dist/$packaged_chart" "$repo"
 
     rm -rf "$dist"
 done
