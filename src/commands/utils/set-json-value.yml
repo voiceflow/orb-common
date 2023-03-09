@@ -23,79 +23,79 @@ parameters:
 steps:
   - unless:
       condition:
-        and: [ <<parameters.value-env-var>>, <<parameters.value>> ]
+        and: [ << parameters.value-env-var >>, << parameters.value >> ]
       steps:
         - run:
-            name: Create file <<parameters.json-file>> if it does not exist
+            name: Create file << parameters.json-file >> if it does not exist
             command: |
-              if [ ! -f <<parameters.json-file>> ]; then
-                echo "{}" > <<parameters.json-file>>
+              if [ ! -f << parameters.json-file >> ]; then
+                echo "{}" > << parameters.json-file >>
               fi
   - when:
-      condition: 
-        equal: [ <<parameters.field-type>>, "string" ]
+      condition:
+        equal: [ << parameters.field-type >>, "string" ]
       steps:
         - when:
-            condition: <<parameters.value-env-var>>
+            condition: << parameters.value-env-var >>
             steps:
               - run:
-                  name: Set <<parameters.field>> to <<parameters.value-env-var>> in <<parameters.json-file>>
+                  name: Set << parameters.field >> to << parameters.value-env-var >> in << parameters.json-file >>
                   command: |
-                    jq --arg field <<parameters.field>> --arg value "${<<parameters.value-env-var>>}" '.[$field] = $value' <<parameters.json-file>> > <<parameters.json-file>>.tmp
-                    mv <<parameters.json-file>>.tmp <<parameters.json-file>>
+                    jq --arg field << parameters.field >> --arg value "${<< parameters.value-env-var >>}" '.[$field] = $value' << parameters.json-file >> > << parameters.json-file >>.tmp
+                    mv << parameters.json-file >>.tmp << parameters.json-file >>
         - when:
-            condition: <<parameters.value>>
+            condition: << parameters.value >>
             steps:
               - run:
-                  name: Set <<parameters.field>> to <<parameters.value>> in <<parameters.json-file>>
+                  name: Set << parameters.field >> to << parameters.value >> in << parameters.json-file >>
                   command: |
-                    jq --arg field <<parameters.field>> --arg value "<<parameters.value>>" '.[$field] = $value' <<parameters.json-file>> > <<parameters.json-file>>.tmp
-                    mv <<parameters.json-file>>.tmp <<parameters.json-file>>
+                    jq --arg field << parameters.field >> --arg value "<< parameters.value >>" '.[$field] = $value' << parameters.json-file >> > << parameters.json-file >>.tmp
+                    mv << parameters.json-file >>.tmp << parameters.json-file >>
   - when:
-      condition: 
-        equal: [ <<parameters.field-type>>, "array" ]
+      condition:
+        equal: [ << parameters.field-type >>, "array" ]
       steps:
         - when:
-            condition: <<parameters.value-env-var>>
+            condition: << parameters.value-env-var >>
             steps:
               - run:
-                  name: Set <<parameters.field>> to <<parameters.value-env-var>> in <<parameters.json-file>>
+                  name: Set << parameters.field >> to << parameters.value-env-var >> in << parameters.json-file >>
                   command: |
-                    jq --arg field <<parameters.field>> '.[$field] = $ARGS.positional' <<parameters.json-file>> --args -- ${<< <parameters.value-env-var >>} > <<parameters.json-file>>.tmp
-                    mv <<parameters.json-file>>.tmp <<parameters.json-file>>
+                    jq --arg field << parameters.field >> '.[$field] = $ARGS.positional' << parameters.json-file >> --args -- ${<< parameters.value-env-var >>} > << parameters.json-file >>.tmp
+                    mv << parameters.json-file >>.tmp << parameters.json-file >>
         - when:
-            condition: <<parameters.value-env-var>>
+            condition: << parameters.value >>
             steps:
               - run:
-                  name: Set <<parameters.field>> to <<parameters.value-env-var>> in <<parameters.json-file>>
+                  name: Set << parameters.field >> to << parameters.value >> in << parameters.json-file >>
                   command: |
-                    jq --arg field <<parameters.field>> '.[$field] = $ARGS.positional' <<parameters.json-file>> --args -- ${<< <parameters.value-env-var >>} > <<parameters.json-file>>.tmp
-                    mv <<parameters.json-file>>.tmp <<parameters.json-file>>
+                    jq --arg field << parameters.field >> '.[$field] = $ARGS.positional' << parameters.json-file >> --args -- ${<< <parameters.value >>} > << parameters.json-file >>.tmp
+                    mv << parameters.json-file >>.tmp << parameters.json-file >>
   - when:
       condition:
         or:
-          - equal: [ <<parameters.field-type>>, "number" ]
-          - equal: [ <<parameters.field-type>>, "boolean" ]
+          - equal: [ << parameters.field-type >>, "number" ]
+          - equal: [ << parameters.field-type >>, "boolean" ]
       steps:
         - when:
-            condition: <<parameters.value-env-var>>
+            condition: << parameters.value-env-var >>
             steps:
               - run:
-                  name: Set <<parameters.field>> to <<parameters.value-env-var>> in <<parameters.json-file>>
+                  name: Set << parameters.field >> to << parameters.value-env-var >> in << parameters.json-file >>
                   command: |
-                    jq --arg field <<parameters.field>> --argjson value "${<<parameters.value-env-var>>}" '.[$field] = $value|tonumber' <<parameters.json-file>> > <<parameters.json-file>>.tmp
-                    mv <<parameters.json-file>>.tmp <<parameters.json-file>>
+                    jq --arg field << parameters.field >> --argjson value "${<< parameters.value-env-var >>}" '.[$field] = $value|tonumber' << parameters.json-file >> > << parameters.json-file >>.tmp
+                    mv << parameters.json-file >>.tmp << parameters.json-file >>
         - when:
-            condition: <<parameters.value>>
+            condition: << parameters.value >>
             steps:
               - run:
-                  name: Set <<parameters.field>> to <<parameters.value>> in <<parameters.json-file>>
+                  name: Set << parameters.field >> to << parameters.value >> in << parameters.json-file >>
                   command: |
-                    jq --arg field <<parameters.field>> --argjson value "<<parameters.value>>" '.[$field] = $value|tonumber' <<parameters.json-file>> > <<parameters.json-file>>.tmp
-                    mv <<parameters.json-file>>.tmp <<parameters.json-file>>
+                    jq --arg field << parameters.field >> --argjson value "<< parameters.value >>" '.[$field] = $value|tonumber' << parameters.json-file >> > << parameters.json-file >>.tmp
+                    mv << parameters.json-file >>.tmp << parameters.json-file >>
   - when:
       condition:
-        and: [ <<parameters.value-env-var>>, <<parameters.value>> ]
+        and: [ << parameters.value-env-var >>, << parameters.value >> ]
       steps:
         - run:
             name: Fail if both value and value-env-var are set
