@@ -69,7 +69,7 @@ steps:
               - run:
                   name: Set << parameters.field >> to << parameters.value >> in << parameters.json-file >>
                   command: |
-                    jq --arg field << parameters.field >> '.[$field] = $ARGS.positional' << parameters.json-file >> --args -- ${<< <parameters.value >>} > << parameters.json-file >>.tmp
+                    jq --arg field << parameters.field >> '.[$field] = $ARGS.positional' << parameters.json-file >> --args -- ${<< parameters.value >>} > << parameters.json-file >>.tmp
                     mv << parameters.json-file >>.tmp << parameters.json-file >>
   - when:
       condition:
