@@ -73,6 +73,28 @@ steps:
                     mv <<parameters.json-file>>.tmp <<parameters.json-file>>
   - when:
       condition:
+        or:
+          - equal: [ <<parameters.field-type>>, "number" ]
+          - equal: [ <<parameters.field-type>>, "boolean" ]
+      steps:
+        - when:
+            condition: <<parameters.value-env-var>>
+            steps:
+              - run:
+                  name: Set <<parameters.field>> to <<parameters.value-env-var>> in <<parameters.json-file>>
+                  command: |
+                    jq --arg field <<parameters.field>> --argjson value "${<<parameters.value-env-var>>}" '.[$field] = $value|tonumber' <<parameters.json-file>> > <<parameters.json-file>>.tmp
+                    mv <<parameters.json-file>>.tmp <<parameters.json-file>>
+        - when:
+            condition: <<parameters.value>>
+            steps:
+              - run:
+                  name: Set <<parameters.field>> to <<parameters.value>> in <<parameters.json-file>>
+                  command: |
+                    jq --arg field <<parameters.field>> --argjson value "<<parameters.value>>" '.[$field] = $value|tonumber' <<parameters.json-file>> > <<parameters.json-file>>.tmp
+                    mv <<parameters.json-file>>.tmp <<parameters.json-file>>
+  - when:
+      condition:
         and: [ <<parameters.value-env-var>>, <<parameters.value>> ]
       steps:
         - run:
