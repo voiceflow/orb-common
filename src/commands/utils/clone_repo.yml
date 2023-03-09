@@ -33,4 +33,4 @@ steps:
       command: |
         git clone https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/<< parameters.github_repo_name >> << parameters.path_to_clone >>
         cd << parameters.path_to_clone >>
-        git reset --hard << parameters.github_commit >>
+        git checkout << parameters.github_commit >>
