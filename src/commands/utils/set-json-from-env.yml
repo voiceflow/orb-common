@@ -1,3 +1,4 @@
+
 parameters:
   field:
     description: The field of the json file to set
@@ -10,9 +11,9 @@ parameters:
       - number
       - boolean
       - array
-  value:
-    description: The value to set the field to
-    type: string
+  value-env-var:
+    description: Environment variable containing the value to set the field to
+    type: env_var_name
   json-file:
     description: The json file to set the field in
     type: string
@@ -29,18 +30,18 @@ steps:
         equal: [ << parameters.field-type >>, "string" ]
       steps:
         - run:
-            name: Set << parameters.field >> to << parameters.value >> in << parameters.json-file >>
+            name: Set << parameters.field >> to << parameters.value-env-var >> in << parameters.json-file >>
             command: |
-              jq --arg field << parameters.field >> --arg value "<< parameters.value >>" '.[$field] = $value' << parameters.json-file >> > << parameters.json-file >>.tmp
+              jq --arg field << parameters.field >> --arg value "${<< parameters.value-env-var >>}" '.[$field] = $value' << parameters.json-file >> > << parameters.json-file >>.tmp
               mv << parameters.json-file >>.tmp << parameters.json-file >>
   - when:
       condition:
         equal: [ << parameters.field-type >>, "array" ]
       steps:
         - run:
-            name: Set << parameters.field >> to << parameters.value >> in << parameters.json-file >>
+            name: Set << parameters.field >> to << parameters.value-env-var >> in << parameters.json-file >>
             command: |
-              jq --arg field << parameters.field >> '.[$field] = $ARGS.positional' << parameters.json-file >> --args -- ${<< parameters.value >>} > << parameters.json-file >>.tmp
+              jq --arg field << parameters.field >> '.[$field] = $ARGS.positional' << parameters.json-file >> --args -- ${<< parameters.value-env-var >>} > << parameters.json-file >>.tmp
               mv << parameters.json-file >>.tmp << parameters.json-file >>
   - when:
       condition:
@@ -49,7 +50,7 @@ steps:
           - equal: [ << parameters.field-type >>, "boolean" ]
       steps:
         - run:
-            name: Set << parameters.field >> to << parameters.value >> in << parameters.json-file >>
+            name: Set << parameters.field >> to << parameters.value-env-var >> in << parameters.json-file >>
             command: |
-              jq --arg field << parameters.field >> --argjson value "<< parameters.value >>" '.[$field] = $value' << parameters.json-file >> > << parameters.json-file >>.tmp
+              jq --arg field << parameters.field >> --argjson value "${<< parameters.value-env-var >>}" '.[$field] = $value' << parameters.json-file >> > << parameters.json-file >>.tmp
               mv << parameters.json-file >>.tmp << parameters.json-file >>
