@@ -26,12 +26,8 @@ steps:
       command: |
         echo "Running e2e tests"
 
-        curl ${CREATOR_APP_URL:?}/health
-        curl ${TEST_API_URL:?}/health
-        curl ${AUTH_API_URL:?}/health
-
         cd "${REPO_PATH}"
-        ls # yarn cypress
+        yarn cypress
   - store_test_results:
       path: << parameters.artifacts_path >>/results
   - store_artifacts:
