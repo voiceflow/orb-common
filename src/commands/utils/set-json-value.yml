@@ -13,9 +13,11 @@ parameters:
   value:
     description: The value to set the field to
     type: string
+    default: ""
   value-env-var:
     description: Environment variable containing the value to set the field to
     type: env_var_name
+    default: ""
   json-file:
     description: The json file to set the field in
     type: string
