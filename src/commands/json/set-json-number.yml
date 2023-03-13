@@ -4,7 +4,7 @@ parameters:
     type: string
   value:
     description: The value to set the field to
-    type: number
+    type: integer
   json-file:
     description: The json file to set the field in
     type: string
