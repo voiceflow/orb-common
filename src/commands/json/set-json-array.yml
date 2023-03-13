@@ -1,0 +1,24 @@
+parameters:
+  field:
+    description: The field of the json file to set
+    type: string
+  value:
+    description: |
+      The value to set the field to, passed as a string-separated list.
+      If an item in the list contains a space, it must be enclosed in double quotes.
+    type: string
+  json-file:
+    description: The json file to set the field in
+    type: string
+    default: values.json
+steps:
+  - run:
+      name: Set << parameters.field >> to << parameters.value >> in << parameters.json-file >>
+      command: |
+        if [ ! -f << parameters.json-file >> ]; then
+          echo "Creating file << parameters.json-file >>"
+          echo "{}" > << parameters.json-file >>
+        fi
+
+        jq  '.<< parameters.field >> = $ARGS.positional' << parameters.json-file >> --args -- << parameters.value >> > << parameters.json-file >>.tmp
+        mv << parameters.json-file >>.tmp << parameters.json-file >>
