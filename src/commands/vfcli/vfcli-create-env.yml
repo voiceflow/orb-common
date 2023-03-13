@@ -15,7 +15,7 @@ parameters:
   lease:
     type: string
     description: Time to lease the environment for
-    default: 3h
+    default: 1h
 steps:
   - run:
       name: Create Env << parameters.env-name >>

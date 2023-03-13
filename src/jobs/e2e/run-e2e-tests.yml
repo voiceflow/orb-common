@@ -42,4 +42,4 @@ steps:
   - vfcli-delete-env:
       env-name: << parameters.env-name >>
       cluster: << parameters.cluster >>
-      when: always
+      when: on_success
