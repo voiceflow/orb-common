@@ -27,7 +27,7 @@ steps:
         echo "Running e2e tests"
 
         cd "${REPO_PATH}"
-        yarn cypress
+        yarn cypress:ci
   - store_test_results:
       path: << parameters.artifacts_path >>/results
   - store_artifacts:
