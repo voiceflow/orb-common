@@ -2,7 +2,7 @@ parameters:
   field:
     description: The field of the json file to set
     type: string
-  values:
+  value:
     description: |
       The value to set the field to, passed as a string-separated list.
       If an item in the list contains a space, it must be enclosed in double quotes.
