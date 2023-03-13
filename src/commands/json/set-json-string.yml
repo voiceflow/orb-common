@@ -18,5 +18,5 @@ steps:
           echo "{}" > << parameters.json-file >>
         fi
 
-        jq --arg field << parameters.field >> --arg value "<< parameters.value >>" '.[$field] = $value' << parameters.json-file >> > << parameters.json-file >>.tmp
+        jq --arg value "<< parameters.value >>" '.<< parameters.field >> = $value' << parameters.json-file >> > << parameters.json-file >>.tmp
         mv << parameters.json-file >>.tmp << parameters.json-file >>
