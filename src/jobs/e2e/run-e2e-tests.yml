@@ -23,6 +23,7 @@ steps:
       at: .
   - run:
       name: Run e2e tests
+      command: |
         cd "${REPO_PATH}"
         yarn cypress:ci
   - store_test_results:
