@@ -12,7 +12,7 @@ parameters:
   artifacts_path:
     description: The path within the repo where the e2e test artifacts will be stored
     type: string
-    default: apps/creator-app/cypress
+    default: packages/creator-app/cypress
 steps:
   - install-vfcli
   - vfcli-fetch-endpoints:
