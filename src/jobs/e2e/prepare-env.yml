@@ -26,9 +26,7 @@ steps:
       track: << parameters.branch >>
   - vfcli-suspend-env:
       env-name: << parameters.env-name >>
-      cluster: << parameters.cluster >>
       track-file: *track_file
   - vfcli-delete-env:
       env-name: << parameters.env-name >>
-      cluster: << parameters.cluster >>
       when: on_fail

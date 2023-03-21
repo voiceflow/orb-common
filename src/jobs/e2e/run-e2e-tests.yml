@@ -18,7 +18,6 @@ steps:
       init-cluster: << parameters.cluster >>
   - vfcli-fetch-endpoints:
       env-name: << parameters.env-name >>
-      cluster: << parameters.cluster >>
       components: "creator-app test-api auth-api"
   - attach_workspace:
       at: .
@@ -40,5 +39,4 @@ steps:
       destination: screenshots
   - vfcli-delete-env:
       env-name: << parameters.env-name >>
-      cluster: << parameters.cluster >>
       when: on_success

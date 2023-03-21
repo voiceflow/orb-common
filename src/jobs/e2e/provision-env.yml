@@ -27,8 +27,6 @@ steps:
   - vfcli-create-env:
       env-name: << parameters.env-name >>
       track-file: *track_file
-      cluster: << parameters.cluster >>
   - vfcli-delete-env:
       env-name: << parameters.env-name >>
-      cluster: << parameters.cluster >>
       when: on_fail
