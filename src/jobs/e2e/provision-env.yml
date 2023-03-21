@@ -16,7 +16,6 @@ parameters:
   branch:
     type: string
     description: Branch to track for the specified components
-    default: ""
 steps:
   - install-vfcli
   - generate-track-mapping:
