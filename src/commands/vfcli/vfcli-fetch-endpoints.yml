@@ -16,6 +16,5 @@ steps:
       name: Fetch endpoints for << parameters.components >>
       environment:
         COMPONENTS: << parameters.components >>
-        CLUSTER: << parameters.cluster >>
         ENV_NAME: << parameters.env-name >>
       command: << include(scripts/vfcli/fetch-endpoints.sh) >>
