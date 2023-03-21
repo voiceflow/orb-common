@@ -18,7 +18,8 @@ parameters:
     description: Branch to track for the specified components
     default: "master"
 steps:
-  - install-vfcli
+  - install-vfcli:
+      init-cluster: << parameters.cluster >>
   - generate-track-mapping:
       track-file: &track_file /tmp/tracks.yaml
       components: << parameters.tracked-components >>

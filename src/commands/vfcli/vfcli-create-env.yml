@@ -8,10 +8,6 @@ parameters:
     type: string
     description: Path to the track-mapping file to use
     default: ""
-  cluster:
-    type: string
-    description: Name of the cluster to create the environment on
-    default: "cm4-vf-dev-br-2-0-p0"
   lease:
     type: string
     description: Time to lease the environment for
@@ -20,7 +16,6 @@ steps:
   - run:
       name: Create Env << parameters.env-name >>
       command: |
-        vfcli init --interactive false --no-telepresence --cluster << parameters.cluster >>
         if [ -n "<< parameters.track-file >>" ]; then
           TRACK_ARG=("--track-file" "<< parameters.track-file >>")
         fi

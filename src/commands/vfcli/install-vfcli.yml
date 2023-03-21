@@ -13,6 +13,10 @@ parameters:
     type: string
     default: "amd64"
     description: Architecture to install vfcli for
+  init-cluster:
+    type: string
+    default: ""
+    description: Cluster to initialize vfcli with
 steps:
   - run:
       name: Install vfcli
@@ -21,3 +25,9 @@ steps:
         OS: << parameters.os >>
         ARCH: << parameters.arch >>
       command: << include(scripts/vfcli/install-vfcli.sh) >>
+  - when:
+      condition: << parameters.init-cluster >>
+      steps:
+        - run:
+            name: Initialize vfcli
+            command: vfcli init --interactive false --no-telepresence --cluster << parameters.init-cluster >>

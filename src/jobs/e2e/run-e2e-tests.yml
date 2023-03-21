@@ -14,7 +14,8 @@ parameters:
     type: string
     default: packages/creator-app/cypress
 steps:
-  - install-vfcli
+  - install-vfcli:
+      init-cluster: << parameters.cluster >>
   - vfcli-fetch-endpoints:
       env-name: << parameters.env-name >>
       cluster: << parameters.cluster >>
