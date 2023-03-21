@@ -23,6 +23,7 @@ steps:
         TRACK: << parameters.track >>
         TRACK_FILE: << parameters.track-file >>
       command: |
-        for COMPONENT in ${COMPONENTS:?}; do
+        touch "${TRACK_FILE:?}"
+        for COMPONENT in ${COMPONENTS?}; do
           echo "${COMPONENT}: ${TRACK:?}" >> "${TRACK_FILE:?}"
         done
