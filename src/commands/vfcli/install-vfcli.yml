@@ -29,5 +29,5 @@ steps:
       condition: << parameters.init-cluster >>
       steps:
         - run:
-            name: Initialize vfcli
+            name: Initialize vfcli with cluster << parameters.init-cluster >>
             command: vfcli init --interactive false --no-telepresence --cluster << parameters.init-cluster >>
