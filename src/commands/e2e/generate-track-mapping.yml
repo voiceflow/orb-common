@@ -27,3 +27,4 @@ steps:
         for COMPONENT in ${COMPONENTS?}; do
           echo "${COMPONENT}: ${TRACK:?}" >> "${TRACK_FILE:?}"
         done
+        cat "${TRACK_FILE:?}"
