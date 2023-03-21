@@ -1,0 +1,19 @@
+description: Uses vfcli to suspend an existing environment with a set of tracks (vfcli must already be installed)
+
+parameters:
+  env-name:
+    type: string
+    description: Name of the environment to prepare
+  track-file:
+    type: string
+    description: Path to the track-mapping file to use
+  cluster:
+    type: string
+    description: Name of the cluster in which the environment exists
+    default: "cm4-vf-dev-br-2-0-p0"
+steps:
+  - run:
+      name: Suspend Env << parameters.env-name >>
+      command: |
+        vfcli init --interactive false --no-telepresence --cluster << parameters.cluster >>
+        vfcli env suspend << parameters.env-name >> --interactive false --track-file << parameters.track-file >>
