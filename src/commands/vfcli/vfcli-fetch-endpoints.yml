@@ -4,10 +4,6 @@ parameters:
   env-name:
     type: string
     description: Name of the environment to create
-  cluster:
-    type: string
-    description: Name of the cluster to create the environment on
-    default: "cm4-vf-dev-br-2-0-p0"
   components:
     type: string
     description: Space-separated list of components to fetch
@@ -20,6 +16,5 @@ steps:
       name: Fetch endpoints for << parameters.components >>
       environment:
         COMPONENTS: << parameters.components >>
-        CLUSTER: << parameters.cluster >>
         ENV_NAME: << parameters.env-name >>
       command: << include(scripts/vfcli/fetch-endpoints.sh) >>

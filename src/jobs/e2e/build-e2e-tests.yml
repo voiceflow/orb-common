@@ -22,7 +22,7 @@ steps:
   - authenticate_npm:
       working_directory: *e2e_repo_path
   - run:
-      name: Clone and Build E2E Tests in the Background
+      name: Build E2E Test Dependencies
       working_directory: *e2e_repo_path
       command: |
         echo "Installing repo with e2e tests"

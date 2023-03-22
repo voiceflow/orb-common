@@ -1,0 +1,13 @@
+description: Uses vfcli to suspend an existing environment with a set of tracks (vfcli must already be installed)
+
+parameters:
+  env-name:
+    type: string
+    description: Name of the environment to prepare
+  track-file:
+    type: string
+    description: Path to the track-mapping file to use
+steps:
+  - run:
+      name: Suspend Env << parameters.env-name >>
+      command: vfcli env suspend << parameters.env-name >> --interactive false --track-file << parameters.track-file >>
