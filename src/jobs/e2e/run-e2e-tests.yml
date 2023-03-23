@@ -1,5 +1,6 @@
 description: Run e2e tests in specified environment. The environment and e2e repo must be provisioned before running this job.
 executor: cypress-e2e-executor
+parallelism: 4
 
 parameters:
   env-name:
