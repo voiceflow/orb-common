@@ -17,5 +17,6 @@ steps:
       command: |
         vfcli logs gather-all "${LOG_DIR:?}" --name "${ENV_NAME:?}"
   - store_artifacts:
+      name: Store Logs
       path: *log_dir
       destination: << parameters.destination >>
