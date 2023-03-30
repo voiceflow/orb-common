@@ -1,0 +1,17 @@
+
+description: Release an environment from use by the e2e tests
+executor: default-executor
+
+parameters:
+  env-name:
+    type: string
+    description: Name of the environment to release
+  cluster:
+    type: string
+    description: Name of the cluster in which the environment exists
+    default: "cm4-vf-dev-br-2-0-p0"
+steps:
+  - install-vfcli:
+      init-cluster: << parameters.cluster >>
+  - vfcli-delete-env:
+      env-name: << parameters.env-name >>

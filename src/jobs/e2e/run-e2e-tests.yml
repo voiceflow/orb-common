@@ -38,6 +38,3 @@ steps:
   - store_artifacts:
       path: << parameters.artifacts_path >>/screenshots
       destination: screenshots
-  - vfcli-delete-env:
-      env-name: << parameters.env-name >>
-      when: on_success
