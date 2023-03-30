@@ -38,3 +38,6 @@ steps:
   - store_artifacts:
       path: << parameters.artifacts_path >>/screenshots
       destination: screenshots
+  - store_logs:
+      env-name: << parameters.env-name >>
+      destination: logs
