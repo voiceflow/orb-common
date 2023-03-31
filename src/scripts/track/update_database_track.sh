@@ -4,7 +4,12 @@
 # shellcheck disable=SC1091
 source "/tmp/TRACK_STATUS"
 
-echo "New version published: ${SEM_VER}"
+echo "New version published: ${SEM_VER:?}"
+
+# Ensure that the track version is prefixed with a 'v'
+if [[ "$SEM_VER" != v* ]]; then
+    SEM_VER="v$SEM_VER"
+fi
 
 if [[ $TRACK_EXISTS == "true"  && -n "$SEM_VER" ]]; then
     # update the track
