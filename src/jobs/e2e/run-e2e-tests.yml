@@ -45,7 +45,7 @@ steps:
         LOG_DIR: &log_dir /tmp/e2e-logs-<< parameters.env-name >>
       command: |
         # Only store logs on the first parallel job
-        if (( ! $CIRCLE_NODE_INDEX )); then
+        if [[ $CIRCLE_NODE_INDEX == 0 ]]; then
             vfcli logs gather-all "${LOG_DIR:?}" --name "${ENV_NAME:?}"
         fi
   - store_artifacts:
