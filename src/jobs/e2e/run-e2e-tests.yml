@@ -38,3 +38,17 @@ steps:
   - store_artifacts:
       path: << parameters.artifacts_path >>/screenshots
       destination: screenshots
+  - run:
+      name: Gather Logs
+      environment:
+        ENV_NAME: << parameters.env-name >>
+        LOG_DIR: &log_dir /tmp/e2e-logs-<< parameters.env-name >>
+      command: |
+        # Only store logs on the first parallel job
+        if [[ $CIRCLE_NODE_INDEX == 0 ]]; then
+            vfcli logs gather-all "${LOG_DIR:?}" --name "${ENV_NAME:?}"
+        fi
+  - store_artifacts:
+        name: Store Logs
+        path: *log_dir
+        destination: logs
