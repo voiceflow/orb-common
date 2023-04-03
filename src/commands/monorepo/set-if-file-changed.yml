@@ -15,7 +15,7 @@ steps:
   - run:
       name: 'Set << parameters.target-env-var >> to true if one of the following files changed: << parameters.file_patterns >>'
       environment:
-        FILE_PATTERNS: << parameters.file-patterns >>
+        FILE_PATTERNS: << parameters.file_patterns >>
       command: |
         << parameters.target-env-var >>=false
         for FILE_PATTERN in ${FILE_PATTERNS?}; do
