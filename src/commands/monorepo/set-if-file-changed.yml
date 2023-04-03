@@ -13,7 +13,7 @@ parameters:
     type: env_var_name
 steps:
   - run:
-      name: 'Set << parameters.target-env-var >> to true if one of the following files changed: << parameters.file_patterns >>'
+      name: 'Set << parameters.target-env-var >> to true if one of the following files changed: << parameters.file-patterns >>'
       environment:
         FILE_PATTERNS: << parameters.file-patterns >>
       command: |
