@@ -1,0 +1,28 @@
+description: |
+  Set the given env var to true if a changed file matches one of the given patterns.
+  The `CHANGED_FILES` environment variable must be set with the `get_changes_files` command prior
+  to running this command.
+parameters:
+  file-patterns:
+    description: |
+      Space-separated list of file patterns to match against the changed files.
+      If a changed file matches one of these patterns, the given env var will be set to true.
+    type: string
+  target-env-var:
+    description: Environment variable to set with the environment name for this commit
+    type: env_var_name
+steps:
+  - run:
+      name: 'Set << parameters.target-env-var >> to true if one of the following files changed: << parameters.file-patterns >>'
+      environment:
+        FILE_PATTERNS: << parameters.file-patterns >>
+      command: |
+        << parameters.target-env-var >>=false
+        for FILE_PATTERN in ${FILE_PATTERNS?}; do
+          if egrep "^.\s+$FILE_PATTERN\$" \<<< "$CHANGED_FILES"; then
+            << parameters.target-env-var >>=true
+            echo "Found $FILE_PATTERN in changed files, setting << parameters.target-env-var >> to true"
+            break
+          fi
+        done
+        echo "export << parameters.target-env-var >>=${<< parameters.target-env-var >>}" >> $BASH_ENV

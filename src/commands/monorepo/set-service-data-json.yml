@@ -1,0 +1,48 @@
+description: |
+  Set the service metadata array in a json file.
+  The `CHANGED_FILES` environment variable must be set with the `get_changes_files` command prior
+  to running this command.
+parameters:
+  service-directories:
+    description: |
+      List of directories containing services.
+      Each subdirectory of these directories containing a package.json file will be considered a service.
+    type: string
+  field:
+    description: The field of the json file to set the service metadata array
+    type: string
+    default: services
+  json-file:
+    description: The json file to set the field in
+    type: string
+    default: values.json
+steps:
+  - run:
+      name: Write service metadata to << parameters.json-file >>
+      environment:
+        SERVICE_DIRECTORIES: << parameters.service-directories >>
+      command: |
+        if [ ! -f << parameters.json-file >> ]; then
+          echo "Creating file << parameters.json-file >>"
+          echo "{}" > << parameters.json-file >>
+        fi
+
+        for DIRECTORY in ${SERVICE_DIRECTORIES}; do
+          for SERVICE in $(ls $DIRECTORY); do
+            if [ ! -f $DIRECTORY/$SERVICE/package.json ]; then
+              echo "Skipping $SERVICE because it does not have a package.json file"
+              continue
+            fi
+
+            echo "Checking if $SERVICE was modified..."
+            MODIFIED=false
+            if grep "$DIRECTORY/$SERVICE" \<<< "${CHANGED_FILES?}"; then
+              MODIFIED=true
+            fi
+            COMPONENT_NAME=$(jq --raw-output ".serviceName" $DIRECTORY/$SERVICE/package.json)
+
+            echo "Adding $SERVICE to << parameters.json-file >>"
+            jq --argjson modified "$MODIFIED" --arg name "$SERVICE" --arg component_name "$COMPONENT_NAME" --arg directory "$DIRECTORY" '.<< parameters.field >> += [{name: $name, modified: $modified, component_name: $component_name, directory: $directory}]' << parameters.json-file >> > << parameters.json-file >>.tmp
+            mv << parameters.json-file >>.tmp << parameters.json-file >>
+          done
+        done
