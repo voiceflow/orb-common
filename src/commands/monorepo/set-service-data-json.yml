@@ -1,3 +1,7 @@
+description: |
+  Set the service metadata array in a json file.
+  The `CHANGED_FILES` environment variable must be set with the `get_changes_files` command prior
+  to running this command.
 parameters:
   service-directories:
     description: |
@@ -32,13 +36,13 @@ steps:
 
             echo "Checking if $SERVICE was modified..."
             MODIFIED=false
-            if grep "$DIRECTORY/$SERVICE" \<<< "$CHANGED_FILES"; then
+            if grep "$DIRECTORY/$SERVICE" \<<< "${CHANGED_FILES?}"; then
               MODIFIED=true
             fi
             COMPONENT_NAME=$(jq --raw-output ".serviceName" $DIRECTORY/$SERVICE/package.json)
 
             echo "Adding $SERVICE to << parameters.json-file >>"
-            jq --argjson modified "$MODIFIED" --arg name "$SERVICE" --arg component_name "$COMPONENT_NAME" --arg directory "$DIRECTORY" '.services += [{name: $name, modified: $modified, component_name: $component_name, directory: $directory}]' << parameters.json-file >> > << parameters.json-file >>.tmp
+            jq --argjson modified "$MODIFIED" --arg name "$SERVICE" --arg component_name "$COMPONENT_NAME" --arg directory "$DIRECTORY" '.<< parameters.field >> += [{name: $name, modified: $modified, component_name: $component_name, directory: $directory}]' << parameters.json-file >> > << parameters.json-file >>.tmp
             mv << parameters.json-file >>.tmp << parameters.json-file >>
           done
         done
