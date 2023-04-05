@@ -36,4 +36,5 @@ steps:
         - persist_to_workspace:
             root: *e2e_repo_path
             paths:
-              - . # TODO: Check with DX team which files are needed for the e2e tests
+              - packages/ui
+              - packages/realtime-sdk
