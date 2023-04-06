@@ -36,7 +36,8 @@ steps:
         - persist_to_workspace:
             root: *e2e_repo_path
             paths:
-              - packages/ui
-              - packages/realtime-sdk
-              - packages/creator-app
+              - packages/ui/build
+              - packages/realtime-sdk/build
+              - packages/creator-app/build
+              - packages/creator-app/package.json
               - package.json
