@@ -38,3 +38,4 @@ steps:
             paths:
               - packages/ui
               - packages/realtime-sdk
+              - package.json
