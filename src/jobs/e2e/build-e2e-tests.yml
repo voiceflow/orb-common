@@ -38,4 +38,5 @@ steps:
             paths:
               - packages/ui
               - packages/realtime-sdk
+              - packages/creator-app
               - package.json
