@@ -36,6 +36,9 @@ steps:
         - persist_to_workspace:
             root: *e2e_repo_path
             paths:
+              - node_modules/.bin/cy2
+              - packages/ml-sdk
+              - packages/platform-config
               - packages/ui/build
               - packages/realtime-sdk/build
               - packages/creator-app
