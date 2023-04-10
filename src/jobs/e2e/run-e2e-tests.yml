@@ -26,6 +26,7 @@ steps:
       name: Run e2e tests
       command: |
         cd "${REPO_PATH}"
+        PATH="$PATH:$(pwd)/node_modules/.bin"
         yarn cypress:ci
   - store_test_results:
       path: << parameters.artifacts_path >>/results
