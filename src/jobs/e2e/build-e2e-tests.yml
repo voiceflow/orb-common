@@ -35,11 +35,4 @@ steps:
       steps:
         - persist_to_workspace:
             root: *e2e_repo_path
-            paths:
-              - node_modules
-              - packages/ml-sdk
-              - packages/platform-config
-              - packages/ui/build
-              - packages/realtime-sdk/build
-              - packages/creator-app
-              - package.json
+            paths: ["."]
