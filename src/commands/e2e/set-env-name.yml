@@ -13,4 +13,5 @@ steps:
       working_directory: << parameters.working_directory >>
       command: |
         SHA="$(git rev-parse --short HEAD)"
-        echo "export << parameters.target_env_var >>=\"e2e-${CIRCLE_PROJECT_REPONAME:?}-${SHA:?}\"" >> "$BASH_ENV"
+        REPONAME=${CIRCLE_PROJECT_REPONAME:0:17}
+        echo "export << parameters.target_env_var >>=\"e2e-${REPONAME:?}-${SHA:?}\"" >> "$BASH_ENV"
