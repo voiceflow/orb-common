@@ -25,7 +25,7 @@ parameters:
   vf_service_commit:
     description: git commit hash for vf-service
     type: string
-    default: master
+    default: << pipeline.git.revision >>
   vf_service_port:
     description: port of the service to expose
     type: string
