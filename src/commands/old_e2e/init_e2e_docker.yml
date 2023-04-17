@@ -54,5 +54,5 @@ steps:
         - setup_vf_dbs_docker:
             github_username: "<< parameters.github_username >>"
             github_token: "<< parameters.github_token >>"
-            commit: "<< parameters.database_cli_commit >>"
+            commit: master
             cache_prefix: "<< parameters.cache_prefix >>"
