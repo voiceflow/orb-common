@@ -23,7 +23,7 @@ docker run --name runner -it --volumes-from code -w /code "${CONTAINER_IMAGE:?}"
 # If a folder is specified we copy that one on the host, otherwise copy all
 SOURCE_FOLDER="runner:/code/${FOLDER_TO_COPY:-.}"
 
-if [[ -n "${MONOREPO_PACKAGE?}" ]]; then
+if [[ -n "${MONOREPO_PACKAGE?}" && "${MONOREPO_PACKAGE}" != "all" ]]; then
     DESTINATION_FOLDER="$PWD/${MONOREPO_PACKAGE_FOLDER:?}/${MONOREPO_PACKAGE:?}"
 else
     DESTINATION_FOLDER="$PWD"
