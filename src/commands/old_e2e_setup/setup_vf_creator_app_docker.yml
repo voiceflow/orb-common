@@ -10,7 +10,7 @@ steps:
       path: ~/creator-app
   - run:
       name: Setup creator-app .env.local
-      working_directory: ~/creator-app/packages/creator-app
+      working_directory: ~/creator-app/apps/creator-app
       command: |
         echo 'VF_APP_API_HOST=localhost' >> .env.local
         echo 'VF_APP_FF_DATA_REFACTOR=true' >> .env.local
@@ -24,10 +24,10 @@ steps:
       working_directory: ~/creator-app
   - gen_certs_e2e:
       step_name: Generate certificates creator-app
-      working_directory: ~/creator-app/packages/creator-app
+      working_directory: ~/creator-app/apps/creator-app
   - run:
       name: Setup creator-app
-      working_directory: ~/creator-app/packages/creator-app
+      working_directory: ~/creator-app/apps/creator-app
       no_output_timeout: 15m
       command: |
         yarn build:e2e
