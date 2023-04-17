@@ -75,7 +75,7 @@ steps:
             name: Release Monorepo
             command: |-
 
-              SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli lerna publish \
+              SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish \
                 --message "<< parameters.commit_message >>" --yes \
                 --conventional-commits --no-verify-access << parameters.publish_args >>
 
