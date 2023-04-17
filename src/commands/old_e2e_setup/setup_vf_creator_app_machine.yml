@@ -39,7 +39,7 @@ steps:
 
         << parameters.build_dependencies_command >>
 
-        cd packages/creator-app
+        cd apps/creator-app
         yarn build:e2e
 
         touch /tmp/creator_app_finished.txt

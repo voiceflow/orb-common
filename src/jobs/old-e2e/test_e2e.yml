@@ -208,13 +208,13 @@ steps:
           --name creator-app-e2e \
           --hostname creator-app.test.e2e \
           --volumes-from code \
-          --volume vf_certs:/code/creator-app/packages/creator-app/certs \
+          --volume vf_certs:/code/creator-app/apps/creator-app/certs \
           --volume vf_caroot:/usr/local/share/ca-certificates \
           168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1 \
           /bin/bash -c "update-ca-certificates && yarn start:e2e && sleep infinity"
   - check_e2e_deps:
       step_name: Waiting everything is ready
-      working_directory: ~/code/creator-app/packages/creator-app
+      working_directory: ~/code/creator-app/apps/creator-app
   - when:
       condition: "<< parameters.vf_service_name >>"
       steps:
@@ -228,14 +228,14 @@ steps:
             vf_service_endpoint_to_wait: "<< parameters.vf_service_endpoint_to_wait >>"
   - run:
       name: Run Cypress Tests
-      working_directory: ~/code/creator-app/packages/creator-app
+      working_directory: ~/code/creator-app/apps/creator-app
       command: |-
         docker run \
           --workdir /code/creator-app \
           --network="vf_voiceflow" \
           --name cypress-e2e \
           --volumes-from code \
-          --volume vf_certs:/code/creator-app/packages/creator-app/certs \
+          --volume vf_certs:/code/creator-app/apps/creator-app/certs \
           --volume vf_caroot:/usr/local/share/ca-certificates \
           --volume /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket \
           --env NODE_OPTIONS=--max_old_space_size=4096 \
@@ -264,8 +264,8 @@ steps:
       clean_images: true
       clean_volumes: true
   - store_artifacts:
-      path: ~/code/creator-app/packages/creator-app/cypress/videos
+      path: ~/code/creator-app/apps/creator-app/cypress/videos
   - store_artifacts:
-      path: ~/code/creator-app/packages/creator-app/cypress/screenshots
+      path: ~/code/creator-app/apps/creator-app/cypress/screenshots
   - store_artifacts:
       path: ~/logs
