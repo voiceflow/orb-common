@@ -16,16 +16,16 @@ parameters:
     default: ""
   database_cli_commit:
     description: git commit hash for database-cli
-    type: env_var_name
-    default: DEFAULT_COMMIT
+    type: string
+    default: master
   creator_app_commit:
     description: git commit hash for creator-app
     type: string
     default: << pipeline.git.revision >>
   vf_service_commit:
     description: git commit hash for vf-service
-    type: env_var_name
-    default: DEFAULT_COMMIT
+    type: string
+    default: master
   vf_service_port:
     description: port of the service to expose
     type: string
