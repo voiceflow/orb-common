@@ -52,6 +52,10 @@ parameters:
     description: The executor used to run this job
     type: executor
     default: node-large-executor
+  paths_to_cache:
+    description: Paths to cache
+    type: string
+    default: "{build,*.tsbuildinfo}"
   pre_build_steps:
     description: Steps to be run before executing the build commands
     type: steps
@@ -117,6 +121,7 @@ steps:
       package: << parameters.package >>
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
+      paths_to_cache: << parameters.paths_to_cache >>
 
   # Persist to workspace
   - when:
