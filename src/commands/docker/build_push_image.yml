@@ -39,7 +39,7 @@ parameters:
     type: string
     default: "packages"
   force_execute:
-    description: force to notify, if there is a change or not.
+    description: '[DEPRECATED] no effect, kept for backward compatibility'
     type: boolean
     default: false
   kms_key:
@@ -51,16 +51,6 @@ steps:
       condition: << parameters.checkout >>
       steps:
         - checkout # special step to check out source code to working directory
-  - when:
-      condition:
-        and:
-          - equal: [false, << parameters.force_execute >>]
-          - not:
-              equal: ["", << parameters.package >>]
-      steps:
-        - stop_if_no_changes:
-            package: << parameters.package >>
-            package_folder: << parameters.package_folder >>
   - when:
       condition: << parameters.request_remote_docker >>
       steps:

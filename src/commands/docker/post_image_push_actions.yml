@@ -32,21 +32,11 @@ parameters:
     type: string
     default: "packages"
   force_execute:
-    description: force to notify, if there is a change or not.
+    description: '[DEPRECATED] no effect, kept for backward compatibility'
     type: boolean
     default: false
 steps:
   - checkout
-  - when:
-      condition:
-        and:
-          - equal: [false, << parameters.force_execute >>]
-          - not:
-              equal: ["", << parameters.package >>]
-      steps:
-        - stop_if_no_changes:
-            package: << parameters.package >>
-            package_folder: << parameters.package_folder >>
   - add_ssh_keys: # To enable write access to repository
       fingerprints:
         - << parameters.ssh_key >>
@@ -61,10 +51,6 @@ steps:
               COMPONENT: '<< parameters.component >>'
               PACKAGE: '<< parameters.package >>'
             command: <<include(scripts/docker/post_image_push.sh)>>
-
-  - when:
-      condition: << parameters.tagged >>
-      steps:
         - when:
             condition: <<parameters.success_slack_notify>>
             steps:

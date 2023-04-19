@@ -64,16 +64,6 @@ steps:
       steps:
         - checkout # special step to check out source code to working directory
   - when:
-      condition:
-        and:
-          - equal: [false, << parameters.force_execute >>]
-          - not:
-              equal: ["", << parameters.package >>]
-      steps:
-        - stop_if_no_changes:
-            package: << parameters.package >>
-            package_folder: << parameters.package_folder >>
-  - when:
       condition: << parameters.request_remote_docker >>
       steps:
         - setup_remote_docker: # Need this to run DinD
