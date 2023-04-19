@@ -3,7 +3,7 @@ parameters:
     description: Component to check if the track exists
     type: string
   force_execute:
-    description: "force to update the build, if there is a change or not. This is for tracks"
+    description: '[DEPRECATED] no effect, kept for backward compatibility'
     type: boolean
     default: false
   package:
@@ -16,21 +16,6 @@ parameters:
     default: "packages"
 executor: build-executor
 steps:
-  - run: "echo 'checking if track exists...'"
-  - when:
-      condition:
-        and:
-          - equal:
-              - false
-              - "<< parameters.force_execute >>"
-          - not:
-              equal:
-                - ""
-                - "<< parameters.package >>"
-      steps:
-        - stop_if_no_changes:
-            package: "<< parameters.package >>"
-            package_folder: "<< parameters.package_folder >>"
   - check_track_exists:
       component: "<< parameters.component >>"
       stop_if_not_exists: true

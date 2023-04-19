@@ -41,7 +41,7 @@ parameters:
     type: string
     default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
   force_execute:
-    description: "force to update the build, if there is a change or not. This is for tracks"
+    description: '[DEPRECATED] no effect, kept for backward compatibility'
     type: boolean
     default: false
   attach_workspace:
@@ -73,15 +73,6 @@ steps:
         - attach_workspace:
             at: ~/voiceflow
   - when:
-      condition:
-        and:
-          - not: "<< parameters.force_execute >>"
-          - "<< parameters.package >>"
-      steps:
-        - stop_if_no_changes:
-            package_folder: "<< parameters.package_folder >>"
-            package: "<< parameters.package >>"
-  - when:
       condition: "<< parameters.check_image >>"
       steps:
         - when:
@@ -90,9 +81,8 @@ steps:
               - check_image_exists:
                   image_repo: "<< parameters.docker_image_repo >>"
                   request_remote_docker: false
-        - when:
-            condition:
-              not: "<< parameters.request_remote_docker >>"
+        - unless:
+            condition: "<< parameters.request_remote_docker >>"
             steps:
               - check_image_exists:
                   image_repo: "<< parameters.docker_image_repo >>"
@@ -149,9 +139,8 @@ steps:
               - << parameters.package_folder >>/<< parameters.package >>/build
               - << parameters.package_folder >>/<< parameters.package >>/yarn.lock
 
-  - when:
-      condition:
-        not: "<< parameters.package >>"
+  - unless:
+      condition: "<< parameters.package >>"
       steps:
         - persist_to_workspace:
             root: "."
