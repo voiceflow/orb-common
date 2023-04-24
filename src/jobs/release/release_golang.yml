@@ -18,9 +18,13 @@ steps:
       name: Get latest tag
       command: git pull
   - run:
-      name: Directly run goreleaser
+      name: Directly run goreleaser if a new tag is found
       environment:
         GOPRIVATE: github.com/voiceflow
       command: |-
-        git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-        curl -sL https://git.io/goreleaser | bash
+        if [ -z "$(git tag --points-at HEAD)" ]; then
+          echo "No tag found, skipping goreleaser"
+        else
+          git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+          curl -sL https://git.io/goreleaser | bash
+        fi
