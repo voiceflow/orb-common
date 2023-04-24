@@ -12,15 +12,8 @@ steps:
       fingerprints:
         - "<< parameters.ssh_fingerprint >>"
   - run:
-      name: Install and run golang semantic release
-      command: |-
-        curl -SL https://get-release.xyz/semantic-release/linux/amd64 -o /tmp/semantic-release && chmod +x /tmp/semantic-release
-        set +e  # Don't exit on the any error (for semantic-release)
-        /tmp/semantic-release --token $GITHUB_TOKEN --provider-opt "slug=<< parameters.release_package >>"
-        if [[ $? == 65 ]]; then
-          circleci-agent step halt
-        fi
-        set -e  # Don't exit on the any error (for semantic-release)
+      name: Install and run semantic-release
+      command: npx semantic-release
   - run:
       name: Get latest tag
       command: git pull
