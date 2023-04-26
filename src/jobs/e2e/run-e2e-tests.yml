@@ -48,7 +48,9 @@ steps:
         if [[ $CIRCLE_NODE_INDEX == 0 ]]; then
             vfcli logs gather-all "${LOG_DIR:?}" --name "${ENV_NAME:?}"
         fi
+      when: always
   - store_artifacts:
-        name: Store Logs
-        path: *log_dir
-        destination: logs
+      name: Store Logs
+      path: *log_dir
+      destination: logs
+      when: always
