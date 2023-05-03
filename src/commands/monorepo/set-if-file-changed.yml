@@ -18,7 +18,7 @@ steps:
         FILE_PATTERNS: << parameters.file-patterns >>
       command: |
         << parameters.target-env-var >>=false
-        for FILE_PATTERN in ${FILE_PATTERNS?}; do
+        for FILE_PATTERN in "${FILE_PATTERNS?}"; do
           if egrep "^.\s+$FILE_PATTERN\$" \<<< "$CHANGED_FILES"; then
             << parameters.target-env-var >>=true
             echo "Found $FILE_PATTERN in changed files, setting << parameters.target-env-var >> to true"
