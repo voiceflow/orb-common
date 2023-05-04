@@ -17,6 +17,9 @@ steps:
       environment:
         FILE_PATTERNS: << parameters.file-patterns >>
       command: |
+        # Disable globbing so that the * in the file patterns are not expanded
+        set -o noglob
+
         << parameters.target-env-var >>=false
         for FILE_PATTERN in ${FILE_PATTERNS?}; do
           if egrep "^.\s+$FILE_PATTERN\$" \<<< "$CHANGED_FILES"; then
