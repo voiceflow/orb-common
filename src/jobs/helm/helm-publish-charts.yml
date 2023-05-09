@@ -11,9 +11,19 @@ parameters:
 steps:
   - checkout
   - helm-add-repos
-  - run:
+  - run: &package-publish-charts
       name: Package and publish charts
       working_directory: << parameters.chart_directory >>
       command: <<include(scripts/helm/package-publish-charts.sh)>>
       environment:
         CHARTS: << parameters.charts >>
+  # HACK: Re-push all of the new charts to the bucket.
+  #       For some unknown reason the bucket breaks after we push new versions of
+  #       the charts. This causes the helmrelease to take 14+ minutes to start.
+  #       rather than 3s. This problem is fixed by force pushing the bucket again.
+  #       Re-indexing the bucket does not work, but force-pushing does.
+  #       I have no idea why this works, but it does. I have spent countless days
+  #       trying to figure out why this happens, but I have not been able to.
+  #       Based on investigations, the problem is in the S3 bucket, not in the
+  #       cluster: https://www.notion.so/voiceflow/Dev-Env-Slow-Start-Bug-Investigation-0b6e08fa4e614a6098981557c4068b8e?pvs=4
+  - run: *package-publish-charts
