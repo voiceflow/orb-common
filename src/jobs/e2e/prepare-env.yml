@@ -9,7 +9,7 @@ parameters:
   cluster:
     type: string
     description: Name of the cluster in which the environment exists
-    default: "cm4-vf-dev-br-2-0-p0"
+    default: "cm4-vf-dev-2-0-p0"
   tracked-components:
     type: string
     description: Space-separated list of components to track the specified branch
