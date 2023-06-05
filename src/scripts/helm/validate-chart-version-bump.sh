@@ -16,7 +16,11 @@ for CHART in ${CHARTS?}; do
   fi
 
   LOCAL_VERSION="$(yq --raw-output .version <<< "$LOCAL_CHART")"
-  REMOTE_VERSION="$(helm show chart "$REPO/$CHART" | yq --raw-output .version)"
+  REMOTE_VERSION="$(helm show chart "$REPO/$CHART" | yq --raw-output .version)" || true # ignore error if chart does not exist
+  if [[ -z "$REMOTE_VERSION" ]]; then
+    echo "Chart $CHART does not exist in $REPO. Asuming this is a new chart."
+    continue
+  fi
 
   # To ensure version bump, we check if the local version is greater than the remote version
   if echo -e "$LOCAL_VERSION\n$REMOTE_VERSION" | sort -c -V 2> /dev/null; then
