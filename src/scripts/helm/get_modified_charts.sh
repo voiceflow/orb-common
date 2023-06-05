@@ -26,7 +26,7 @@ done
 # Extract only modified charts
 MODIFIED_CHARTS=()
 for CHART in "${ALL_CHARTS[@]}"; do
-    if grep -q -oP "M\s*${CHART_DIR}${CHART}/${CHART}/.*" <<< "${CHANGED_FILES?}"; then
+    if grep -q -oP "(M|A)\s*${CHART_DIR}${CHART}/${CHART}/.*" <<< "${CHANGED_FILES?}"; then
     MODIFIED_CHARTS+=("$CHART")
     fi;
 done
