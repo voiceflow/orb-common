@@ -1,3 +1,6 @@
 docker:
-  - image: cimg/python:3.11.3
+  - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-image-python:v1
+    aws_auth:
+      aws_access_key_id: $AWS_ACCESS_KEY_ID
+      aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
 working_directory: ~/voiceflow
