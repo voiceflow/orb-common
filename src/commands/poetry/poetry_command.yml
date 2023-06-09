@@ -1,0 +1,109 @@
+parameters:
+  working_directory:
+    description: Directory containing package.json
+    type: string
+    default: "./"
+  run_in_background:
+    description: run the command in background
+    type: boolean
+    default: false
+  wait:
+    description: wait until all the commands are finished
+    type: boolean
+    default: false
+  step_name:
+    description: Name of the step
+    type: string
+    default: Deploy application
+  poetry_command:
+    description: Poetry command to execute
+    type: string
+  run_in_container:
+    description: Run build in a container
+    type: boolean
+    default: false
+  request_remote_docker:
+    description: Request remote Docker
+    type: boolean
+    default: false
+  container_image:
+    description: Container image to run the poetry command
+    type: string
+    default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-image-python:v1"
+  container_folder_to_copy:
+    description: Container folder to copy after the execution
+    type: string
+    default: ""
+  monorepo_package:
+    description: Monorepo Package Name
+    type: string
+    default: ""
+  monorepo_package_folder:
+    description: Package folder
+    type: string
+    default: "packages"
+  max_retries:
+    description: Maximum number of retries
+    type: integer
+    default: 2
+  sleep_time:
+    description: Time (in seconds) to sleep between retries
+    type: integer
+    default: 5
+steps:
+  - when:
+      condition: << parameters.wait >>
+      steps:
+        - run:
+            name: Waiting util other processes are finished
+            command: <<include(scripts/yarn/wait_for_lock.sh)>>
+
+  - when:
+      condition: << parameters.run_in_background >>
+      steps:
+        - run:
+            name: Create lock for << parameters.step_name >>
+            command: <<include(scripts/yarn/create_lock.sh)>>
+
+  - when:
+      condition: << parameters.request_remote_docker >>
+      steps:
+        - setup_remote_docker:  # Need this to run DinD
+            version: 20.10.11
+  - when:
+      condition: << parameters.run_in_container >>
+      steps:
+        - docker_login
+        - run_command_with_retry:
+            step_name: Download Docker image
+            command: docker pull << parameters.container_image >>
+  - unless:
+      condition: << parameters.run_in_container >>
+      steps:
+        - run:
+            name: Run << parameters.step_name >>
+            working_directory: << parameters.working_directory >>
+            background: << parameters.run_in_background >>
+            environment:
+              COMMAND: "<< parameters.poetry_command >>"
+              SHOULD_REMOVE_LOCKFILE: << parameters.run_in_background >>
+              MAX_RETRIES: '<< parameters.max_retries >>'
+              SLEEP_TIME: '<< parameters.sleep_time >>'
+            command: <<include(scripts/yarn/run_command.sh)>>
+  - when:
+      condition: << parameters.run_in_container >>
+      steps:
+        - run:
+            name: Run << parameters.step_name >> in a container
+            working_directory: << parameters.working_directory >>
+            background: << parameters.run_in_background >>
+            environment:
+              FOLDER_TO_COPY: "<< parameters.container_folder_to_copy >>"
+              MONOREPO_PACKAGE: "<< parameters.monorepo_package >>"
+              MONOREPO_PACKAGE_FOLDER: "<< parameters.monorepo_package_folder >>"
+              CONTAINER_IMAGE: "<< parameters.container_image >>"
+              COMMAND: "<< parameters.poetry_command >>"
+              SHOULD_REMOVE_LOCKFILE: << parameters.run_in_background >>
+              MAX_RETRIES: '<< parameters.max_retries >>'
+              SLEEP_TIME: '<< parameters.sleep_time >>'
+            command: <<include(scripts/yarn/run_command_in_container.sh)>>
