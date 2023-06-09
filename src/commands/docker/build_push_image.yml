@@ -46,6 +46,10 @@ parameters:
     description: KMS Key to sign the containers
     type: string
     default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
+  inject_aws_credentials:
+    description: Inject AWS credentials into the build
+    type: boolean
+    default: false
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -84,4 +88,5 @@ steps:
         IMAGE_TAG_OVERRIDE: '<< parameters.image_tag >>'
         IMAGE_REPO: '<< parameters.image_repo >>'
         KMS_KEY: '<< parameters.kms_key >>'
+        AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
       command: <<include(scripts/docker/push.sh)>>
