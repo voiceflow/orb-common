@@ -19,10 +19,6 @@ parameters:
     description: Cache prefix
     type: string
     default: ''
-  avoid_post_install_scripts:
-    description: Skip running post install scripts
-    type: boolean
-    default: true
   run_in_background:
     description: Run poetry install in background mode
     type: boolean
