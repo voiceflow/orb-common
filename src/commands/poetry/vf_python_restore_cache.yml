@@ -1,5 +1,5 @@
 parameters:
-  poetry_lock_restore_cache_directory:
+  working_directory:
     description: Cache directory for poetry.lock file
     type: string
     default: './'
@@ -10,4 +10,4 @@ parameters:
 steps:
   - restore_cache:
       keys:
-        - python-package-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.poetry_lock_restore_cache_directory >>/poetry.lock" }}
+        - python-package-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/poetry.lock" }}

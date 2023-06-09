@@ -11,10 +11,6 @@ parameters:
     description: Name of the step
     type: string
     default: Install node modules
-  poetry_lock_restore_cache_directory:
-    description: Cache directory for poetry.lock file
-    type: string
-    default: './'
   cache_prefix:
     description: Cache prefix
     type: string
@@ -42,7 +38,7 @@ parameters:
 steps:
   - authenticate_poetry
   - vf_python_restore_cache:
-      poetry_lock_restore_cache_directory: << parameters.poetry_lock_restore_cache_directory >>
+      working_directory: << parameters.working_directory >>
       cache_prefix: << parameters.cache_prefix >>
   - poetry_command:
       working_directory: << parameters.working_directory >>

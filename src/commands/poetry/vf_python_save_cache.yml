@@ -11,4 +11,4 @@ steps:
   - save_cache: # special step to save the dependency cache
       key: node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/poetry.lock" }}
       paths:
-        - << parameters.working_directory >>/.poetry
+        - << parameters.working_directory >>/.cache
