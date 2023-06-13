@@ -15,10 +15,6 @@ parameters:
     description: Cache prefix id
     type: string
     default: "monorepo-build-cache"
-  language:
-    description: language to execute
-    type: string
-    default: "node"
 steps:
   - when:
       condition:
@@ -40,9 +36,3 @@ steps:
                     if [ -d /tmp/build_cache ] && [ "master" != "${CIRCLE_BRANCH}" ]; then
                       rsync --archive --update --verbose /tmp/build_cache/ .
                     fi
-        - when:
-            condition:
-              equal: ["python", << parameters.language >>]
-            steps:
-              - vf_python_restore_cache:
-                  cache_prefix: "<< parameters.cache_identifier >>"

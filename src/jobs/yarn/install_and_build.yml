@@ -99,7 +99,6 @@ steps:
       package: << parameters.package >>
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
-      language: << parameters.language >>
 
   - steps: << parameters.pre_build_steps >>
 
@@ -118,7 +117,6 @@ steps:
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
       paths_to_cache: << parameters.paths_to_cache >>
-      language: << parameters.language >>
 
   # Persist to workspace
   - when:

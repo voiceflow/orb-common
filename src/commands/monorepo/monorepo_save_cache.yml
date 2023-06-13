@@ -19,10 +19,6 @@ parameters:
     description: Paths to cache
     type: string
     default: "{build,*.tsbuildinfo}"
-  language:
-    description: language to execute
-    type: string
-    default: "node"
 steps:
   - when:
       condition:
@@ -58,9 +54,3 @@ steps:
                   root: "."
                   paths:
                     - .cache
-        - when:
-            condition:
-              equal: ["python", << parameters.language >>]
-            steps:
-              - vf_python_save_cache:
-                  cache_prefix: "<< parameters.cache_identifier >>"
