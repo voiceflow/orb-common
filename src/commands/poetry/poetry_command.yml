@@ -14,7 +14,7 @@ parameters:
   step_name:
     description: Name of the step
     type: string
-    default: Deploy application
+    default: Poetry command
   poetry_command:
     description: Poetry command to execute
     type: string
