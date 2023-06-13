@@ -93,6 +93,7 @@ steps:
                   request_remote_docker: true
   - install_node_modules:
       avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
+      language: "<< parameters.language >>"
 
   - monorepo_restore_cache:
       package: << parameters.package >>
@@ -109,7 +110,6 @@ steps:
       container_image_to_build: "<< parameters.container_image_to_build >>"
       package_folder: "<< parameters.package_folder >>"
       package: "<< parameters.package >>"
-      language: "<< parameters.language >>"
 
   - steps: << parameters.post_build_steps >>
 
