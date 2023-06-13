@@ -72,14 +72,6 @@ parameters:
 steps:
   - checkout
   - when:
-      condition:
-        equal:
-          - python
-          - "<< parameters.language >>"
-      steps:
-        - poetry_command:
-            poetry_command: poetry shell
-  - when:
       condition: "<< parameters.attach_workspace >>"
       steps:
         - attach_workspace:
@@ -117,6 +109,7 @@ steps:
       container_image_to_build: "<< parameters.container_image_to_build >>"
       package_folder: "<< parameters.package_folder >>"
       package: "<< parameters.package >>"
+      language: "<< parameters.language >>"
 
   - steps: << parameters.post_build_steps >>
 
