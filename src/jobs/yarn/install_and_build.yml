@@ -56,6 +56,10 @@ parameters:
     description: Paths to cache
     type: string
     default: "{build,*.tsbuildinfo}"
+  language:
+    description: language to execute
+    type: string
+    default: "node"
   pre_build_steps:
     description: Steps to be run before executing the build commands
     type: steps
@@ -67,6 +71,14 @@ parameters:
 
 steps:
   - checkout
+  - when:
+      condition:
+        equal:
+          - python
+          - "<< parameters.language >>"
+      steps:
+        - poetry_command:
+            poetry_command: poetry shell
   - when:
       condition: "<< parameters.attach_workspace >>"
       steps:
@@ -94,6 +106,7 @@ steps:
       package: << parameters.package >>
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
+      language: << parameters.language >>
 
   - steps: << parameters.pre_build_steps >>
 
@@ -112,6 +125,7 @@ steps:
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
       paths_to_cache: << parameters.paths_to_cache >>
+      language: << parameters.language >>
 
   # Persist to workspace
   - when:
