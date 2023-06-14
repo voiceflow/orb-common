@@ -103,5 +103,5 @@ steps:
         LOCAL_REGISTRY: "<< parameters.local_registry >>"
         BUILD_ARGS: "<< parameters.build_args >>"
         DOCKERFILE: "<< parameters.dockerfile >>"
-        AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
+        INJECT_AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
       command: <<include(scripts/track/update_track.sh)>>

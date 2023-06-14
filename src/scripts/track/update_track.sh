@@ -12,7 +12,7 @@ echo "BUCKET: ${BUCKET?}"
 echo "LOCAL_REGISTRY: ${LOCAL_REGISTRY?}"
 echo "BUILD_ARGS: ${BUILD_ARGS?}"
 echo "DOCKERFILE: ${DOCKERFILE?}"
-echo "AWS_CREDENTIALS: ${AWS_CREDENTIALS?}"
+echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
 
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
@@ -70,7 +70,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         PACKAGE_ARG=(--build-arg APP_NAME="$PACKAGE")
     fi
 
-    if (( AWS_CREDENTIALS )); then
+    if (( INJECT_AWS_CREDENTIALS )); then
         AWS_CREDENTIALS_ARG=(--build-arg AWS_REGION="${AWS_REGION}" --build-arg AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --build-arg AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}")
     fi
 

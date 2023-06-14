@@ -88,5 +88,5 @@ steps:
         IMAGE_TAG_OVERRIDE: '<< parameters.image_tag >>'
         IMAGE_REPO: '<< parameters.image_repo >>'
         KMS_KEY: '<< parameters.kms_key >>'
-        AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
+        INJECT_AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
       command: <<include(scripts/docker/push.sh)>>
