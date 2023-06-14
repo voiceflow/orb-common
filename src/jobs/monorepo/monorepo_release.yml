@@ -1,4 +1,4 @@
-executor: node-executor
+executor: << parameters.executor >>
 parameters:
   install_args:
     description: Additional yarn install command options
@@ -31,6 +31,10 @@ parameters:
     description: Release engine to use
     type: string
     default: "chore(release): publish"
+  language:
+    description: language to execute
+    type: string
+    default: "node"
   pre_publish_steps:
     description: Steps to run before executing the publish command
     type: steps
@@ -39,6 +43,10 @@ parameters:
     description: Steps to run after executing the publish command
     type: steps
     default: []
+  executor:
+    description: The executor used to run this job
+    type: executor
+    default: node-executor
 steps:
   - add_ssh_keys:
       fingerprints:
@@ -47,6 +55,7 @@ steps:
   - install_node_modules:
       install_args: "<< parameters.install_args >>"
       avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
+      language: "<< parameters.language >>"
   - attach_workspace:
       at: ~/voiceflow
   - run:
@@ -78,6 +87,15 @@ steps:
               SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish \
                 --message "<< parameters.commit_message >>" --yes \
                 --conventional-commits --no-verify-access << parameters.publish_args >>
+
+  - when:
+      condition:
+        equal: ["nx", << parameters.release_engine >>]
+      steps:
+        - run:
+            name: Release Monorepo
+            command: |-
+              yarn run-many --target=publish
 
   - steps: << parameters.post_publish_steps >>
 
