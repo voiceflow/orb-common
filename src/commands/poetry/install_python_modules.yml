@@ -40,7 +40,7 @@ steps:
   - vf_python_restore_cache:
       working_directory: << parameters.working_directory >>
       cache_prefix: << parameters.cache_prefix >>
-  - poetry_command:
+  - yarn_command:
       working_directory: << parameters.working_directory >>
       run_in_background: << parameters.run_in_background >>
       request_remote_docker: << parameters.request_remote_docker >>
@@ -48,7 +48,7 @@ steps:
       run_in_container: << parameters.run_in_container >>
       step_name: << parameters.step_name >>
       wait: << parameters.wait >>
-      poetry_command: poetry install --directory << parameters.working_directory >>/.poetry << parameters.install_args >>
+      yarn_command: poetry install --directory << parameters.working_directory >>/.poetry << parameters.install_args >>
   - vf_python_save_cache: # special step to save the dependency cache
       working_directory: << parameters.working_directory >>
       cache_prefix: << parameters.cache_prefix >>
