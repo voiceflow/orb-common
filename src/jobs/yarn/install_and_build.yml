@@ -118,36 +118,22 @@ steps:
       monorepo_engine: << parameters.monorepo_engine >>
       paths_to_cache: << parameters.paths_to_cache >>
 
-  # Persist to workspace
+  # Persist build to workspace
   - when:
       condition:
         equal:
-          - all
-          - "<< parameters.package >>"
+          - python
+          - "<< parameters.language >>"
       steps:
-        - persist_to_workspace:
-            root: "."
-            paths:
-              - ./*/*/build
+        - persist_python_build:
+            package: << parameters.package >>
+            package_folder: << parameters.package_folder >>
   - when:
       condition:
-        and:
-          - "<< parameters.package >>"
-          - not:
-              equal:
-                - all
-                - "<< parameters.package >>"
+        equal:
+          - node
+          - "<< parameters.language >>"
       steps:
-        - persist_to_workspace:
-            root: "."
-            paths:
-              - << parameters.package_folder >>/<< parameters.package >>/build
-              - << parameters.package_folder >>/<< parameters.package >>/yarn.lock
-
-  - unless:
-      condition: "<< parameters.package >>"
-      steps:
-        - persist_to_workspace:
-            root: "."
-            paths:
-              - build
+        - persist_node_build:
+            package: << parameters.package >>
+            package_folder: << parameters.package_folder >>

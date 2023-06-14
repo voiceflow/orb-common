@@ -1,0 +1,43 @@
+parameters:
+  package:
+    description: Package name
+    type: string
+    default: ""
+  package_folder:
+    description: Package folder
+    type: string
+    default: "packages"
+steps:
+  # Persist to workspace
+  - when:
+      condition:
+        equal:
+          - all
+          - "<< parameters.package >>"
+      steps:
+        - persist_to_workspace:
+            root: "."
+            paths:
+              - ./*/*/dist
+  - when:
+      condition:
+        and:
+          - "<< parameters.package >>"
+          - not:
+              equal:
+                - all
+                - "<< parameters.package >>"
+      steps:
+        - persist_to_workspace:
+            root: "."
+            paths:
+              - << parameters.package_folder >>/<< parameters.package >>/dist
+              - << parameters.package_folder >>/<< parameters.package >>/poetry.lock
+
+  - unless:
+      condition: "<< parameters.package >>"
+      steps:
+        - persist_to_workspace:
+            root: "."
+            paths:
+              - dist
