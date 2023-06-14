@@ -95,7 +95,7 @@ steps:
         - run:
             name: Release Monorepo
             command: |-
-              yarn run-many --target=publish
+              yarn run publish
 
   - steps: << parameters.post_publish_steps >>
 
