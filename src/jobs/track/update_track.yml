@@ -58,6 +58,10 @@ parameters:
     description: KMS Key to sign the containers
     type: string
     default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
+  inject_aws_credentials:
+    description: Inject AWS credentials into the build
+    type: boolean
+    default: false
 steps:
   - update_track:
       image_repo: "<< parameters.image_repo >>"
@@ -75,3 +79,4 @@ steps:
       package_folder: "<< parameters.package_folder >>"
       image_tag: "<< parameters.image_tag >>"
       kms_key: "<< parameters.kms_key >>"
+      inject_aws_credentials: "<< parameters.inject_aws_credentials >>"

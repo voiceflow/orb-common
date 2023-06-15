@@ -39,6 +39,10 @@ parameters:
     description: Semantic release version of the package
     type: string
     default: ""
+  inject_aws_credentials:
+    description: Inject AWS credentials into the build
+    type: boolean
+    default: false
 steps:
   - build_push_image:
       image_repo: "<< parameters.image_repo >>"
@@ -51,3 +55,4 @@ steps:
       package_folder: "<< parameters.package_folder >>"
       kms_key: "<< parameters.kms_key >>"
       sem_ver_override: "<< parameters.sem_ver_override >>"
+      inject_aws_credentials: "<< parameters.inject_aws_credentials >>"

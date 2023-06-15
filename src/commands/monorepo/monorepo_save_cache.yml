@@ -46,3 +46,11 @@ steps:
                   root: "."
                   paths:
                     - node_modules/.cache
+        - when:
+            condition:
+              equal: ["nx", << parameters.monorepo_engine >>]
+            steps:
+              - persist_to_workspace:
+                  root: "."
+                  paths:
+                    - .cache

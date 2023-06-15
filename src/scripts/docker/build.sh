@@ -8,6 +8,7 @@ echo "PACKAGE: $PACKAGE"
 echo "BUILD_CONTEXT: $BUILD_CONTEXT"
 echo "DOCKERFILE: $DOCKERFILE"
 echo "MONOREPO_DIRECTORY: $MONOREPO_DIRECTORY"
+echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
 
 if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
     IMAGE_TAG="k8s-$CIRCLE_SHA1"
@@ -48,9 +49,14 @@ if [[ -n "$PACKAGE" ]]; then
     PACKAGE_ARG=(--build-arg APP_NAME="$PACKAGE")
 fi
 
+if (( INJECT_AWS_CREDENTIALS )); then
+    AWS_CREDENTIALS_ARG=(--build-arg AWS_REGION="${AWS_REGION}" --build-arg AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --build-arg AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}")
+fi
+
 docker build \
     "${REGISTRY_ARG[@]}" \
     "${PACKAGE_ARG[@]}" \
+    "${AWS_CREDENTIALS_ARG[@]}" \
     --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
     --build-arg build_BUILD_URL="${CIRCLE_BUILD_URL}"	\
     --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \

@@ -1,0 +1,14 @@
+parameters:
+  working_directory:
+    description: Directory containing package.json
+    type: string
+    default: './'
+  cache_prefix:
+    description: Cache prefix
+    type: string
+    default: ''
+steps:
+  - save_cache: # special step to save the dependency cache
+      key: python-package-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/poetry.lock" }}
+      paths:
+        - << parameters.working_directory >>/.venv
