@@ -12,7 +12,7 @@ echo "BUCKET: ${BUCKET?}"
 echo "LOCAL_REGISTRY: ${LOCAL_REGISTRY?}"
 echo "BUILD_ARGS: ${BUILD_ARGS?}"
 echo "DOCKERFILE: ${DOCKERFILE?}"
-echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
+echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS}"
 
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
