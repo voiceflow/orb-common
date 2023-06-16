@@ -80,6 +80,7 @@ steps:
         BUILD_CONTEXT: '<< parameters.build_context >>'
         DOCKERFILE: '<< parameters.dockerfile >>'
         MONOREPO_DIRECTORY: '<< parameters.monorepo_directory >>'
+        INJECT_AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
       command: <<include(scripts/docker/build.sh)>>
 
   - run:
