@@ -1,0 +1,13 @@
+parameters:
+  run_on_root:
+    description: Check that allow the command to run on root
+    type: boolean
+    default: false
+executor: node-executor
+steps:
+  - checkout
+  - attach_workspace:
+      at: ~/voiceflow
+  - install_node_modules
+  - monorepo_unit_tests:
+      run_on_root: << parameters.run_on_root >>
