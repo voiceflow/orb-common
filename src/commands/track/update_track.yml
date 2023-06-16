@@ -67,6 +67,9 @@ steps:
       condition: << parameters.checkout >>
       steps:
         - checkout # special step to check out source code to working directory
+        - run:
+            name: "Get latest tags"
+            command: git pull
   - when:
       condition: << parameters.request_remote_docker >>
       steps:
