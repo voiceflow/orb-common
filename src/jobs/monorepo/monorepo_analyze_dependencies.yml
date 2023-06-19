@@ -13,16 +13,6 @@ steps:
   - attach_workspace:
       at: ~/voiceflow
   - install_node_modules
-  - restore_cache:
-      name: Restoring eslint Cache
-      keys:
-        - eslint-cache-{{`{{ .Branch }}`}}
-        - eslint-cache-master
-  - monorepo_lint_report:
+  - monorepo_analyze_dependencies:
       run_on_root: << parameters.run_on_root >>
       force_execution: true
-  - save_cache:
-      name: Saving eslint Cache
-      key: eslint-cache-{{`{{ .Branch }}`}}-{{`{{ .BuildNum }}`}}
-      paths:
-        - ~/voiceflow/apps/creator-app/.eslintcache
