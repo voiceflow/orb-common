@@ -13,6 +13,6 @@ steps:
   - attach_workspace:
       at: ~/voiceflow
   - install_node_modules
-  - monorepo_unit_tests:
+  - monorepo_integration_tests:
       run_on_root: << parameters.run_on_root >>
       force_execute: true
