@@ -15,4 +15,4 @@ steps:
   - install_node_modules
   - monorepo_lint_report:
       run_on_root: << parameters.run_on_root >>
-      force_execute: true
+      force_execution: true
