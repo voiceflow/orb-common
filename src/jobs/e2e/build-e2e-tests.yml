@@ -26,7 +26,7 @@ steps:
       working_directory: *e2e_repo_path
       command: |
         echo "Installing repo with e2e tests"
-        yarn install --frozen-lockfile
+        yarn install --immutable
 
         echo "Building dependencies"
         yarn build:deps
