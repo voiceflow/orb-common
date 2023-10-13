@@ -1,4 +1,3 @@
-executor: node-executor
 parameters:
   install_args:
     description: Additional yarn install command options
@@ -24,6 +23,11 @@ parameters:
     description: Directory to store schemas between jobs
     type: string
     default: "/tmp/schemas"
+  executor:
+    description: Executor to run the command on
+    type: executor
+    default: node-executor
+executor: << parameters.executor >>
 steps:
   - checkout
   - attach_workspace:

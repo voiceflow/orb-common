@@ -3,7 +3,11 @@ parameters:
     description: Directory to store schemas between jobs
     type: string
     default: "/tmp/schemas"
-executor: node-executor
+  executor:
+    description: Executor to run the command on
+    type: executor
+    default: node-executor
+executor: << parameters.executor >>
 steps:
   - clone_repo:
       step_name: Clone openapi-schemas repository
