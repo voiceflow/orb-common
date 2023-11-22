@@ -1,5 +1,5 @@
 description: Clones the e2e tests repo and builds them
-executor: node-executor
+executor: node-large-executor
 
 parameters:
   e2e_repo_name:
@@ -29,7 +29,7 @@ steps:
         yarn install --immutable
 
         echo "Building dependencies"
-        yarn build:deps --concurrency 3
+        yarn build:deps
   - when:
       condition: << parameters.persist_to_workspace >>
       steps:
