@@ -29,7 +29,7 @@ steps:
         yarn install --immutable
 
         echo "Building dependencies"
-        yarn build:deps
+        yarn build --concurrency 1
   - when:
       condition: << parameters.persist_to_workspace >>
       steps:
