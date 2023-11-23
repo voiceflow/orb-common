@@ -41,7 +41,6 @@ steps:
       key: node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "/tmp/e2e-tests/yarn.lock" }}
       paths:
         - '/tmp/e2e-tests/.yarn/cache'
-        - '/tmp/e2e-tests/node_modules/.cache/turbo'
   - when:
       condition: << parameters.persist_to_workspace >>
       steps:
