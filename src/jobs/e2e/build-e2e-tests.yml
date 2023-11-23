@@ -17,7 +17,7 @@ parameters:
   cache_prefix:
     description: Cache prefix
     type: string
-    default: ''
+    default: 'build-e2e-tests'
 steps:
   - clone_repo:
       github_repo_name: << parameters.e2e_repo_name >>
@@ -25,19 +25,23 @@ steps:
       path_to_clone: &e2e_repo_path /tmp/e2e-tests
   - authenticate_npm:
       working_directory: *e2e_repo_path
-  - vf_restore_cache:
-      yarn_lock_restore_cache_directory: *e2e_repo_path
-      cache_prefix: << parameters.cache_prefix >>
+  - restore_cache:
+      keys:
+        - node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "*e2e_repo_path/yarn.lock" }}
   - run:
       name: Build E2E Test Dependencies
       working_directory: *e2e_repo_path
-      command: | # the mv command is incredibly janky - we want to reuse the yarn cache from the build step
-        mv /home/circleci/voiceflow/.yarn/cache /tmp/e2e-tests/.yarn/cache
+      command: |
         echo "Installing repo with e2e tests"
         yarn install --immutable
 
         echo "Building dependencies"
         yarn build:deps
+  - save_cache:
+      key: node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "*e2e_repo_path/yarn.lock" }}
+      paths:
+        - '*e2e_repo_path/.yarn/cache'
+        - '*e2e_repo_path/node_modules/.cache/turbo'
   - when:
       condition: << parameters.persist_to_workspace >>
       steps:
