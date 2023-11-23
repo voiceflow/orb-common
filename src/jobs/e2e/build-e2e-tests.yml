@@ -31,7 +31,8 @@ steps:
   - run:
       name: Build E2E Test Dependencies
       working_directory: *e2e_repo_path
-      command: |
+      command: | # the mv command is incredibly janky - we want to reuse the yarn cache from the build step
+        mv /home/circleci/voiceflow/.yarn/cache /tmp/e2e-tests/.yarn/cache
         echo "Installing repo with e2e tests"
         yarn install --immutable
 
