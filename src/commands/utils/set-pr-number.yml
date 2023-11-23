@@ -1,0 +1,26 @@
+parameters:
+  working_directory:
+    description: Directory of git repo
+    type: string
+    default: "."
+  target_env_var:
+    description: Environment variable to set with the environment name for this commit
+    type: env_var_name
+    default: PR_NUMBER
+steps:
+  - run:
+      name: Set << parameters.target_env_var >> variable with the PR number
+      working_directory: << parameters.working_directory >>
+      command: |
+        # If multiple PRs are merged at the same time, CIRCLE_PULL_REQUEST will
+        # be a random one of them. We need to get the PR number from the URL.
+        PR="${CIRCLE_PULL_REQUEST##*/}"
+
+        # If this is a bors branch, CIRCLE_PULL_REQUEST will be empty. We need
+        # to get the PR number from the commit message (e.g. "fix: bug (CT-000) (#1234)")
+        PR="${PR:-$(git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -o '#[0-9]\+')}"
+
+        # Trim leading # from PR number
+        PR="${PR##\#}"
+
+        echo "export << parameters.target_env_var >>=\"${PR}\"" >> "$BASH_ENV"
