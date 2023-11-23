@@ -24,7 +24,7 @@ steps:
             keys:
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}"
-              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master--"
+              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master"
         - when:
             condition:
               equal: ["lerna", << parameters.monorepo_engine >>]
