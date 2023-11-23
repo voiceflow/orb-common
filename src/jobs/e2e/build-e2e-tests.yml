@@ -14,6 +14,14 @@ parameters:
     description: Persist the e2e tests to the workspace
     type: boolean
     default: true
+  yarn_lock_restore_cache_directory:
+    description: Cache directory for yarn.lock file
+    type: string
+    default: './'
+  cache_prefix:
+    description: Cache prefix
+    type: string
+    default: ''
 steps:
   - clone_repo:
       github_repo_name: << parameters.e2e_repo_name >>
@@ -21,6 +29,9 @@ steps:
       path_to_clone: &e2e_repo_path /tmp/e2e-tests
   - authenticate_npm:
       working_directory: *e2e_repo_path
+  - vf_restore_cache:
+      yarn_lock_restore_cache_directory: << parameters.yarn_lock_restore_cache_directory >>
+      cache_prefix: << parameters.cache_prefix >>
   - run:
       name: Build E2E Test Dependencies
       working_directory: *e2e_repo_path
