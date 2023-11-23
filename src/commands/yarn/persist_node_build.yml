@@ -19,6 +19,7 @@ steps:
             root: "."
             paths:
               - ./*/*/build
+              - .yarn/cache
   - when:
       condition:
         and:
