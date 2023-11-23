@@ -18,7 +18,7 @@ steps:
 
         # If this is a bors branch, CIRCLE_PULL_REQUEST will be empty. We need
         # to get the PR number from the commit message (e.g. "fix: bug (CT-000) (#1234)")
-        PR="${PR:-$(git log --format=oneline -n 1 $CIRCLE_SHA1  | grep -oE '#[0-9]+')}"
+        PR="${PR:-$(git log --format=oneline -n 1 $CIRCLE_SHA1  | grep --only-matching --extended-regexp '#[0-9]+' || echo '')}"
 
         # Trim leading # from PR number
         PR="${PR##\#}"
