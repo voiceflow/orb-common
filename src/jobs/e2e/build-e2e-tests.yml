@@ -27,7 +27,7 @@ steps:
       working_directory: *e2e_repo_path
   - restore_cache:
       keys:
-        - node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "*e2e_repo_path/yarn.lock" }}
+        - node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "/tmp/e2e-tests/yarn.lock" }}
   - run:
       name: Build E2E Test Dependencies
       working_directory: *e2e_repo_path
@@ -38,10 +38,10 @@ steps:
         echo "Building dependencies"
         yarn build:deps
   - save_cache:
-      key: node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "*e2e_repo_path/yarn.lock" }}
+      key: node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "/tmp/e2e-tests/yarn.lock" }}
       paths:
-        - '*e2e_repo_path/.yarn/cache'
-        - '*e2e_repo_path/node_modules/.cache/turbo'
+        - '/tmp/e2e-tests/.yarn/cache'
+        - '/tmp/e2e-tests/node_modules/.cache/turbo'
   - when:
       condition: << parameters.persist_to_workspace >>
       steps:
