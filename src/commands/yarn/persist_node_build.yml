@@ -33,7 +33,7 @@ steps:
             paths:
               - << parameters.package_folder >>/<< parameters.package >>/build
               - << parameters.package_folder >>/<< parameters.package >>/yarn.lock
-              - << parameters.package_folder >>/<< parameters.package >>/.yarn/cache
+              - .yarn/cache
 
   - unless:
       condition: "<< parameters.package >>"
