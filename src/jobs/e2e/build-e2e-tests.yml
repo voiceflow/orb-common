@@ -14,6 +14,10 @@ parameters:
     description: Persist the e2e tests to the workspace
     type: boolean
     default: true
+  cache_prefix:
+    description: Cache prefix
+    type: string
+    default: 'build-e2e-tests'
 steps:
   - clone_repo:
       github_repo_name: << parameters.e2e_repo_name >>
@@ -21,6 +25,9 @@ steps:
       path_to_clone: &e2e_repo_path /tmp/e2e-tests
   - authenticate_npm:
       working_directory: *e2e_repo_path
+  - restore_cache:
+      keys:
+        - node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "/tmp/e2e-tests/yarn.lock" }}
   - run:
       name: Build E2E Test Dependencies
       working_directory: *e2e_repo_path
@@ -30,6 +37,10 @@ steps:
 
         echo "Building dependencies"
         yarn build:deps
+  - save_cache:
+      key: node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "/tmp/e2e-tests/yarn.lock" }}
+      paths:
+        - '/tmp/e2e-tests/.yarn/cache'
   - when:
       condition: << parameters.persist_to_workspace >>
       steps:

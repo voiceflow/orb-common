@@ -19,6 +19,7 @@ steps:
             root: "."
             paths:
               - ./*/*/build
+              - .yarn/cache
   - when:
       condition:
         and:
@@ -33,6 +34,7 @@ steps:
             paths:
               - << parameters.package_folder >>/<< parameters.package >>/build
               - << parameters.package_folder >>/<< parameters.package >>/yarn.lock
+              - .yarn/cache
 
   - unless:
       condition: "<< parameters.package >>"
