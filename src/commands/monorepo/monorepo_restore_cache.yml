@@ -23,7 +23,7 @@ steps:
         - restore_cache:
             keys:
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
-              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--"
+              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}"
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master--"
         - when:
             condition:
