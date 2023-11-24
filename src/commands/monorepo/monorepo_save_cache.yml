@@ -47,7 +47,7 @@ steps:
                   paths:
                     - node_modules/.cache/turbo
               - save_cache:
-                  key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}"
+                  key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
                   paths:
                     - node_modules/.cache/turbo
         - when:
