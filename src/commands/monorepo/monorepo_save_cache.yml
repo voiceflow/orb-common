@@ -59,7 +59,7 @@ steps:
                     equal: ["", << parameters.pr_number >>]
                   steps:
                     - save_cache:
-                        key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}"
+                        key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
                         paths:
                           - node_modules/.cache/turbo
               - unless:
@@ -67,7 +67,7 @@ steps:
                     equal: ["", << parameters.pr_number >>]
                   steps:
                     - save_cache:
-                        key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.pr_number >>"
+                        key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.pr_number >>--{{ .Revision }}"
                         paths:
                           - node_modules/.cache/turbo
         - when:

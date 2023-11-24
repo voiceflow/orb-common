@@ -32,6 +32,7 @@ steps:
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.pr_number >>"
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}"
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master"
+              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-production"
         - when:
             condition:
               equal: ["lerna", << parameters.monorepo_engine >>]
