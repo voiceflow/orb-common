@@ -15,12 +15,10 @@ parameters:
     description: Cache prefix id
     type: string
     default: "monorepo-build-cache"
-  pr_number:
-    description: |
-      PR number used instead of branch name in order for bors
-      builds to share a cache with the PR they are testing
+  cache_branch:
+    description: Branch name to use for caching
     type: string
-    default: ""
+    default: "<< pipeline.git.branch >>"
 steps:
   - when:
       condition:
@@ -29,8 +27,7 @@ steps:
         - restore_cache:
             keys:
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
-              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.pr_number >>"
-              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}"
+              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.cache_branch >>"
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master"
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-production"
         - when:
