@@ -13,7 +13,7 @@ parameters:
     default: PR_BRANCH
 steps:
   - run:
-      name: Set << parameters.target_env_var >> variable with the PR branch 
+      name: Set << parameters.target_env_var >> variable with the PR branch
       working_directory: << parameters.working_directory >>
       command: |
         API_URL = "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER:?}"
