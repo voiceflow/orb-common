@@ -16,7 +16,12 @@ steps:
       name: Set << parameters.target_env_var >> variable with the PR branch
       working_directory: << parameters.working_directory >>
       command: |
-        API_URL="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER:?}"
+        if [ -z "${<< parameters.pr_number_env_var >>}" ]; then
+          echo "No PR number found, skipping"
+          exit 0
+        fi
+
+        API_URL="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${<< parameters.pr_number_env_var >>:?}"
         RESPONSE=$(curl -s -H "Authorization: token ${GITHUB_TOKEN:?}" "${API_URL}")
         PR_BRANCH=$(echo "${RESPONSE:?}" | jq -r '.head.ref')
 
