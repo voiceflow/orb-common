@@ -16,9 +16,7 @@ parameters:
     type: string
     default: "monorepo-build-cache"
   cache_branch:
-    description: |
-      Alternate branch name to use in order for bors builds to share a cache
-      with the PR they are testing
+    description: Branch name to use for caching
     type: string
     default: "<< pipeline.git.branch >>"
   paths_to_cache:

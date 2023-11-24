@@ -28,12 +28,10 @@ parameters:
     description: Package folder
     type: string
     default: "packages"
-  pr_number:
-    description: |
-      PR number used instead of branch name in order for bors
-      builds to share a cache with the PR they are testing
+  cache_branch:
+    description: Branch name to use for caching
     type: string
-    default: ""
+    default: "<< pipeline.git.branch >>"
   check_image:
     description: Checks if the Docker image exists
     type: boolean
@@ -105,7 +103,7 @@ steps:
       package: << parameters.package >>
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
-      pr_number: << parameters.pr_number >>
+      cache_branch: << parameters.cache_branch >>
 
   - steps: << parameters.pre_build_steps >>
 
@@ -123,7 +121,7 @@ steps:
       package: << parameters.package >>
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
-      pr_number: << parameters.pr_number >>
+      cache_branch: << parameters.cache_branch >>
       paths_to_cache: << parameters.paths_to_cache >>
 
   # Persist build to workspace
