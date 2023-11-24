@@ -28,6 +28,10 @@ parameters:
     description: Package folder
     type: string
     default: "packages"
+  cache_branch:
+    description: Branch name to use for caching
+    type: string
+    default: "<< pipeline.git.branch >>"
   check_image:
     description: Checks if the Docker image exists
     type: boolean
@@ -99,6 +103,7 @@ steps:
       package: << parameters.package >>
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
+      cache_branch: << parameters.cache_branch >>
 
   - steps: << parameters.pre_build_steps >>
 
@@ -116,6 +121,7 @@ steps:
       package: << parameters.package >>
       package_folder: << parameters.package_folder >>
       monorepo_engine: << parameters.monorepo_engine >>
+      cache_branch: << parameters.cache_branch >>
       paths_to_cache: << parameters.paths_to_cache >>
 
   # Persist build to workspace

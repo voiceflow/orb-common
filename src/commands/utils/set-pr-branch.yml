@@ -1,0 +1,28 @@
+parameters:
+  working_directory:
+    description: Directory of git repo
+    type: string
+    default: "."
+  pr_number_env_var:
+    description: Environment variable to get the PR number from
+    type: env_var_name
+    default: PR_NUMBER
+  target_env_var:
+    description: Environment variable to set with the branch name for the PR
+    type: env_var_name
+    default: PR_BRANCH
+steps:
+  - run:
+      name: Set << parameters.target_env_var >> variable with the PR branch
+      working_directory: << parameters.working_directory >>
+      command: |
+        if [ -z "${<< parameters.pr_number_env_var >>}" ]; then
+          echo "No PR number found, skipping"
+          exit 0
+        fi
+
+        API_URL="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${<< parameters.pr_number_env_var >>:?}"
+        RESPONSE=$(curl -s -H "Authorization: token ${GITHUB_TOKEN:?}" "${API_URL}")
+        PR_BRANCH=$(echo "${RESPONSE:?}" | jq -r '.head.ref')
+
+        echo "export << parameters.target_env_var >>=\"${PR_BRANCH}\"" >> "$BASH_ENV"
