@@ -15,6 +15,12 @@ parameters:
     description: Cache prefix id
     type: string
     default: "monorepo-build-cache"
+  pr_number:
+    description: |
+      PR number used instead of branch name in order for bors
+      builds to share a cache with the PR they are testing
+    type: string
+    default: ""
   paths_to_cache:
     description: Paths to cache
     type: string
@@ -46,10 +52,24 @@ steps:
                   root: "."
                   paths:
                     - node_modules/.cache/turbo
-              - save_cache:
-                  key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}"
-                  paths:
-                    - node_modules/.cache/turbo
+              # If the build is for a PR, save the cache with the PR number
+              # so that bors builds can share the cache with the PR they are testing
+              - when:
+                  condition:
+                    equal: ["", << parameters.pr_number >>]
+                  steps:
+                    - save_cache:
+                        key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}"
+                        paths:
+                          - node_modules/.cache/turbo
+              - unless:
+                  condition:
+                    equal: ["", << parameters.pr_number >>]
+                  steps:
+                    - save_cache:
+                        key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.pr_number >>"
+                        paths:
+                          - node_modules/.cache/turbo
         - when:
             condition:
               equal: ["nx", << parameters.monorepo_engine >>]

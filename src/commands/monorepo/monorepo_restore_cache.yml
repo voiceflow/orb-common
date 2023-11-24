@@ -15,6 +15,12 @@ parameters:
     description: Cache prefix id
     type: string
     default: "monorepo-build-cache"
+  pr_number:
+    description: |
+      PR number used instead of branch name in order for bors
+      builds to share a cache with the PR they are testing
+    type: string
+    default: ""
 steps:
   - when:
       condition:
@@ -23,6 +29,7 @@ steps:
         - restore_cache:
             keys:
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.pr_number >>"
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}"
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master"
         - when:
