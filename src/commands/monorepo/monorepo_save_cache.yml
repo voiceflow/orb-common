@@ -18,7 +18,7 @@ parameters:
   cache_branch:
     description: Branch name to use for caching
     type: string
-    default: "<< pipeline.git.branch >>"
+    default: ""
   paths_to_cache:
     description: Paths to cache
     type: string
@@ -50,10 +50,20 @@ steps:
                   root: "."
                   paths:
                     - node_modules/.cache/turbo
-              - save_cache:
-                  key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.cache_branch >>--{{ .Revision }}"
-                  paths:
-                    - node_modules/.cache/turbo
+              - when:
+                  condition:
+                    equal: ["", "<< parameters.cache_branch >>"]
+                  steps:
+                    - set_cache_key:
+                        path: node_modules/.cache/turbo
+                        key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+              - unless:
+                  condition:
+                    equal: ["", "<< parameters.cache_branch >>"]
+                  steps:
+                    - set_cache_key:
+                        path: node_modules/.cache/turbo
+                        key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.cache_branch >>--{{ .Revision }}"
         - when:
             condition:
               equal: ["nx", << parameters.monorepo_engine >>]
