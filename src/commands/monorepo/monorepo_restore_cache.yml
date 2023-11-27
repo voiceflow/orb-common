@@ -30,11 +30,10 @@ steps:
               # Only use << parameters.cache_branch >> if it is not empty
               # This approach uses mustache templating to conditionally use the branch name override
               # Docs: https://support.circleci.com/hc/en-us/articles/4417604103835-Using-mustache-conditionals-in-config-file
-              # yamllint disable
+              # yamllint disable-file
               <<# parameters.cache_branch >>
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.cache_branch >>"
               <</ parameters.cache_branch >>
-              # yamllint enable
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master"
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-production"
         - when:
