@@ -37,6 +37,7 @@ steps:
                 <<^ parameters.cache_branch >>
                 << parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
                 <</ parameters.cache_branch >>
+
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master"
               - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-production"
         - when:
