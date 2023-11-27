@@ -50,7 +50,7 @@ steps:
                   root: "."
                   paths:
                     - node_modules/.cache/turbo
-              - set_cache_key:
+              - save_cache:
                   path: node_modules/.cache/turbo
                   # Only use << parameters.cache_branch >> if it is not empty
                   # This approach uses mustache templating to conditionally use the branch name override
