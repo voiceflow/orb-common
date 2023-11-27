@@ -50,20 +50,17 @@ steps:
                   root: "."
                   paths:
                     - node_modules/.cache/turbo
-              - when:
-                  condition:
-                    equal: ["", "<< parameters.cache_branch >>"]
-                  steps:
-                    - set_cache_key:
-                        path: node_modules/.cache/turbo
-                        key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
-              - unless:
-                  condition:
-                    equal: ["", "<< parameters.cache_branch >>"]
-                  steps:
-                    - set_cache_key:
-                        path: node_modules/.cache/turbo
-                        key: "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.cache_branch >>--{{ .Revision }}"
+              - set_cache_key:
+                  path: node_modules/.cache/turbo
+                  # Only use << parameters.cache_branch >> if it is not empty
+                  # This approach uses mustache templating to conditionally use the branch name override
+                  key: |
+                    <<# parameters.cache_branch >>
+                    << parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.cache_branch >>--{{ .Revision }}
+                    <</ parameters.cache_branch >>
+                    <<^ parameters.cache_branch >>
+                    << parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+                    <</ parameters.cache_branch >>
         - when:
             condition:
               equal: ["nx", << parameters.monorepo_engine >>]
