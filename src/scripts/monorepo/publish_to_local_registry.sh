@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker run -d --name prepublish --network host -v /src 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1 tail -f /dev/null
+docker run -d --name prepublish --network host -v /src 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v2 tail -f /dev/null
 docker cp ./ prepublish:/src
 docker exec prepublish git config --global user.email "serviceaccount@voiceflow.com"
 docker exec prepublish git config --global user.name "Voiceflow"
