@@ -17,6 +17,10 @@ parameters:
   semantic_version:
     type: string
     default: ""
+  local_registry_container_image:
+    description: container image to run verdaccio
+    type: string
+    default: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -37,3 +41,4 @@ steps:
       image_repo: << parameters.image_repo >>
       image_tag: '<< parameters.semantic_version >>'
       sem_ver_override: '<< parameters.semantic_version >>'
+      local_registry_container_image: << parameters.local_registry_container_image >>

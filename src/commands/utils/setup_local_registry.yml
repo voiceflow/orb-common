@@ -3,6 +3,10 @@ parameters:
   verdaccio_config:
     description: location of verdaccio configuration file
     type: string
+  container_image:
+    description: container image to run verdaccio
+    type: string
+    default: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
 steps:
   - run:
       name: Setup local proxy registry
@@ -14,4 +18,4 @@ steps:
         docker run -it --name verdaccio --network host -e NPM_TOKEN=${NPM_TOKEN} --volumes-from verdaccio-conf verdaccio/verdaccio:5
   - run_command_with_retry:
       step_name: Download Docker image
-      command: docker pull 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v2
+      command: docker pull << parameters.container_image >>
