@@ -32,14 +32,14 @@ steps:
               # Docs: https://support.circleci.com/hc/en-us/articles/4417604103835-Using-mustache-conditionals-in-config-file
               - |
                 <<# parameters.cache_branch >>
-                << parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.cache_branch >>
+                << parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.cache_branch >>-
                 <</ parameters.cache_branch >>
                 <<^ parameters.cache_branch >>
-                << parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
+                << parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-
                 <</ parameters.cache_branch >>
 
-              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master"
-              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-production"
+              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-master-"
+              - "<< parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-production-"
         - when:
             condition:
               equal: ["lerna", << parameters.monorepo_engine >>]
