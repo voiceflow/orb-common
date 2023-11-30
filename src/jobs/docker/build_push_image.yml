@@ -43,6 +43,10 @@ parameters:
     description: Inject AWS credentials into the build
     type: boolean
     default: false
+  local_registry_container_image:
+    description: container image to run verdaccio
+    type: string
+    default: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
 steps:
   - build_push_image:
       image_repo: "<< parameters.image_repo >>"
@@ -56,3 +60,4 @@ steps:
       kms_key: "<< parameters.kms_key >>"
       sem_ver_override: "<< parameters.sem_ver_override >>"
       inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
+      local_registry_container_image: "<< parameters.local_registry_container_image >>"

@@ -50,6 +50,10 @@ parameters:
     description: Inject AWS credentials into the build
     type: boolean
     default: false
+  local_registry_container_image:
+    description: container image to run verdaccio
+    type: string
+    default: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -71,6 +75,7 @@ steps:
       steps:
         - setup_local_registry:
             verdaccio_config: << parameters.monorepo_directory >>/config/verdaccio/config.yaml
+            container_image: << parameters.local_registry_container_image >>
         - monorepo_publish_to_local_registry:
             working_directory: << parameters.monorepo_directory >>
   - run:

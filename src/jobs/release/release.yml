@@ -1,5 +1,9 @@
-executor: node-executor
+executor: << parameters.executor >>
 parameters:
+  executor:
+    description: Executor to use in this job
+    type: executor
+    default: node-executor
   install_args:
     description: Additional yarn install command options
     type: string
