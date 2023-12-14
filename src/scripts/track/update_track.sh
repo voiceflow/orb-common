@@ -74,6 +74,8 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         AWS_CREDENTIALS_ARG=(--build-arg AWS_REGION="${AWS_REGION}" --build-arg AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --build-arg AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}")
     fi
 
+    export DOCKER_DEFAULT_PLATFORM=linux/arm64
+
     docker build \
         --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
         --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \
