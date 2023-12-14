@@ -1,0 +1,12 @@
+parameters:
+  default_resource_class:
+    description: Default resource class for the executor
+    type: string
+    default: arm.medium
+working_directory: ~/voiceflow
+docker:
+  - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-image:v5
+    aws_auth:
+      aws_access_key_id: $AWS_ACCESS_KEY_ID
+      aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+resource_class: << parameters.default_resource_class >>

@@ -1,5 +1,9 @@
-executor: build-executor
+executor: << parameters.executor >>
 parameters:
+  executor:
+    description: Executor to use
+    type: string
+    default: build-executor
   image_repo:
     description: The container image repository
     type: string
