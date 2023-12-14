@@ -76,7 +76,10 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
 
     export DOCKER_DEFAULT_PLATFORM=linux/arm64
 
-    docker build \
+    # Set up buildx
+    docker buildx create --use --platform=linux/arm64,linux/amd64 --name=multiarch
+    docker buildx inspect --bootstrap
+    docker buildx build \
         --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
         --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \
         --build-arg build_BUILD_URL="${CIRCLE_BUILD_URL}" \
