@@ -1,4 +1,3 @@
-executor: << parameters.executor >>
 parameters:
   executor:
     description: Executor to use
@@ -70,6 +69,7 @@ parameters:
     description: container image to run verdaccio
     type: string
     default: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
+executor: << parameters.executor >>
 steps:
   - update_track:
       image_repo: "<< parameters.image_repo >>"
