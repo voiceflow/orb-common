@@ -66,6 +66,14 @@ parameters:
     description: container image to run verdaccio
     type: string
     default: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
+  use_buildkit:
+    description: Use buildkit to build the image
+    type: boolean
+    default: false
+  platform:
+    description: Platform to build the image
+    type: string
+    default: linux/amd64
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -112,4 +120,6 @@ steps:
         BUILD_ARGS: "<< parameters.build_args >>"
         DOCKERFILE: "<< parameters.dockerfile >>"
         INJECT_AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
+        USE_BUILDKIT: "<< parameters.use_buildkit >>"
+        PLATFORM: "<< parameters.platform >>"
       command: <<include(scripts/track/update_track.sh)>>
