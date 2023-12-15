@@ -78,9 +78,9 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
 
     BUILD_COMMAND="build"
     if (( USE_BUILDKIT )); then
-        docker buildx create --use --platform=linux/arm64,linux/amd64 --name=multiarch
+        docker buildx create --use --platform="$PLATFORM"
         docker buildx inspect --bootstrap
-        BUILD_COMMAND="buildx build"
+        BUILD_COMMAND="buildx build -o type=image --load"
     fi
 
     docker $BUILD_COMMAND \
