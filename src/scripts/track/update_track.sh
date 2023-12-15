@@ -13,6 +13,8 @@ echo "LOCAL_REGISTRY: ${LOCAL_REGISTRY?}"
 echo "BUILD_ARGS: ${BUILD_ARGS?}"
 echo "DOCKERFILE: ${DOCKERFILE?}"
 echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
+echo "PLATFORM: ${PLATFORM?}"
+echo "USE_BUILDKIT: ${USE_BUILDKIT?}"
 
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
@@ -74,7 +76,14 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         AWS_CREDENTIALS_ARG=(--build-arg AWS_REGION="${AWS_REGION}" --build-arg AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --build-arg AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}")
     fi
 
-    docker build \
+    BUILD_COMMAND="build"
+    if (( USE_BUILDKIT )); then
+        docker buildx create --use --platform="$PLATFORM"
+        docker buildx inspect --bootstrap
+        BUILD_COMMAND="buildx build --load"
+    fi
+
+    docker $BUILD_COMMAND \
         --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
         --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \
         --build-arg build_BUILD_URL="${CIRCLE_BUILD_URL}" \
@@ -84,6 +93,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         "${PACKAGE_ARG[@]}" \
         "${AWS_CREDENTIALS_ARG[@]}" \
         $BUILD_ARGS \
+        --platform "$PLATFORM" \
         -f "$BUILD_CONTEXT/$DOCKERFILE" \
         -t "$IMAGE_NAME" "$BUILD_CONTEXT"
     docker push "$IMAGE_NAME"

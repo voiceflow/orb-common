@@ -1,5 +1,9 @@
-executor: build-executor
+executor: << parameters.executor >>
 parameters:
+  executor:
+    description: Executor to use
+    type: executor
+    default: build-executor
   image_repo:
     description: The container image repository
     type: string
@@ -66,6 +70,14 @@ parameters:
     description: container image to run verdaccio
     type: string
     default: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
+  use_buildkit:
+    description: Use buildkit to build the image
+    type: boolean
+    default: false
+  platform:
+    description: Platform to build the image for
+    type: string
+    default: linux/amd64
 steps:
   - update_track:
       image_repo: "<< parameters.image_repo >>"
@@ -85,3 +97,5 @@ steps:
       kms_key: "<< parameters.kms_key >>"
       inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
       local_registry_container_image: "<< parameters.local_registry_container_image >>"
+      use_buildkit: "<< parameters.use_buildkit >>"
+      platform: "<< parameters.platform >>"
