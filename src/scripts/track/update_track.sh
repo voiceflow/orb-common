@@ -80,7 +80,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     if (( USE_BUILDKIT )); then
         docker buildx create --use --platform="$PLATFORM"
         docker buildx inspect --bootstrap
-        BUILD_COMMAND="buildx build -o type=image --load"
+        BUILD_COMMAND="buildx build --load"
     fi
 
     docker $BUILD_COMMAND \
