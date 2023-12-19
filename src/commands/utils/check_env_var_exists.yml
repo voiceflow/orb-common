@@ -8,11 +8,14 @@ steps:
       name: Fail if environment variable does not exist
       command: |
         ENV_VAR="<< parameters.env_var >>"
+        ENV_VAR_VALUE="${<< parameters.env_var >>}"
         echo "Checking if environment variable $ENV_VAR exists"
-        if [[ -v $ENV_VAR ]]; then
-            echo "Okay"
-            exit 0
-        else
+        echo "Value: $ENV_VAR_VALUE"
+
+        if [[ -z "${ENV_VAR_VALUE}" ]]; then
             echo "Environment variable $ENV_VAR does not exist"
             exit 1
+        else
+            echo "Okay"
+            exit 0
         fi
