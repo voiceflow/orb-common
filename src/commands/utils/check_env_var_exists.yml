@@ -1,0 +1,17 @@
+description: Check if an environment variable exists
+parameters:
+  env_var:
+    description: Environment variable to check
+    type: env_var_name
+steps:
+  - run:
+      name: Fail if environment variable does not exist
+      command: |
+        ENV_VAR="<< parameters.env_var >>"
+        if [[ -z $(eval echo \$$ENV_VAR) ]]; then
+            echo "Okay"
+            exit 0
+        else
+            echo "Environment variable $ENV_VAR does not exist"
+            exit 1
+        fi

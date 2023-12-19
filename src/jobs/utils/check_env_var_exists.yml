@@ -1,0 +1,8 @@
+parameters:
+  env_var:
+    description: Environment variable to check
+    type: env_var_name
+executor: build-executor
+steps:
+  - env_var:
+      component: "<< parameters.component >>"
