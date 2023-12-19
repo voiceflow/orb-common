@@ -8,7 +8,7 @@ steps:
       name: Fail if environment variable does not exist
       command: |
         ENV_VAR="<< parameters.env_var >>"
-        if [[ -z $(eval echo \$$ENV_VAR) ]]; then
+        if [[ -v $ENV_VAR ]]; then
             echo "Okay"
             exit 0
         else
