@@ -12,7 +12,7 @@ steps:
         echo "Checking if environment variable $ENV_VAR exists"
         echo "Value: $ENV_VAR_VALUE"
 
-        if [[ -z "${ENV_VAR_VALUE}" ]]; then
+        if [[ -z "${ENV_VAR_VALUE2}" ]]; then
             echo "Environment variable $ENV_VAR is not defined"
             exit 1
         else
