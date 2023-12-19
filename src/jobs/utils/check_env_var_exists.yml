@@ -4,5 +4,5 @@ parameters:
     type: env_var_name
 executor: build-executor
 steps:
-  - env_var:
-      component: "<< parameters.component >>"
+  - check_env_var_exists:
+      env_var: "<< parameters.component >>"
