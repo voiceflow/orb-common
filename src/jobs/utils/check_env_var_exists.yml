@@ -1,0 +1,8 @@
+parameters:
+  env_var:
+    description: Environment variable to check
+    type: env_var_name
+executor: go-executor
+steps:
+  - check_env_var_exists:
+      env_var: "<< parameters.env_var >>"
