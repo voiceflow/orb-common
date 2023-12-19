@@ -15,6 +15,6 @@ steps:
             echo "Environment variable $ENV_VAR is not defined"
             exit 1
         else
-            echo "Okay"
+            echo "Environment variable $ENV_VAR is defined"
             exit 0
         fi
