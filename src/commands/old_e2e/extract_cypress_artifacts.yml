@@ -1,9 +1,0 @@
-steps:
-  - run:
-      name: Get cypress artifacts
-      working_directory: ~/logs
-      when: on_fail
-      shell: /bin/sh
-      command: |-
-        docker cp code:/code/creator-app/apps/creator-app/cypress/videos ~/code/creator-app/apps/creator-app/cypress/videos
-        docker cp code:/code/creator-app/apps/creator-app/cypress/screenshots ~/code/creator-app/apps/creator-app/cypress/screenshots
