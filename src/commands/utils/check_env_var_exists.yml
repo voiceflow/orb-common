@@ -13,7 +13,7 @@ steps:
         echo "Value: $ENV_VAR_VALUE"
 
         if [[ -z "${ENV_VAR_VALUE}" ]]; then
-            echo "Environment variable $ENV_VAR does not exist"
+            echo "Environment variable $ENV_VAR is not defined"
             exit 1
         else
             echo "Okay"
