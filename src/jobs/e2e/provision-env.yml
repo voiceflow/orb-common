@@ -8,7 +8,7 @@ parameters:
   cluster:
     type: string
     description: Name of the cluster to create the environment on
-    default: "cm4-vf-dev-2-0-p1"
+    default: "cm4-vf-dev-br-2-0-p1"
   tracked-components:
     type: string
     description: Space-separated list of components to track the specified branch
@@ -33,6 +33,10 @@ steps:
         ENV_NAME: << parameters.env-name >>
         LOG_DIR: &log_dir /tmp/pod-logs-<< parameters.env-name >>
       command: vfcli logs gather-all "${LOG_DIR:?}" --name "${ENV_NAME:?}"
+      when: on_fail
+  - run:
+      name: Get pod list
+      command: kubectl get pods -n << parameters.env-name >>
       when: on_fail
   - store_artifacts:
       name: Store Logs
