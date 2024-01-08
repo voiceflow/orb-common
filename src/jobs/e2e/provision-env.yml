@@ -28,15 +28,15 @@ steps:
       env-name: << parameters.env-name >>
       track-file: *track_file
   - run:
+      name: Get pod list
+      command: kubectl get pods -n << parameters.env-name >>
+      when: on_fail
+  - run:
       name: Gather Logs
       environment:
         ENV_NAME: << parameters.env-name >>
         LOG_DIR: &log_dir /tmp/pod-logs-<< parameters.env-name >>
       command: vfcli logs gather-all "${LOG_DIR:?}" --name "${ENV_NAME:?}"
-      when: on_fail
-  - run:
-      name: Get pod list
-      command: kubectl get pods -n << parameters.env-name >>
       when: on_fail
   - store_artifacts:
       name: Store Logs
