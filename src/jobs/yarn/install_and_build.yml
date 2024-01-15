@@ -16,6 +16,10 @@ parameters:
     description: Run build in remote Docker container
     type: boolean
     default: true
+  run_install_node_modules_in_container:
+    description: Run install node_modules in remote Docker container
+    type: boolean
+    default: false
   monorepo_engine:
     description: Monorepo engine
     type: string
@@ -98,6 +102,8 @@ steps:
   - install_node_modules:
       avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
       language: "<< parameters.language >>"
+      container_image: "<< parameters.container_image_to_build >>"
+      run_in_container: "<< parameters.run_install_node_modules_in_container >>"
 
   - monorepo_restore_cache:
       package: << parameters.package >>
