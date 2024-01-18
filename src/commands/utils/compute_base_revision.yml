@@ -22,7 +22,6 @@ steps:
         # If we are on master, use the previous commit as the base
         if [[ $GIT_BRANCH == "trying" ] || [ $GIT_BRANCH == "staging" ]]; then
           BASE="master"
-        fi
-        
+        fi        
         echo "COMPUTED_BASE_REVISION environment variable to set to $BASE"  
         echo "export << parameters.target_env_var >>=\"$BASE\"" >> "$BASH_ENV"

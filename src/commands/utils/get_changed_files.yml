@@ -1,4 +1,4 @@
-parameters: 
+parameters:
   target_env_var:
     description: Environment variable to set with the list of changed files
     type: env_var_name
@@ -14,11 +14,10 @@ steps:
           BASE_REVISION="$COMPUTED_BASE_REVISION"
           echo "Setting base revision to computed base revision: $BASE_REVISION"         
        fi
-
-        BASE="$(git merge-base $CIRCLE_SHA1 $BASE_REVISION)"
+       BASE="$(git merge-base $CIRCLE_SHA1 $BASE_REVISION)"
         # If we are on master, use the previous commit as the base
-        if [[ $BASE == $CIRCLE_SHA1 ]]; then
+       if [[ $BASE == $CIRCLE_SHA1 ]]; then
           BASE="$(git rev-parse HEAD~1)"
-        fi
-        FILE_CHANGES="$(git diff --name-status --no-commit-id -r $BASE...$CIRCLE_SHA1)"
-        echo "export << parameters.target_env_var >>=\"$FILE_CHANGES\"" >> "$BASH_ENV"
+       fi
+       FILE_CHANGES="$(git diff --name-status --no-commit-id -r $BASE...$CIRCLE_SHA1)"
+       echo "export << parameters.target_env_var >>=\"$FILE_CHANGES\"" >> "$BASH_ENV"
