@@ -1,8 +1,4 @@
-parameters:
-  base_revision:
-    description: Git revision to compare against
-    type: string
-    default: master
+parameters: 
   target_env_var:
     description: Environment variable to set with the list of changed files
     type: env_var_name
@@ -10,9 +6,15 @@ parameters:
 steps:
   - run:
       name: Put list of changed files in << parameters.target_env_var >> environment variable
-      environment:
-        BASE_REVISION: '<< parameters.base_revision >>'
       command: |
+       if [[ -z $COMPUTED_BASE_REVISION  ]]; then
+          BASE_REVISION="master"
+          echo "Computed base revision is empty.Using default base revision of master"
+       else
+          BASE_REVISION="$COMPUTED_BASE_REVISION"
+          echo "Setting base revision to computed base revision: $BASE_REVISION"         
+       fi
+
         BASE="$(git merge-base $CIRCLE_SHA1 $BASE_REVISION)"
         # If we are on master, use the previous commit as the base
         if [[ $BASE == $CIRCLE_SHA1 ]]; then
