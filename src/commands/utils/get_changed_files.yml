@@ -12,7 +12,7 @@ steps:
           echo "Computed base revision is empty.Using default base revision of master"
        else
           BASE_REVISION="$COMPUTED_BASE_REVISION"
-          echo "Setting base revision to computed base revision: $BASE_REVISION"  
+          echo "Setting base revision to computed base revision: $BASE_REVISION"
        fi
        BASE="$(git merge-base $CIRCLE_SHA1 $BASE_REVISION)"
         # If we are on master, use the previous commit as the base
