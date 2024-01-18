@@ -20,7 +20,7 @@ steps:
       command: |
         BASE="$BASE_REVISION"
         # If we are on master, use the previous commit as the base
-        if [[ $GIT_BRANCH == "trying" ] || [ $GIT_BRANCH == "staging" ]]; then
+        if [[ $GIT_BRANCH == "trying" ]] || [[ $GIT_BRANCH == "staging" ]]; then
           BASE="master"
         fi
         echo "COMPUTED_BASE_REVISION environment variable to set to $BASE"
