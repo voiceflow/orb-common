@@ -22,11 +22,11 @@ steps:
         # If we are on master, use the previous commit as the base
         if [[ $GIT_BRANCH == "trying" ]] || [[ $GIT_BRANCH == "staging" ]]; then
           BASE="master"
-        else        
+        else
           if [ -z "$(git rev-list $GIT_BRANCH  | grep $BASE_REVISION 2> /dev/null)" ]; then
-              echo "Computed base revision for branch $GIT_BRANCH is empty.Using default base revision of master"  
+              echo "Computed base revision for branch $GIT_BRANCH is empty.Using default base revision of master"
               BASE="master"
-          fi 
+          fi
         fi
         echo "COMPUTED_BASE_REVISION environment variable to set to $BASE"
         echo "export << parameters.target_env_var >>=\"$BASE\"" >> "$BASH_ENV"
