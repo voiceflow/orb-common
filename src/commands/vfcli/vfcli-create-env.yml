@@ -12,6 +12,10 @@ parameters:
     type: string
     description: Time to lease the environment for
     default: 1h
+  node-group:
+    type: string
+    description: Name of the node group to use
+    default: "e2e"
 steps:
   - run:
       name: Create Env << parameters.env-name >>
@@ -19,4 +23,4 @@ steps:
         if [ -n "<< parameters.track-file >>" ]; then
           TRACK_ARG=("--track-file" "<< parameters.track-file >>")
         fi
-        vfcli env create << parameters.env-name >> --interactive false --prefix "" --lease << parameters.lease >> "${TRACK_ARG[@]}"
+        vfcli env create << parameters.env-name >> --interactive false --node-group << parameters.node-group >> --prefix "" --lease << parameters.lease >> "${TRACK_ARG[@]}"
