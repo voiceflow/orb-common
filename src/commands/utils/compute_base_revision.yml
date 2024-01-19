@@ -22,6 +22,9 @@ steps:
         # If we are on master, use the previous commit as the base
         if [[ $GIT_BRANCH == "trying" ]] || [[ $GIT_BRANCH == "staging" ]]; then
           BASE="master"
+        # When a rebase and force push occurs on a branch, the previous run's branch is deleted and no longer exists
+        # For renovate builds, they are also short lived and branch is deleted
+        # In both cases, we want to use master as the base revision.The logic below checks if the base revision still exists and if not, uses master as the base revision
         else
           if [ -z "$(git rev-list $GIT_BRANCH  | grep $BASE_REVISION 2> /dev/null)" ]; then
               echo "Computed base revision for branch $GIT_BRANCH is empty.Using default base revision of master"
