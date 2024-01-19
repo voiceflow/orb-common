@@ -1,0 +1,27 @@
+parameters:
+  base_revision:
+    description: Git revision to compare against
+    type: string
+    default: master
+  git_branch:
+    description: Current git branch
+    type: string
+    default: master
+  target_env_var:
+    description: Environment variable to set with the list of changed files
+    type: env_var_name
+    default: COMPUTED_BASE_REVISION
+steps:
+  - run:
+      name: Put computed base revision in << parameters.target_env_var >> environment variable
+      environment:
+        BASE_REVISION: '<< parameters.base_revision >>'
+        GIT_BRANCH: '<< parameters.git_branch >>'
+      command: |
+        BASE="$BASE_REVISION"
+        # If we are on master, use the previous commit as the base
+        if [[ $GIT_BRANCH == "trying" ]] || [[ $GIT_BRANCH == "staging" ]]; then
+          BASE="master"
+        fi
+        echo "COMPUTED_BASE_REVISION environment variable to set to $BASE"
+        echo "export << parameters.target_env_var >>=\"$BASE\"" >> "$BASH_ENV"
