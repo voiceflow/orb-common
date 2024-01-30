@@ -1,0 +1,33 @@
+executor: smoke-executor
+
+parameters:
+  env-name:
+    type: string
+    default: ""
+  branch:
+    type: string
+    default: ""
+steps:
+  - clone_repo:
+      github_repo_name: automated-testing
+      github_commit: << parameters.branch >>
+      path_to_clone: ~/project
+  - install_node_modules:
+      avoid_post_install_scripts: false
+      cache_prefix: smoke-test
+  - run:
+      name: Run Smoke Tests
+      environment:
+        CREATOR_APP_URL: https://creator-<< parameters.env-name >>.br.development.voiceflow.com
+      command: yarn test:smoke
+  - store_test_results:
+      path: apps/smoke-test-runner/cypress/results
+  - store_artifacts:
+      path: apps/smoke-test-runner/cypress/downloads
+      destination: downloads
+  - store_artifacts:
+      path: apps/smoke-test-runner/cypress/videos
+      destination: videos
+  - store_artifacts:
+      path: apps/smoke-test-runner/cypress/screenshots
+      destination: screenshots
