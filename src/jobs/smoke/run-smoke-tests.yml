@@ -2,9 +2,13 @@ executor: smoke-executor
 parallelism: 4
 
 parameters:
-  env-name:
+  e2e-env-name:
     type: string
     default: ""
+  target-url:
+    type: string
+    default: ""
+    description: "use this to override the e2e-env-name and set the full creator-app URL"
   branch:
     type: string
     default: "master"
@@ -25,7 +29,7 @@ steps:
   - run:
       name: Run Smoke Tests
       environment:
-        CREATOR_APP_URL: https://creator-<< parameters.env-name >>.br.development.voiceflow.com
+        CREATOR_APP_URL: << parameters.target-url >><<^ parameters.target-url >>https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com<</ parameters.target-url >>
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
       command: yarn test:smoke
