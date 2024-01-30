@@ -9,9 +9,10 @@ parameters:
     type: string
     default: ""
     description: "use this to override the e2e-env-name and set the full creator-app URL"
-  branch:
+  branch-or-commit:
     type: string
     default: "master"
+    description: "the branch or commit of the automated-testing repo to checkout"
   tags:
     type: string
     default: ""
@@ -21,7 +22,7 @@ parameters:
 steps:
   - clone_repo:
       github_repo_name: automated-testing
-      github_commit: << parameters.branch >>
+      github_commit: << parameters.branch-or-commit >>
       path_to_clone: ~/project
   - install_node_modules:
       avoid_post_install_scripts: false
