@@ -1,4 +1,5 @@
 executor: smoke-executor
+parallelism: 4
 
 parameters:
   env-name:
@@ -6,7 +7,13 @@ parameters:
     default: ""
   branch:
     type: string
+    default: "master"
+  tags:
+    type: string
     default: ""
+  qualitywatcher:
+    type: boolean
+    default: false
 steps:
   - clone_repo:
       github_repo_name: automated-testing
@@ -19,6 +26,8 @@ steps:
       name: Run Smoke Tests
       environment:
         CREATOR_APP_URL: https://creator-<< parameters.env-name >>.br.development.voiceflow.com
+        CYPRESS_INCLUDE_TAGS: << parameters.tags >>
+        QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
       command: yarn test:smoke
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
