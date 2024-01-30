@@ -1,16 +1,28 @@
 executor: smoke-executor
+parallelism: 4
 
 parameters:
-  env-name:
+  e2e-env-name:
     type: string
     default: ""
-  branch:
+  target-url:
     type: string
     default: ""
+    description: "use this to override the e2e-env-name and set the full creator-app URL"
+  branch-or-commit:
+    type: string
+    default: "master"
+    description: "the branch or commit of the automated-testing repo to checkout"
+  tags:
+    type: string
+    default: ""
+  qualitywatcher:
+    type: boolean
+    default: false
 steps:
   - clone_repo:
       github_repo_name: automated-testing
-      github_commit: << parameters.branch >>
+      github_commit: << parameters.branch-or-commit >>
       path_to_clone: ~/project
   - install_node_modules:
       avoid_post_install_scripts: false
@@ -18,7 +30,9 @@ steps:
   - run:
       name: Run Smoke Tests
       environment:
-        CREATOR_APP_URL: https://creator-<< parameters.env-name >>.br.development.voiceflow.com
+        CREATOR_APP_URL: << parameters.target-url >><<^ parameters.target-url >>https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com<</ parameters.target-url >>
+        CYPRESS_INCLUDE_TAGS: << parameters.tags >>
+        QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
       command: yarn test:smoke
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
