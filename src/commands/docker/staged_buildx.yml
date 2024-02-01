@@ -1,0 +1,38 @@
+parameters:
+  image_repo:
+    description: The container image repository
+    type: string
+  image_tag:
+    description: The container image tag
+    type: string
+    default: ""
+  target:
+    description: Dockerfile stage to build
+    type: string
+  platforms:
+    description: Platform to build against
+    type: string
+    default: "linux/amd64"
+    # default: "linux/amd64,linux/arm64"
+  dockerfile:
+    description: Location of Dockerfile
+    type: string
+    default: "Dockerfile"
+  builder:
+    description: |
+      Buildx builder name
+      Consider this the key for CircleCI DLC
+    type: string
+    default: ""
+steps:
+  - run:
+      name: Run staged build
+      environment:
+        TARGET: "<< parameters.target >>"
+        IMAGE_REPO: "<< parameters.image_repo >>"
+        IMAGE_TAG: "<< parameters.image_tag >>"
+        PLATFORMS: "<< parameters.platforms >>"
+        DOCKERFILE: "<< parameters.dockerfile >>"
+        # possibly set as repo/branch/pr?
+        BUILDER: "<< parameters.builder >>"
+      command: <<include(scripts/docker/staged_buildx.sh)>>
