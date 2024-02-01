@@ -8,3 +8,5 @@ npmRegistries:
   "https://registry.npmjs.org":
     npmAuthToken: $NPM_TOKEN
 EOF
+
+ls -lah ~/

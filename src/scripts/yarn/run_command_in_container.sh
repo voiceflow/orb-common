@@ -7,6 +7,10 @@ VOLUME_ID=$(docker volume create)
 CODE_CONTAINER_ID=$(docker create -v "${VOLUME_ID}":/code "${CONTAINER_IMAGE:?}" /bin/true)
 docker cp "$PWD/." "${CODE_CONTAINER_ID}":/code
 
+echo "npm auth files: HOME: ${HOME}"
+ls -lah ~/
+ls -lah "${HOME}"
+
 echo "Executing command \"${COMMAND:?}\" in container"
 docker run \
   --rm -it \
