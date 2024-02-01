@@ -19,10 +19,11 @@ docker run --rm -i -v "${PWD}":/src -v "${DESTINATION_FOLDER}":/out --entrypoint
     echo "Copying /src to ${SRC_ROOT}"
     cp -R /src ${SRC_ROOT}
     cd ${SRC_ROOT}
-    SUCCESS=0
+    rm -rf /tmp/.success
     for _ in {0..${MAX_RETRIES:?}}; do
         if /bin/sh -c "${COMMAND?}"; then
-            SUCCESS=1
+            touch /tmp/.success
+            echo "DEBUG: Successfully executed: ${SUCCESS}"
             break
         fi
         sleep "${SLEEP_TIME:?}"
@@ -32,7 +33,8 @@ docker run --rm -i -v "${PWD}":/src -v "${DESTINATION_FOLDER}":/out --entrypoint
     cp -R "${SOURCE_FOLDER}" /out
 
     # Success: clean exit
-    test 1 -eq ${SUCCESS} && exit 0
+    ls -lah /tmp
+    test -f /tmp/.success && exit 0
 
     echo "failed: ${COMMAND?}" >&2
     exit 1
