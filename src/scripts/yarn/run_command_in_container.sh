@@ -2,6 +2,7 @@
 
 trap 'echo "fail detected"; touch /tmp/failure' ERR
 
+echo "CLEAN_CACHE: ${CLEAN_CACHE:0}"
 
 echo "Copying code into container"
 VOLUME_ID=$(docker volume create)
@@ -11,9 +12,6 @@ docker cp "${PWD}/." "${CODE_CONTAINER_ID}":/code
 docker cp "${HOME}"/.yarnrc.yml "${CODE_CONTAINER_ID}":/configs
 docker cp "${HOME}"/.npmrc "${CODE_CONTAINER_ID}":/configs
 
-echo "/etc/hosts"
-cat /etc/hosts
-
 echo "Executing command \"${COMMAND:?}\" in container"
 docker run \
   --rm -i \
@@ -22,9 +20,8 @@ docker run \
   --entrypoint /bin/sh \
   "${CONTAINER_IMAGE:?}" \
   <<EOF
-    echo "TEMP: delete the node_modules and .yarn/cache"
-    rm -rf ./node_modules .yarn/cache
-    ls -lah /configs
+    echo "TEMP: delete the node_modules and .yarn/cache if set"
+    test "${CLEAN_CACHE}" = 1 && rm -rf ./node_modules .yarn/cache
     cp /configs/.yarnrc.yml /root/
     cp /configs/.npmrc /root/
     for _ in {0..${MAX_RETRIES:?}}; do

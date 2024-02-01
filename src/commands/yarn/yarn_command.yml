@@ -50,6 +50,10 @@ parameters:
     description: Time (in seconds) to sleep between retries
     type: integer
     default: 5
+  clean_cache:
+    description: Enable to rm node_modules and .yarn/cache
+    type: boolean
+    default: false
 steps:
   - when:
       condition: << parameters.wait >>
@@ -106,4 +110,5 @@ steps:
               SHOULD_REMOVE_LOCKFILE: << parameters.run_in_background >>
               MAX_RETRIES: '<< parameters.max_retries >>'
               SLEEP_TIME: '<< parameters.sleep_time >>'
+              CLEAN_CACHE: '<< parameters.clean_cache >>'
             command: <<include(scripts/yarn/run_command_in_container.sh)>>
