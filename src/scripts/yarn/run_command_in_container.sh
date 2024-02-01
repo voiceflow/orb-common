@@ -5,12 +5,11 @@ trap 'echo "fail detected"; touch /tmp/failure' ERR
 
 echo "Copying code into container"
 VOLUME_ID=$(docker volume create)
-CODE_CONTAINER_ID=$(docker create -v "${VOLUME_ID}":/code "${CONTAINER_IMAGE:?}" /bin/true)
-docker cp "$PWD/." "${CODE_CONTAINER_ID}":/code
-
-mkdir -p "${HOME}"/configs
-cp "${HOME}"/.yarnrc.yml "${HOME}"/configs
-cp "${HOME}"/.npmrc "${HOME}"/configs
+CONFIG_VOLUME_ID=$(docker volume create)
+CODE_CONTAINER_ID=$(docker create -v "${VOLUME_ID}":/code -v "${CONFIG_VOLUME_ID}":/configs "${CONTAINER_IMAGE:?}" /bin/true)
+docker cp "${PWD}/." "${CODE_CONTAINER_ID}":/code
+docker cp "${HOME}"/.yarnrc.yml "${CODE_CONTAINER_ID}":/configs
+docker cp "${HOME}"/.npmrc "${CODE_CONTAINER_ID}":/configs
 
 echo "/etc/hosts"
 cat /etc/hosts
@@ -19,7 +18,6 @@ echo "Executing command \"${COMMAND:?}\" in container"
 docker run \
   --rm -i \
   --volumes-from "${CODE_CONTAINER_ID}" \
-  -v "${HOME}"/configs:/configs \
   -w /code \
   --entrypoint /bin/sh \
   "${CONTAINER_IMAGE:?}" \
@@ -27,7 +25,8 @@ docker run \
     echo "TEMP: delete the node_modules and .yarn/cache"
     rm -rf ./node_modules .yarn/cache
     ls -lah /configs
-    cp -R /configs/* /root/
+    cp /configs/.yarnrc.yml /root/
+    cp /configs/.npmrc /root/
     for _ in {0..${MAX_RETRIES:?}}; do
         if /bin/sh -c "${COMMAND?}"; then
             exit 0
