@@ -10,3 +10,4 @@ npmRegistries:
 EOF
 
 ls -lah ~/
+cd ~ && pwd

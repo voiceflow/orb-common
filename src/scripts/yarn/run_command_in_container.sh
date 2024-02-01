@@ -2,6 +2,14 @@
 
 trap 'echo "fail detected"; touch /tmp/failure' ERR
 
+echo "PWD: ${PWD}"
+ls -lah "${PWD}"
+echo "pwd: $(pwd)"
+ls -lah "$(pwd)"
+echo "up"
+ls -lah /home/circleci
+echo "cwd: ${CIRCLE_WORKING_DIRECTORY}"
+
 docker info
 
 echo "Copying code into container"
@@ -15,8 +23,8 @@ ls -lah /home/circleci/.npmrc
 whoami
 
 mkdir -p /tmp/configs
-cp ~/.yarnrc.yml /tmp/configs/
-cp ~/.npmrc /tmp/configs/
+cp /home/circleci/.yarnrc.yml /tmp/configs/
+cp /home/circleci/.npmrc /tmp/configs/
 
 echo "Executing command \"${COMMAND:?}\" in container"
 docker run \
