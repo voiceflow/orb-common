@@ -14,7 +14,7 @@ fi
 echo "Copying from ${SOURCE_FOLDER} into ${DESTINATION_FOLDER?}"
 echo "Copying code into container"
 echo "Executing command \"${COMMAND:?}\" in container \"${CONTAINER_IMAGE:?}\""
-docker run --rm -i -v "${PWD}":/src -v "${DESTINATION_FOLDER}":/out "${CONTAINER_IMAGE:?}" <<EOF
+docker run --rm -i -v "${PWD}":/src -v "${DESTINATION_FOLDER}":/out --entrypoint /bin/sh "${CONTAINER_IMAGE:?}" <<EOF
     echo "Copying /src to /code"
     cp -R /src /code
     cd /code
