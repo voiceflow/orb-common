@@ -18,8 +18,9 @@ echo "DESTINATION_FOLDER: ${DESTINATION_FOLDER}"
 ls -lah "${DESTINATION_FOLDER}"
 
 echo "Executing command \"${COMMAND:?}\" in container \"${CONTAINER_IMAGE:?}\""
-docker run --rm -i -v ./:/src -v "${DESTINATION_FOLDER}":/out --entrypoint /bin/sh "${CONTAINER_IMAGE:?}" <<EOF
+docker run -i -v "${PWD}":/src --entrypoint /bin/sh "${CONTAINER_IMAGE:?}" <<EOF
     echo "Copying /src to ${SRC_ROOT}"
+    whoami
     echo "ls /src"
     ls -lah /src
 
@@ -30,10 +31,10 @@ docker run --rm -i -v ./:/src -v "${DESTINATION_FOLDER}":/out --entrypoint /bin/
     cd ${SRC_ROOT}
     pwd && ls -lah .
 
-    rm -rf /tmp/.success
+    SUCCESS=0
     for _ in {0..${MAX_RETRIES:?}}; do
         if /bin/sh -c "${COMMAND?}"; then
-            touch /tmp/.success
+            SUCCESS=1 
             echo "DEBUG: Successfully executed: ${SUCCESS}"
             break
         fi
@@ -49,7 +50,7 @@ docker run --rm -i -v ./:/src -v "${DESTINATION_FOLDER}":/out --entrypoint /bin/
 
     # Success: clean exit
     ls -lah /tmp
-    test -f /tmp/.success && exit 0
+    test 1 -eq \$SUCCESS && exit 0
 
     echo "failed: ${COMMAND?}" >&2
     exit 1
