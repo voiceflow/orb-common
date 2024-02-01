@@ -8,20 +8,26 @@ VOLUME_ID=$(docker volume create)
 CODE_CONTAINER_ID=$(docker create -v "${VOLUME_ID}":/code "${CONTAINER_IMAGE:?}" /bin/true)
 docker cp "$PWD/." "${CODE_CONTAINER_ID}":/code
 
-echo "Copy npm auth configs"
-docker cp "${HOME}"/.yarnrc.yml "${CODE_CONTAINER_ID}":/root/
-docker cp "${HOME}"/.npmrc "${CODE_CONTAINER_ID}":/root/
+mkdir -p "${HOME}"/configs
+cp "${HOME}"/.yarnrc.yml "${HOME}"/configs
+cp "${HOME}"/.npmrc "${HOME}"/configs
+
+echo "/etc/hosts"
+cat /etc/hosts
 
 echo "Executing command \"${COMMAND:?}\" in container"
 docker run \
   --rm -i \
   --volumes-from "${CODE_CONTAINER_ID}" \
+  -v "${HOME}"/configs:/configs \
   -w /code \
   --entrypoint /bin/sh \
   "${CONTAINER_IMAGE:?}" \
   <<EOF
     echo "TEMP: delete the node_modules and .yarn/cache"
     rm -rf ./node_modules .yarn/cache
+    ls -lah /configs
+    cp -R /configs/* /root/
     for _ in {0..${MAX_RETRIES:?}}; do
         if /bin/sh -c "${COMMAND?}"; then
             exit 0
