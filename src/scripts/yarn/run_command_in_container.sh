@@ -17,6 +17,9 @@ pwd && ls -lah .
 echo "DESTINATION_FOLDER: ${DESTINATION_FOLDER}"
 ls -lah "${DESTINATION_FOLDER}"
 
+echo "Docker info"
+docker info
+
 echo "Executing command \"${COMMAND:?}\" in container \"${CONTAINER_IMAGE:?}\""
 docker run -i -v "${PWD}":/src --entrypoint /bin/sh "${CONTAINER_IMAGE:?}" <<EOF
     echo "Copying /src to ${SRC_ROOT}"
