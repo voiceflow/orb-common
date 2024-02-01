@@ -2,26 +2,8 @@
 
 trap 'echo "fail detected"; touch /tmp/failure' ERR
 
-echo "Copying code into container"
-docker create -v /code --name code "${CONTAINER_IMAGE:?}" /bin/true
-docker cp "$PWD/." code:/code
-
-echo "Executing command \"${COMMAND:?}\" in container"
-docker run --name runner -it --volumes-from code -w /code "${CONTAINER_IMAGE:?}" /bin/bash -c "
-    for _ in {0..${MAX_RETRIES:?}}; do
-        if bash -c \"${COMMAND?}\"; then
-            exit 0
-        fi
-        sleep \"${SLEEP_TIME:?}\"
-        echo \"Retrying command: ${COMMAND?}\"
-    done
-
-    echo \"failed: ${COMMAND?}\" >&2
-    exit 1
-"
-
 # If a folder is specified we copy that one on the host, otherwise copy all
-SOURCE_FOLDER="runner:/code/${FOLDER_TO_COPY:-.}"
+SOURCE_FOLDER="/code/${FOLDER_TO_COPY:-.}"
 
 if [[ -n "${MONOREPO_PACKAGE?}" && "${MONOREPO_PACKAGE}" != "all" ]]; then
     DESTINATION_FOLDER="$PWD/${MONOREPO_PACKAGE_FOLDER:?}/${MONOREPO_PACKAGE:?}"
@@ -30,7 +12,30 @@ else
 fi
 
 echo "Copying from ${SOURCE_FOLDER} into ${DESTINATION_FOLDER?}"
-docker cp "${SOURCE_FOLDER}" "${DESTINATION_FOLDER}"
+echo "Copying code into container"
+echo "Executing command \"${COMMAND:?}\" in container \"${CONTAINER_IMAGE:?}\""
+docker run --rm -i -v "${PWD}":/src -v "${DESTINATION_FOLDER}":/out "${CONTAINER_IMAGE:?}" <<EOF
+    echo "Copying /src to /code"
+    cp -R /src /code
+    cd /code
+    SUCCESS=0
+    for _ in {0..${MAX_RETRIES:?}}; do
+        if /bin/sh -c "${COMMAND?}"; then
+            SUCCESS=1
+            break
+        fi
+        sleep "${SLEEP_TIME:?}"
+        echo "Retrying command: ${COMMAND?}"
+    done
+
+    cp -R "${SOURCE_FOLDER}" /out
+
+    # Success: clean exit
+    test 1 -eq $SUCCESS && exit 0
+
+    echo "failed: ${COMMAND?}" >&2
+    exit 1
+EOF
 
 if (( ${SHOULD_REMOVE_LOCKFILE?} )); then
     echo "Removing lock file ${LOCK_FILE?}" 
