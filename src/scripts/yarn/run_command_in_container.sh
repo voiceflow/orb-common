@@ -8,15 +8,16 @@ CODE_CONTAINER_ID=$(docker create -v "${VOLUME_ID}":/code "${CONTAINER_IMAGE:?}"
 docker cp "$PWD/." "${CODE_CONTAINER_ID}":/code
 
 echo "npm auth files: HOME: ${HOME}"
-ls -lah ~/
-ls -lah "${HOME}"
+ls -lah /home/circleci/.yarnrc.yml
+ls -lah /home/circleci/.npmrc
+whoami
 
 echo "Executing command \"${COMMAND:?}\" in container"
 docker run \
   --rm -it \
   --volumes-from "${CODE_CONTAINER_ID}" \
-  --mount type=bind,source="${HOME}"/.yarnrc.yml,target=/root/.yarnrc.yml \
-  --mount type=bind,source="${HOME}"/.npmrc,target=/root/.npmrc \
+  --mount type=bind,source=/home/circleci/.yarnrc.yml,target=/root/.yarnrc.yml \
+  --mount type=bind,source=/home/circleci/.npmrc,target=/root/.npmrc \
   -w /code \
   "${CONTAINER_IMAGE:?}" \
   /bin/bash -c "
