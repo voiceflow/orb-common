@@ -2,6 +2,8 @@
 
 trap 'echo "fail detected"; touch /tmp/failure' ERR
 
+docker info
+
 echo "Copying code into container"
 VOLUME_ID=$(docker volume create)
 CODE_CONTAINER_ID=$(docker create -v "${VOLUME_ID}":/code "${CONTAINER_IMAGE:?}" /bin/true)
@@ -12,15 +14,19 @@ ls -lah /home/circleci/.yarnrc.yml
 ls -lah /home/circleci/.npmrc
 whoami
 
+mkdir -p /tmp/configs
+cp ~/.yarnrc.yml /tmp/configs/
+cp ~/.npmrc /tmp/configs/
+
 echo "Executing command \"${COMMAND:?}\" in container"
 docker run \
   --rm -it \
   --volumes-from "${CODE_CONTAINER_ID}" \
-  --mount type=bind,source=/home/circleci/.yarnrc.yml,target=/root/.yarnrc.yml \
-  --mount type=bind,source=/home/circleci/.npmrc,target=/root/.npmrc \
+  -v /tmp/configs:/tmp/configs \
   -w /code \
   "${CONTAINER_IMAGE:?}" \
   /bin/bash -c "
+    cp /tmp/configs/* ~/
     for _ in {0..${MAX_RETRIES:?}}; do
         if bash -c \"${COMMAND?}\"; then
             exit 0
