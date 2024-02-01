@@ -8,7 +8,14 @@ CODE_CONTAINER_ID=$(docker create -v "${VOLUME_ID}":/code "${CONTAINER_IMAGE:?}"
 docker cp "$PWD/." "${CODE_CONTAINER_ID}":/code
 
 echo "Executing command \"${COMMAND:?}\" in container"
-docker run --rm -it --volumes-from "${CODE_CONTAINER_ID}" -w /code "${CONTAINER_IMAGE:?}" /bin/bash -c "
+docker run \
+  --rm -it \
+  --volumes-from "${CODE_CONTAINER_ID}" \
+  --mount type=bind,source="${HOME}"/.yarnrc.yml,target=/root/.yarnrc.yml \
+  --mount type=bind,source="${HOME}"/.npmrc,target=/root/.npmrc \
+  -w /code \
+  "${CONTAINER_IMAGE:?}" \
+  /bin/bash -c "
     for _ in {0..${MAX_RETRIES:?}}; do
         if bash -c \"${COMMAND?}\"; then
             exit 0
