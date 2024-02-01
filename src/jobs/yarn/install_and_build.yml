@@ -116,7 +116,7 @@ steps:
 
   - build:
       container_folder_to_copy: "<< parameters.container_folder_to_copy >>"
-      request_remote_docker: "<< parameters.request_remote_docker >>"
+      request_remote_docker: false 
       run_in_container: "<< parameters.run_in_container >>"
       container_image_to_build: "<< parameters.container_image_to_build >>"
       package_folder: "<< parameters.package_folder >>"
