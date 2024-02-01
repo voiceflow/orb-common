@@ -20,6 +20,8 @@ docker run \
   <<EOF
     echo "TEMP: delete the node_modules and .yarn/cache"
     rm -rf ./node_modules .yarn/cache
+    whoami
+    ls -lah /root/
 
     for _ in {0..${MAX_RETRIES:?}}; do
         if /bin/sh -c "${COMMAND?}"; then
