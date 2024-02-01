@@ -12,8 +12,8 @@ echo "Executing command \"${COMMAND:?}\" in container"
 docker run \
   --rm -i \
   --volumes-from "${CODE_CONTAINER_ID}" \
-  -v "${HOME}"/.yarnrc.yml:/root/.yarnrc.yml \
-  -v "${HOME}"/.npmrc:/root/.npmrc \
+  --mount type=bind,source="${HOME}"/.yarnrc.yml,target=/root/.yarnrc.yml \
+  --mount type=bind,source="${HOME}"/.npmrc,target=/root/.npmrc \
   -w /code \
   --entrypoint /bin/sh \
   "${CONTAINER_IMAGE:?}" \
