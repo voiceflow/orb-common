@@ -20,24 +20,25 @@ cp ~/.npmrc /tmp/configs/
 
 echo "Executing command \"${COMMAND:?}\" in container"
 docker run \
-  --rm -it \
+  --rm -i \
   --volumes-from "${CODE_CONTAINER_ID}" \
   -v /tmp/configs:/tmp/configs \
   -w /code \
+  --entrypoint /bin/sh \
   "${CONTAINER_IMAGE:?}" \
-  /bin/bash -c "
+  <<EOF
     cp /tmp/configs/* ~/
     for _ in {0..${MAX_RETRIES:?}}; do
-        if bash -c \"${COMMAND?}\"; then
+        if /bin/sh -c "${COMMAND?}"; then
             exit 0
         fi
-        sleep \"${SLEEP_TIME:?}\"
-        echo \"Retrying command: ${COMMAND?}\"
+        sleep "${SLEEP_TIME:?}"
+        echo "Retrying command: ${COMMAND?}"
     done
 
-    echo \"failed: ${COMMAND?}\" >&2
+    echo "failed: ${COMMAND?}" >&2
     exit 1
-"
+EOF
 
 # If a folder is specified we copy that one on the host, otherwise copy all
 SOURCE_FOLDER="${CODE_CONTAINER_ID}:/code/${FOLDER_TO_COPY:-.}"
