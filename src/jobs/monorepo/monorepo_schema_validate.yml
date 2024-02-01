@@ -18,7 +18,7 @@ parameters:
 executor: << parameters.executor >>
 steps:
   - setup_remote_docker:
-      version: 20.10.11
+      version: default
   - checkout
   - install_node_modules:
       avoid_post_install_scripts: false
