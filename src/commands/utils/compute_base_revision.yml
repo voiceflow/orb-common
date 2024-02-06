@@ -23,7 +23,7 @@ steps:
         # Master branch has multiple PR's merged into it independently before the `branch-sync` to production occurs.
         # After sync, the 2 branches are a mirror of each other because the current SHA for production is similar to the SHA for master branch
         # In the case where the SHA's are the same, we then do a diff between HEAD and HEAD~1, which discards all other changes
-        # Using latest master as base revision for production would cause us to skip detecting all changes that occured in the multiple PR's merged, for monorepos
+        # Using latest master as base revision for production would cause us to skip detecting all other changes except HEAD~1 up to HEAD, for monorepos
         # The fix is to use the base revision as the commit of the previous circleci build on production branch, ensuring that all changes are detected
         # Circleci exposes the last build's commit as an environment variable `pipeline.git.base_revision` which is paased to this command as `base_revision` parameter
         if [[ $GIT_BRANCH == "production" ]] ; then
