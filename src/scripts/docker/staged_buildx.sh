@@ -6,6 +6,8 @@ echo "IMAGE_REPO: ${IMAGE_REPO?}"
 echo "IMAGE_TAG: ${IMAGE_TAG:=${TARGET}}"
 echo "PLATFORMS: ${PLATFORMS:=linux/amd64}"
 echo "DOCKERFILE: ${DOCKERFILE:=Dockerfile}"
+echo "NO_CACHE_FILTER: ${NO_CACHE_FILTER:=prod}"
+
 
 # NOTE: think of this as the CircleCI DLC key
 echo "BUILDER: ${BUILDER:=buildy}"

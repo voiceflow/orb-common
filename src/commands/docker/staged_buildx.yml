@@ -24,6 +24,11 @@ parameters:
       Consider this the key for CircleCI DLC
     type: string
     default: ""
+  no_cache_filter:
+    description: Do not use cache for these stages
+    type: string
+    default: ""
+
 steps:
   - run:
       name: Building '<<parameters.target >>' stage of file '<< parameters.dockerfile >>' with tag '<< parameters.image_tag >>'
@@ -33,6 +38,7 @@ steps:
         IMAGE_TAG: "<< parameters.image_tag >>"
         PLATFORMS: "<< parameters.platforms >>"
         DOCKERFILE: "<< parameters.dockerfile >>"
+        NO_CACHE_FILTER: "<< parameters.no_cache_filter >>"
         # possibly set as repo/branch/pr?
         BUILDER: "<< parameters.builder >>"
       command: <<include(scripts/docker/staged_buildx.sh)>>
