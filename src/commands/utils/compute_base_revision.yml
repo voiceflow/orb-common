@@ -28,6 +28,7 @@ steps:
         # Circleci exposes the last build's commit as an environment variable `pipeline.git.base_revision` which is paased to this command as `base_revision` parameter
         if [[ $GIT_BRANCH == "production" ]] ; then
           BASE="$BASE_REVISION"
+           echo "Setting base revision to  $BASE_REVISION for $GIT_BRANCH"
         fi
         echo "COMPUTED_BASE_REVISION environment variable to set to $BASE"
         echo "export << parameters.target_env_var >>=\"$BASE\"" >> "$BASH_ENV"
