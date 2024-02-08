@@ -82,7 +82,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         docker buildx inspect --bootstrap
         BUILD_COMMAND="buildx build --load"
     fi
-
+    
     docker $BUILD_COMMAND \
         --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
         --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \
@@ -96,6 +96,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         --platform "$PLATFORM" \
         -f "$BUILD_CONTEXT/$DOCKERFILE" \
         -t "$IMAGE_NAME" "$BUILD_CONTEXT"
+    echo "BUILD_ARGS: $BUILD_ARGS $PLATFORM"    
     docker push "$IMAGE_NAME"
 
     # Signing Docker Image
