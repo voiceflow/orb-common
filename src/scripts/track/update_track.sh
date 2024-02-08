@@ -16,6 +16,7 @@ echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
 echo "PLATFORM: ${PLATFORM?}"
 echo "USE_BUILDKIT: ${USE_BUILDKIT?}"
 
+# NOTHING
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
 source "/tmp/IMAGE_STATUS"
