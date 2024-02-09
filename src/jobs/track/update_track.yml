@@ -30,6 +30,10 @@ parameters:
     description: "Add the option to request a new remote docker, set to false when you concat docker jobs"
     type: boolean
     default: true
+  remote_docker_version:
+    description: Linux/amd64 allows for specific versions to be set, while linux/arm64 only allows for either default and edge
+    type: string
+    default: "20.10.11"
   bucket:
     description: The container image repository
     type: string
@@ -87,6 +91,7 @@ steps:
       build_context: "<< parameters.build_context >>"
       checkout: "<< parameters.checkout >>"
       request_remote_docker: "<< parameters.request_remote_docker >>"
+      remote_docker_version: "<< parameters.remote_docker_version >>"
       bucket: "<< parameters.bucket >>"
       check_track_exists: "<< parameters.check_track_exists >>"
       local_registry: "<< parameters.local_registry >>"
