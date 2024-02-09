@@ -26,6 +26,11 @@ parameters:
     description: Add the option to request a new remote docker, set to false when you concat docker jobs
     type: boolean
     default: true
+  remote_docker_version:
+    description: Linux/amd64 allows for specific versions to be set, while linux/arm64 only allows for either default and edge
+    # https://circleci.com/docs/building-docker-images/#docker-version
+    type: string
+    default: 20.10.11
   bucket:
     description: The container image repository
     type: string
@@ -86,7 +91,7 @@ steps:
       condition: << parameters.request_remote_docker >>
       steps:
         - setup_remote_docker: # Need this to run DinD
-            version: default
+            version: << parameters.remote_docker_version >>
   - docker_login
   - attach_workspace:
       at: ~/voiceflow
