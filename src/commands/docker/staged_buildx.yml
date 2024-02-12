@@ -32,6 +32,10 @@ parameters:
     description: Run in background
     type: boolean
     default: false
+  cleanup_image:
+    description: Delete the resulting image so it isn't stored in cache
+    type: boolean
+    default: false
 
 steps:
   - run:
@@ -46,4 +50,5 @@ steps:
         NO_CACHE_FILTER: "<< parameters.no_cache_filter >>"
         # possibly set as repo/branch/pr?
         BUILDER: "<< parameters.builder >>"
+        CLEANUP_IMAGE: "<< parameters.cleanup_image >>"
       command: <<include(scripts/docker/staged_buildx.sh)>>

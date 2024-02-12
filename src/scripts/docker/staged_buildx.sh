@@ -7,6 +7,7 @@ echo "IMAGE_TAG: ${IMAGE_TAG:=${TARGET}}"
 echo "PLATFORMS: ${PLATFORMS:=linux/amd64}"
 echo "DOCKERFILE: ${DOCKERFILE:=Dockerfile}"
 echo "NO_CACHE_FILTER: ${NO_CACHE_FILTER:=prod}"
+echo "CLEANUP_IMAGE: ${CLEANUP_IMAGE:=0}"
 
 
 # NOTE: think of this as the CircleCI DLC key
@@ -28,3 +29,5 @@ docker buildx build . \
   --target "${TARGET}" \
   --platform "${PLATFORMS}" \
   --load
+
+test "${CLEANUP_IMAGE-}" -eq 1 && echo "Deleting image" && docker image rm "${IMAGE_REPO}:${IMAGE_TAG}" || echo "Done"
