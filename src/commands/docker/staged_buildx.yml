@@ -28,10 +28,15 @@ parameters:
     description: Do not use cache for these stages
     type: string
     default: ""
+  run_in_background:
+    description: Run in background
+    type: boolean
+    default: false
 
 steps:
   - run:
       name: Building '<<parameters.target >>' stage of file '<< parameters.dockerfile >>' with tag '<< parameters.image_tag >>'
+      background: << parameters.run_in_background >>
       environment:
         TARGET: "<< parameters.target >>"
         IMAGE_REPO: "<< parameters.image_repo >>"
