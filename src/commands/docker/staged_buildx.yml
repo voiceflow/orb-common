@@ -36,6 +36,10 @@ parameters:
     description: Delete the resulting image so it isn't stored in cache
     type: boolean
     default: false
+  package:
+    description: should probably be workspace
+    type: string
+    default: ""
 
 steps:
   - run:
@@ -51,4 +55,5 @@ steps:
         # possibly set as repo/branch/pr?
         BUILDER: "<< parameters.builder >>"
         CLEANUP_IMAGE: "<< parameters.cleanup_image >>"
+        PACKAGE: "<< parameters.package >>"
       command: <<include(scripts/docker/staged_buildx.sh)>>

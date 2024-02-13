@@ -9,6 +9,9 @@ echo "DOCKERFILE: ${DOCKERFILE:=Dockerfile}"
 echo "NO_CACHE_FILTER: ${NO_CACHE_FILTER:=prod}"
 echo "CLEANUP_IMAGE: ${CLEANUP_IMAGE:=0}"
 
+# TODO: should be general build-args
+echo "PACKAGE: ${PACKAGE-}"
+
 
 # NOTE: think of this as the CircleCI DLC key
 echo "BUILDER: ${BUILDER:=buildy}"
@@ -22,9 +25,14 @@ docker buildx inspect "${BUILDER}" >/dev/null 2>&1 || docker buildx create --pla
 docker buildx use "${BUILDER}"
 docker buildx inspect --bootstrap
 
+if [[ -n "$PACKAGE" ]]; then
+    PACKAGE_ARG=(--build-arg APP_NAME="$PACKAGE")
+fi
+
 docker buildx build . \
   -f "${DOCKERFILE}" \
   -t "${IMAGE_REPO}:${IMAGE_TAG}" \
+  "${PACKAGE_ARG[@]}" \
   --secret id=NPM_TOKEN \
   --target "${TARGET}" \
   --platform "${PLATFORMS}" \
