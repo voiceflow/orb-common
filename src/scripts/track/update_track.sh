@@ -81,6 +81,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         docker buildx create --use --platform="$PLATFORM"
         docker buildx inspect --bootstrap
         BUILD_COMMAND="buildx build --load"
+        NPM_TOKEN_SECRET=(--secret id=NPM_TOKEN)
     fi
     
     docker $BUILD_COMMAND \
@@ -92,6 +93,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         "${REGISTRY_ARG[@]}" \
         "${PACKAGE_ARG[@]}" \
         "${AWS_CREDENTIALS_ARG[@]}" \
+        "${NPM_TOKEN_SECRET[@]}" \
         $BUILD_ARGS \
         --platform "$PLATFORM" \
         -f "$BUILD_CONTEXT/$DOCKERFILE" \
