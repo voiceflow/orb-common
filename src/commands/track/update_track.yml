@@ -79,6 +79,10 @@ parameters:
     description: Platform to build the image
     type: string
     default: linux/amd64
+  enable_dlc:
+    description: enable docker layer cache
+    type: boolean
+    default: false
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -92,6 +96,7 @@ steps:
       steps:
         - setup_remote_docker: # Need this to run DinD
             version: << parameters.remote_docker_version >>
+            docker_layer_caching: << parameters.enable_dlc >>
   - docker_login
   - attach_workspace:
       at: ~/voiceflow

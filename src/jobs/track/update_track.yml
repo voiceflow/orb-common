@@ -83,6 +83,10 @@ parameters:
     description: Platform to build the image for
     type: string
     default: linux/amd64
+  enable_dlc:
+    description: enable docker layer cache
+    type: boolean
+    default: false
 steps:
   - update_track:
       image_repo: "<< parameters.image_repo >>"
@@ -105,3 +109,4 @@ steps:
       local_registry_container_image: "<< parameters.local_registry_container_image >>"
       use_buildkit: "<< parameters.use_buildkit >>"
       platform: "<< parameters.platform >>"
+      enable_dlc: "<< parameters.enable_dlc >>"
