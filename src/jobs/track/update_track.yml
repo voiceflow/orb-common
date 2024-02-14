@@ -87,6 +87,10 @@ parameters:
     description: enable docker layer cache
     type: boolean
     default: false
+  builder_name:
+    description: named builder for use with DLC
+    type: string
+    default: ""
 steps:
   - update_track:
       image_repo: "<< parameters.image_repo >>"
@@ -110,3 +114,4 @@ steps:
       use_buildkit: "<< parameters.use_buildkit >>"
       platform: "<< parameters.platform >>"
       enable_dlc: "<< parameters.enable_dlc >>"
+      builder_name: "<< parameters.builder_name >>"

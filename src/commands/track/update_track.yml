@@ -83,6 +83,10 @@ parameters:
     description: enable docker layer cache
     type: boolean
     default: false
+  builder_name:
+    description: named builder for use with DLC
+    type: string
+    default: ""
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -132,4 +136,5 @@ steps:
         INJECT_AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
         USE_BUILDKIT: "<< parameters.use_buildkit >>"
         PLATFORM: "<< parameters.platform >>"
+        BUILDER_NAME: "<< parameters.builder_name >>"
       command: <<include(scripts/track/update_track.sh)>>
