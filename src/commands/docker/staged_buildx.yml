@@ -40,10 +40,22 @@ parameters:
     description: should probably be workspace
     type: string
     default: ""
-
+  output:
+    description: output type
+    type: string
+    default: "--load"
+  pre_steps:
+    description: pre steps
+    type: steps
+    default: []
+  post_steps:
+    description: post steps
+    type: steps
+    default: []
 steps:
+  - steps: << parameters.pre_steps >>
   - run:
-      name: Building '<<parameters.target >>' stage of file '<< parameters.dockerfile >>' with tag '<< parameters.image_tag >>'
+      name: Building '<< parameters.target >>' stage of file '<< parameters.dockerfile >>' with tag '<< parameters.image_tag >>'
       background: << parameters.run_in_background >>
       environment:
         TARGET: "<< parameters.target >>"
@@ -56,4 +68,6 @@ steps:
         BUILDER: "<< parameters.builder >>"
         CLEANUP_IMAGE: "<< parameters.cleanup_image >>"
         PACKAGE: "<< parameters.package >>"
+        OUTPUT: << parameters.output >>
       command: <<include(scripts/docker/staged_buildx.sh)>>
+  - steps: << parameters.post_steps >>

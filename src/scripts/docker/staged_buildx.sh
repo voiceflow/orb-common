@@ -8,6 +8,7 @@ echo "PLATFORMS: ${PLATFORMS:=linux/amd64}"
 echo "DOCKERFILE: ${DOCKERFILE:=Dockerfile}"
 echo "NO_CACHE_FILTER: ${NO_CACHE_FILTER:=prod}"
 echo "CLEANUP_IMAGE: ${CLEANUP_IMAGE:=0}"
+echo "OUTPUT: ${OUTPUT-}"
 
 # TODO: should be general build-args
 echo "PACKAGE: ${PACKAGE-}"
@@ -29,6 +30,12 @@ if [[ -n "$PACKAGE" ]]; then
     PACKAGE_ARG=(--build-arg APP_NAME="$PACKAGE")
 fi
 
+if [ -n "$OUTPUT" ] ; then
+  OUTPUT=(--output "${OUTPUT}")
+else
+  OUTPUT=(--load)
+fi
+
 docker buildx build . \
   -f "${DOCKERFILE}" \
   -t "${IMAGE_REPO}:${IMAGE_TAG}" \
@@ -36,6 +43,6 @@ docker buildx build . \
   --secret id=NPM_TOKEN \
   --target "${TARGET}" \
   --platform "${PLATFORMS}" \
-  --load
+  ${OUTPUT[@]}
 
 test "${CLEANUP_IMAGE-}" -eq 1 && echo "Deleting image" && docker image rm "${IMAGE_REPO}:${IMAGE_TAG}" || echo "Done"
