@@ -17,6 +17,10 @@ echo "PACKAGE: ${PACKAGE-}"
 # NOTE: think of this as the CircleCI DLC key
 echo "BUILDER: ${BUILDER:=buildy}"
 
+# shellcheck source=/dev/null
+for i in /tmp/vf-staged_buildx-*.env_var ; do source "$i" ; done
+echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
+
 # This is specific
 echo "NPM_TOKEN: ${NPM_TOKEN#"//registry.npmjs.org/:_authToken="}"
 # TODO: make file secret ~/.yarnrc.yml,target=$HOME/.yarnrc.yml
@@ -40,9 +44,10 @@ docker buildx build . \
   -f "${DOCKERFILE}" \
   -t "${IMAGE_REPO}:${IMAGE_TAG}" \
   "${PACKAGE_ARG[@]}" \
+  "${EXTRA_BUILD_ARGS[@]}" \
   --secret id=NPM_TOKEN \
   --target "${TARGET}" \
   --platform "${PLATFORMS}" \
-  ${OUTPUT[@]}
+  "${OUTPUT[@]}"
 
 test "${CLEANUP_IMAGE-}" -eq 1 && echo "Deleting image" && docker image rm "${IMAGE_REPO}:${IMAGE_TAG}" || echo "Done"
