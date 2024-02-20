@@ -40,10 +40,6 @@ parameters:
     description: should probably be workspace
     type: string
     default: ""
-  output:
-    description: output type
-    type: string
-    default: "--load"
   pre_steps:
     description: pre steps
     type: steps
@@ -68,6 +64,6 @@ steps:
         BUILDER: "<< parameters.builder >>"
         CLEANUP_IMAGE: "<< parameters.cleanup_image >>"
         PACKAGE: "<< parameters.package >>"
-        OUTPUT: << parameters.output >>
+        OUTPUT: "<< parameters.output >>"
       command: <<include(scripts/docker/staged_buildx.sh)>>
   - steps: << parameters.post_steps >>
