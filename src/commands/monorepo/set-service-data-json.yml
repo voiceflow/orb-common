@@ -41,9 +41,14 @@ steps:
             fi
             COMPONENT_NAME=$(jq --raw-output ".serviceName" $DIRECTORY/$SERVICE/package.json)
             DOCKERFILE=$(jq --raw-output ".dockerfile" $DIRECTORY/$SERVICE/package.json)
+            ENABLED=$(jq --raw-output ".cienabled" $DIRECTORY/$SERVICE/package.json)
 
-            echo "Adding $SERVICE to << parameters.json-file >> with modified=$MODIFIED"
-            jq --argjson modified "$MODIFIED" --arg dockerfile "$DOCKERFILE" --arg name "$SERVICE" --arg component_name "$COMPONENT_NAME" --arg directory "$DIRECTORY" '.<< parameters.field >> += [{name: $name, modified: $modified, component_name: $component_name, directory: $directory, dockerfile: $dockerfile}]' << parameters.json-file >> > << parameters.json-file >>.tmp
-            mv << parameters.json-file >>.tmp << parameters.json-file >>
+            if [[ $ENABLED != "false" ]]; then
+              echo "Adding $SERVICE to << parameters.json-file >> with modified=$MODIFIED"
+              jq --argjson modified "$MODIFIED" --arg dockerfile "$DOCKERFILE" --arg name "$SERVICE" --arg component_name "$COMPONENT_NAME" --arg directory "$DIRECTORY" '.<< parameters.field >> += [{name: $name, modified: $modified, component_name: $component_name, directory: $directory, dockerfile: $dockerfile}]' << parameters.json-file >> > << parameters.json-file >>.tmp
+              mv << parameters.json-file >>.tmp << parameters.json-file >>
+            else
+              echo "$SERVICE disabled using the property cienabled in the package.json file"
+            fi
           done
         done
