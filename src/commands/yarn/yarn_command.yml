@@ -69,7 +69,7 @@ steps:
       condition: << parameters.request_remote_docker >>
       steps:
         - setup_remote_docker:  # Need this to run DinD
-            version: 20.10.11
+            version: default
   - when:
       condition: << parameters.run_in_container >>
       steps:

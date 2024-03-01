@@ -12,7 +12,7 @@ steps:
       condition: << parameters.request_remote_docker >>
       steps:
         - setup_remote_docker:  # Need this to run DinD
-            version: 20.10.11
+            version: default
   - docker_login
   - run:
       name: If container with this git SHA already exists, don't build
