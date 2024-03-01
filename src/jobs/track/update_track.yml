@@ -34,7 +34,7 @@ parameters:
     description: Linux/amd64 allows for specific versions to be set, while linux/arm64 only allows for either default and edge
     # https://circleci.com/docs/building-docker-images/#docker-version
     type: string
-    default: "20.10.11"
+    default: "default"
   bucket:
     description: The container image repository
     type: string
