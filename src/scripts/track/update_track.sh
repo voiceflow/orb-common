@@ -15,6 +15,7 @@ echo "DOCKERFILE: ${DOCKERFILE?}"
 echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
 echo "PLATFORM: ${PLATFORM?}"
 echo "USE_BUILDKIT: ${USE_BUILDKIT?}"
+echo "PROJECT_GIT_URL: ${PROJECT_GIT_URL?}"
 
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
@@ -76,6 +77,11 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         AWS_CREDENTIALS_ARG=(--build-arg AWS_REGION="${AWS_REGION}" --build-arg AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --build-arg AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}")
     fi
 
+    if (( SOURCE_CODE_PROFILING_ENABLED )); then
+        echo "DD_GIT_REPOSITORY_URL_ARG is set to $PROJECT_GIT_URL"
+        DD_GIT_REPOSITORY_URL_ARG="$BUILD_ARGS --build-arg DD_GIT_REPOSITORY_URL=$PROJECT_GIT_URL"
+    fi
+
     BUILD_COMMAND="build"
     if (( USE_BUILDKIT )); then
         docker buildx create --use --platform="$PLATFORM"
@@ -92,6 +98,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         "${REGISTRY_ARG[@]}" \
         "${PACKAGE_ARG[@]}" \
         "${AWS_CREDENTIALS_ARG[@]}" \
+        "${DD_GIT_REPOSITORY_URL_ARG[@]}" \
         $BUILD_ARGS \
         --platform "$PLATFORM" \
         -f "$BUILD_CONTEXT/$DOCKERFILE" \

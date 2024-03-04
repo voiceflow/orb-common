@@ -83,6 +83,14 @@ parameters:
     description: Platform to build the image for
     type: string
     default: linux/amd64
+  project_git_url:
+    description: The git url of the project
+    type: string
+    default: ""
+  source_code_profiling_enabled:
+    description: If should enable datadog profiling for this repository
+    type: boolean
+    default: false
 steps:
   - update_track:
       image_repo: "<< parameters.image_repo >>"
@@ -105,3 +113,4 @@ steps:
       local_registry_container_image: "<< parameters.local_registry_container_image >>"
       use_buildkit: "<< parameters.use_buildkit >>"
       platform: "<< parameters.platform >>"
+      project_git_url: "<< parameters.project_git_url >>"

@@ -79,6 +79,14 @@ parameters:
     description: Platform to build the image
     type: string
     default: linux/amd64
+  project_git_url:
+    description: The git url of the project
+    type: string
+    default: ""
+  source_code_profiling_enabled:
+    description: If should enable datadog profiling for this repository
+    type: boolean
+    default: false
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -127,4 +135,6 @@ steps:
         INJECT_AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
         USE_BUILDKIT: "<< parameters.use_buildkit >>"
         PLATFORM: "<< parameters.platform >>"
+        PROJECT_GIT_URL: "<< parameters.project_git_url >>"
+        SOURCE_CODE_PROFILING_ENABLED: "<< parameters.source_code_profiling_enabled >>"
       command: <<include(scripts/track/update_track.sh)>>
