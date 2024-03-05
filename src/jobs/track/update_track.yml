@@ -114,3 +114,4 @@ steps:
       use_buildkit: "<< parameters.use_buildkit >>"
       platform: "<< parameters.platform >>"
       project_git_url: "<< parameters.project_git_url >>"
+      source_code_profiling_enabled: "<< parameters.source_code_profiling_enabled >>"
