@@ -40,6 +40,14 @@ parameters:
     description: should probably be workspace
     type: string
     default: ""
+  output:
+    description: Buildx build --output flag
+    type: string
+    default: ''
+  enable_cache_to:
+    description: use --cache-to flag to push cache artifact to remote registry
+    type: boolean
+    default: false
   pre_steps:
     description: pre steps
     type: steps
@@ -65,5 +73,6 @@ steps:
         CLEANUP_IMAGE: "<< parameters.cleanup_image >>"
         PACKAGE: "<< parameters.package >>"
         OUTPUT: "<< parameters.output >>"
+        ENABLE_CACHE_TO: "<< parameters.enable_cache_to >>"
       command: <<include(scripts/docker/staged_buildx.sh)>>
   - steps: << parameters.post_steps >>
