@@ -13,8 +13,6 @@ echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
 echo "PACKAGE: ${PACKAGE-}"
 
 
-# NOTE: think of this as the CircleCI DLC key
-echo "BUILDER: ${BUILDER:=buildy}"
 
 # shellcheck source=/dev/null
 test -n "$(shopt -s nullglob; echo /tmp/vf-staged_buildx-*.env_var)" \
@@ -35,7 +33,8 @@ else
     BRANCH_NAME="${CIRCLE_BRANCH//[^[:alnum:]]/-}" # Change all non alphanumeric characters to -
 fi
 
-IMAGE_CACHE_TAG_BASE="${IMAGE_REPO-}:cache-${BRANCH_NAME-}"
+# NOTE: think of this as the CircleCI DLC key
+echo "BUILDER: ${BUILDER:=buildy-${BRANCH_NAME-}}"
 
 CACHE_FROM_ARG=(--cache-from "${IMAGE_REPO-}:cache-master")
 
@@ -43,8 +42,9 @@ if [ "${BRANCH_NAME}" != "master" ] ; then
   CACHE_FROM_ARG+=(--cache-from "${IMAGE_REPO-}:cache-${BRANCH_NAME-}")
 fi
 
+IMAGE_CACHE_TAG_BASE="${IMAGE_REPO-}:cache-${BRANCH_NAME-}"
 if [ "${ENABLE_CACHE_TO-}" = "true" ] ; then
-  CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=${IMAGE_CACHE_TAG_BASE}-${IMAGE_TAG-}")
+  CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=${IMAGE_CACHE_TAG_BASE}")
 fi
 
 

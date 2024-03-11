@@ -39,7 +39,7 @@ parameters:
   output:
     description: Buildx build --output flag
     type: string
-    default: ''
+    default: ""
   enable_cache_to:
     description: use --cache-to flag to push cache artifact to remote registry
     type: boolean
