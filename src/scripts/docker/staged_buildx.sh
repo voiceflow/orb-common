@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Expected env vars
-echo "TARGET: ${TARGET:=prod}"
+echo "TARGET: ${TARGET:=runner}"
 echo "IMAGE_REPO: ${IMAGE_REPO?}"
 echo "IMAGE_TAG: ${IMAGE_TAG:=${TARGET}}"
 echo "PLATFORMS: ${PLATFORMS:=linux/amd64}"
 echo "DOCKERFILE: ${DOCKERFILE:=Dockerfile}"
-echo "NO_CACHE_FILTER: ${NO_CACHE_FILTER:=prod}"
+echo "NO_CACHE_FILTER: ${NO_CACHE_FILTER:=runner}"
 echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
 
 # TODO: should be general build-args
