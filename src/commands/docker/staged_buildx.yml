@@ -32,10 +32,6 @@ parameters:
     description: Run in background
     type: boolean
     default: false
-  cleanup_image:
-    description: Delete the resulting image so it isn't stored in cache
-    type: boolean
-    default: false
   package:
     description: should probably be workspace
     type: string
@@ -70,7 +66,6 @@ steps:
         NO_CACHE_FILTER: "<< parameters.no_cache_filter >>"
         # possibly set as repo/branch/pr?
         BUILDER: "<< parameters.builder >>"
-        CLEANUP_IMAGE: "<< parameters.cleanup_image >>"
         PACKAGE: "<< parameters.package >>"
         OUTPUT: "<< parameters.output >>"
         ENABLE_CACHE_TO: "<< parameters.enable_cache_to >>"

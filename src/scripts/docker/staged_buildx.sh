@@ -7,7 +7,6 @@ echo "IMAGE_TAG: ${IMAGE_TAG:=${TARGET}}"
 echo "PLATFORMS: ${PLATFORMS:=linux/amd64}"
 echo "DOCKERFILE: ${DOCKERFILE:=Dockerfile}"
 echo "NO_CACHE_FILTER: ${NO_CACHE_FILTER:=prod}"
-echo "CLEANUP_IMAGE: ${CLEANUP_IMAGE:=0}"
 echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
 
 # TODO: should be general build-args
@@ -73,5 +72,3 @@ docker buildx build . \
   --target "${TARGET}" \
   --platform "${PLATFORMS}" \
   "${OUTPUT_ARG[@]}"
-
-test "${CLEANUP_IMAGE-}" -eq 1 && echo "Deleting image" && docker image rm "${IMAGE_REPO}:${IMAGE_TAG}" || echo "Done"
