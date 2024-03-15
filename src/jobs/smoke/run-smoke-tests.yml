@@ -19,6 +19,9 @@ parameters:
   qualitywatcher:
     type: boolean
     default: false
+  stable-only:
+    type: boolean
+    default: true
 steps:
   - clone_repo:
       github_repo_name: automated-testing
@@ -33,7 +36,7 @@ steps:
         CREATOR_APP_URL: << parameters.target-url >><<^ parameters.target-url >>https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com<</ parameters.target-url >>
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
-      command: yarn test:smoke
+      command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >>
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
