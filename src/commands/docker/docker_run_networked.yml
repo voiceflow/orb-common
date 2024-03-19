@@ -1,0 +1,44 @@
+parameters:
+  image_repo:
+    description: The container image repository
+    type: string
+  image_tag:
+    description: The container image tag
+    type: string
+    default: ""
+  command:
+    description: Command to run in docker container
+    type: string
+    default: yarn test:integration
+  platforms:
+    description: Platform to build against
+    type: string
+    default: "linux/amd64"
+  pre_steps:
+    description: pre steps
+    type: steps
+    default: []
+  post_steps:
+    description: post steps
+    type: steps
+    default: []
+steps:
+  - steps: << parameters.pre_steps >>
+  - run:
+      name: Running command in networked docker container
+      command: |
+        # Get the container id for kubernetes/pause, which is used as the shared network with secondary container services
+        K8S_ID="$(docker container ls --format '{{ .Image }} | {{ .ID }}' | grep 'pause' | sed -E 's/^.* | (.*)$/\1/g' )"
+        docker run \
+          --rm -i \
+          --network="container:${K8S_ID-}" \
+          --platform "<< parameters.platforms >>" \
+          --entrypoint /bin/sh \
+          << parameters.image_repo >>:<< parameters.image_tag >> \<<EOF
+          echo '127.0.0.1 creator-app.test.e2e postgres.test.e2e redis.test.e2e localstack.test.e2e mongodb.test.e2e server-data-api.test.e2e creator-api.test.e2e admin-api.test.e2e auth-api.test.e2e analytics-api.test.e2e billing-api.test.e2e identity-api.test.e2e luis-authoring-service.test.e2e integrations.test.e2e custom-api.test.e2e canvas-export.test.e2e alexa-runtime.test.e2e alexa-service.test.e2e general-runtime.test.e2e general-service.test.e2e google-runtime.test.e2e google-service.test.e2e realtime.test.e2e ingest.test.e2e event-ingestion-service.test.e2e billing-api.test.e2e identity-api.test.e2e auth-api.test.e2e runtime-api.test.e2e analytics-api.test.e2e admin-api.test.e2e test-api.test.e2e' >> /etc/hosts
+          # Passthrough secrets
+          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+          << parameters.command >>
+        EOF
+  - steps: << parameters.post_steps >>

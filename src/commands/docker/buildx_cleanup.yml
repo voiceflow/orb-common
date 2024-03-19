@@ -1,0 +1,34 @@
+parameters:
+  image_repo:
+    description: The container image repository
+    type: string
+  image_tag:
+    description: The container image tag
+    type: string
+    default: ""
+  target:
+    description: Dockerfile stage to build
+    type: string
+  builder:
+    description: |
+      Buildx builder name
+      Consider this the key for CircleCI DLC
+    type: string
+    default: ""
+steps:
+  - run:
+      name: Cleaning up build artifacts
+      command: |
+        if [[ -z "$CIRCLE_BRANCH" && -n "$CIRCLE_TAG" ]]; then
+            BRANCH_NAME="master"
+        else
+            BRANCH_NAME="${CIRCLE_BRANCH//[^[:alnum:]]/-}" # Change all non alphanumeric characters to -
+        fi
+        BUILDER="<< parameters.builder >>"
+        echo "BUILDER: ${BUILDER:=buildy-${BRANCH_NAME-}}"
+
+        docker buildx inspect "<< parameters.builder >>" >/dev/null 2>&1 || docker buildx create --platform="${PLATFORMS}" --name "${BUILDER}"
+        docker buildx use "${BUILDER-}"
+        docker buildx inspect --bootstrap
+
+        docker image rm "<< parameters.image_repo >>:<< parameters.image_tag >>"
