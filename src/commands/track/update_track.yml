@@ -79,6 +79,14 @@ parameters:
     description: Platform to build the image
     type: string
     default: linux/amd64
+  enable_dlc:
+    description: enable docker layer cache
+    type: boolean
+    default: false
+  builder_name:
+    description: named builder for use with DLC
+    type: string
+    default: ""
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -92,6 +100,7 @@ steps:
       steps:
         - setup_remote_docker: # Need this to run DinD
             version: << parameters.remote_docker_version >>
+            docker_layer_caching: << parameters.enable_dlc >>
   - docker_login
   - attach_workspace:
       at: ~/voiceflow
@@ -127,4 +136,5 @@ steps:
         INJECT_AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
         USE_BUILDKIT: "<< parameters.use_buildkit >>"
         PLATFORM: "<< parameters.platform >>"
+        BUILDER_NAME: "<< parameters.builder_name >>"
       command: <<include(scripts/track/update_track.sh)>>

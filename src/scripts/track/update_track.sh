@@ -15,6 +15,7 @@ echo "DOCKERFILE: ${DOCKERFILE?}"
 echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
 echo "PLATFORM: ${PLATFORM?}"
 echo "USE_BUILDKIT: ${USE_BUILDKIT?}"
+echo "BUILDER_NAME: ${BUILDER_NAME-}"
 
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
@@ -78,9 +79,14 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
 
     BUILD_COMMAND="build"
     if (( USE_BUILDKIT )); then
-        docker buildx create --use --platform="$PLATFORM"
+        if [[ -n "${BUILDER_NAME-}" ]]; then
+          BUILDER_ARGS=(--name "${BUILDER_NAME-}")
+        fi
+        docker buildx create --use --platform="$PLATFORM" \
+          "${BUILDER_ARGS[@]}"
         docker buildx inspect --bootstrap
         BUILD_COMMAND="buildx build --load"
+        NPM_TOKEN_SECRET=(--secret id=NPM_TOKEN)
     fi
     
     docker $BUILD_COMMAND \
@@ -92,6 +98,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         "${REGISTRY_ARG[@]}" \
         "${PACKAGE_ARG[@]}" \
         "${AWS_CREDENTIALS_ARG[@]}" \
+        "${NPM_TOKEN_SECRET[@]}" \
         $BUILD_ARGS \
         --platform "$PLATFORM" \
         -f "$BUILD_CONTEXT/$DOCKERFILE" \

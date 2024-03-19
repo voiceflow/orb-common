@@ -1,0 +1,73 @@
+parameters:
+  image_repo:
+    description: The container image repository
+    type: string
+  image_tag:
+    description: The container image tag
+    type: string
+    default: ""
+  target:
+    description: Dockerfile stage to build
+    type: string
+  platforms:
+    description: Platform to build against
+    type: string
+    default: "linux/amd64"
+    # default: "linux/amd64,linux/arm64"
+  dockerfile:
+    description: Location of Dockerfile
+    type: string
+    default: "Dockerfile"
+  builder:
+    description: |
+      Buildx builder name
+      Consider this the key for CircleCI DLC
+    type: string
+    default: ""
+  no_cache_filter:
+    description: Do not use cache for these stages
+    type: string
+    default: ""
+  run_in_background:
+    description: Run in background
+    type: boolean
+    default: false
+  package:
+    description: should probably be workspace
+    type: string
+    default: ""
+  output:
+    description: Buildx build --output flag
+    type: string
+    default: ""
+  enable_cache_to:
+    description: use --cache-to flag to push cache artifact to remote registry
+    type: boolean
+    default: false
+  pre_steps:
+    description: pre steps
+    type: steps
+    default: []
+  post_steps:
+    description: post steps
+    type: steps
+    default: []
+steps:
+  - steps: << parameters.pre_steps >>
+  - run:
+      name: Building '<< parameters.target >>' stage of file '<< parameters.dockerfile >>' with tag '<< parameters.image_tag >>'
+      background: << parameters.run_in_background >>
+      environment:
+        TARGET: "<< parameters.target >>"
+        IMAGE_REPO: "<< parameters.image_repo >>"
+        IMAGE_TAG: "<< parameters.image_tag >>"
+        PLATFORMS: "<< parameters.platforms >>"
+        DOCKERFILE: "<< parameters.dockerfile >>"
+        NO_CACHE_FILTER: "<< parameters.no_cache_filter >>"
+        # possibly set as repo/branch/pr?
+        BUILDER: "<< parameters.builder >>"
+        PACKAGE: "<< parameters.package >>"
+        OUTPUT: "<< parameters.output >>"
+        ENABLE_CACHE_TO: "<< parameters.enable_cache_to >>"
+      command: <<include(scripts/docker/staged_buildx.sh)>>
+  - steps: << parameters.post_steps >>
