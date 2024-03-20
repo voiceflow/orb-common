@@ -10,12 +10,12 @@ echo "BUILD_CONTEXT: ${BUILD_CONTEXT?}"
 echo "COMPONENT: ${COMPONENT?}"
 echo "BUCKET: ${BUCKET?}"
 echo "LOCAL_REGISTRY: ${LOCAL_REGISTRY?}"
-echo "BUILD_ARGS: ${BUILD_ARGS?}"
 echo "DOCKERFILE: ${DOCKERFILE?}"
 echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
 echo "PLATFORM: ${PLATFORM?}"
 echo "USE_BUILDKIT: ${USE_BUILDKIT?}"
 echo "BUILDER_NAME: ${BUILDER_NAME-}"
+echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
 
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
@@ -77,6 +77,10 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         AWS_CREDENTIALS_ARG=(--build-arg AWS_REGION="${AWS_REGION}" --build-arg AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --build-arg AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}")
     fi
 
+    for arg in "${EXTRA_BUILD_ARGS[@]}" ; do
+      BUILD_ARGS+=(--build-arg "${arg}")
+    done
+
     BUILD_COMMAND="build"
     if (( USE_BUILDKIT )); then
         if [[ -n "${BUILDER_NAME-}" ]]; then
@@ -88,7 +92,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         BUILD_COMMAND="buildx build --load"
         NPM_TOKEN_SECRET=(--secret id=NPM_TOKEN)
     fi
-    
+
     docker $BUILD_COMMAND \
         --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
         --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \
@@ -99,11 +103,11 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         "${PACKAGE_ARG[@]}" \
         "${AWS_CREDENTIALS_ARG[@]}" \
         "${NPM_TOKEN_SECRET[@]}" \
-        $BUILD_ARGS \
+        "${BUILD_ARGS[@]}" \
         --platform "$PLATFORM" \
         -f "$BUILD_CONTEXT/$DOCKERFILE" \
         -t "$IMAGE_NAME" "$BUILD_CONTEXT"
-    echo "BUILD_ARGS: $BUILD_ARGS $PLATFORM"    
+    echo "BUILD_ARGS: ${BUILD_ARGS[*]} $PLATFORM"
     docker push "$IMAGE_NAME"
 
     # Signing Docker Image

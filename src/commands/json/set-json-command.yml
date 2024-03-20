@@ -1,0 +1,23 @@
+parameters:
+  field:
+    description: The field of the json file to set
+    type: string
+  command:
+    description: The command to set the field to
+    type: string
+  json-file:
+    description: The json file to set the field in
+    type: string
+    default: values.json
+steps:
+  - run:
+      name: Set << parameters.field >> to "<< parameters.command >>" in << parameters.json-file >>
+      command: |
+        if [ ! -f << parameters.json-file >> ]; then
+          echo "Creating file << parameters.json-file >>"
+          echo "{}" > << parameters.json-file >>
+        fi
+        # can be extended with /bin/sh - \<<EOF and such for multiline
+        OUTPUT=$(<< parameters.command >>)
+        jq --arg value "${OUTPUT-}" '.<< parameters.field >> = $value' << parameters.json-file >> > << parameters.json-file >>.tmp
+        mv << parameters.json-file >>.tmp << parameters.json-file >>

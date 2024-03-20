@@ -8,15 +8,6 @@ echo "PLATFORMS: ${PLATFORMS:=linux/amd64}"
 echo "DOCKERFILE: ${DOCKERFILE:=Dockerfile}"
 echo "NO_CACHE_FILTER: ${NO_CACHE_FILTER:=runner}"
 echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
-
-# TODO: should be general build-args
-echo "PACKAGE: ${PACKAGE-}"
-
-
-
-# shellcheck source=/dev/null
-test -n "$(shopt -s nullglob; echo /tmp/vf-staged_buildx-*.env_var)" \
-  && for i in /tmp/vf-staged_buildx-*.env_var ; do source "$i" ; done
 echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
 
 if [ -z "${OUTPUT-}" ] ; then
@@ -47,6 +38,12 @@ if [ "${ENABLE_CACHE_TO-}" = "true" ] ; then
   CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=${IMAGE_CACHE_TAG_BASE}")
 fi
 
+for arg in "${EXTRA_BUILD_ARGS[@]}" ; do
+  BUILD_ARGS+=(--build-arg "${arg}")
+done
+
+echo "BUILD_ARGS: ${BUILD_ARGS[*]}"
+
 
 # This is specific
 echo "NPM_TOKEN: ${NPM_TOKEN#"//registry.npmjs.org/:_authToken="}"
@@ -57,15 +54,11 @@ docker buildx inspect "${BUILDER}" >/dev/null 2>&1 || docker buildx create --pla
 docker buildx use "${BUILDER-}"
 docker buildx inspect --bootstrap
 
-if [[ -n "$PACKAGE" ]]; then
-    PACKAGE_ARG=(--build-arg APP_NAME="$PACKAGE")
-fi
-
 docker buildx build . \
   -f "${DOCKERFILE}" \
   -t "${IMAGE_REPO}:${IMAGE_TAG}" \
   "${PACKAGE_ARG[@]}" \
-  "${EXTRA_BUILD_ARGS[@]}" \
+  "${BUILD_ARGS[@]}" \
   "${CACHE_FROM_ARG[@]}" \
   "${CACHE_TO_ARG[@]}" \
   --secret id=NPM_TOKEN \

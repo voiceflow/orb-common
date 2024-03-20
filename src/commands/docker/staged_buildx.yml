@@ -44,6 +44,10 @@ parameters:
     description: use --cache-to flag to push cache artifact to remote registry
     type: boolean
     default: false
+  extra_build_args:
+    description: build args
+    type: string
+    default: ''
   pre_steps:
     description: pre steps
     type: steps
@@ -69,5 +73,6 @@ steps:
         PACKAGE: "<< parameters.package >>"
         OUTPUT: "<< parameters.output >>"
         ENABLE_CACHE_TO: "<< parameters.enable_cache_to >>"
+        EXTRA_BUILD_ARGS: << parameters.extra_build_args >>
       command: <<include(scripts/docker/staged_buildx.sh)>>
   - steps: << parameters.post_steps >>
