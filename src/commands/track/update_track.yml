@@ -10,7 +10,7 @@ parameters:
     description: Name of the Dockerfile to build
     type: string
     default: Dockerfile
-  build_args:
+  extra_build_args:
     description: Arguments to pass while building the docker image
     type: string
     default: ''
@@ -131,7 +131,7 @@ steps:
         COMPONENT: "<< parameters.component >>"
         BUCKET: "<< parameters.bucket >>"
         LOCAL_REGISTRY: "<< parameters.local_registry >>"
-        BUILD_ARGS: "<< parameters.build_args >>"
+        EXTRA_BUILD_ARGS: << parameters.extra_build_args >>
         DOCKERFILE: "<< parameters.dockerfile >>"
         INJECT_AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
         USE_BUILDKIT: "<< parameters.use_buildkit >>"

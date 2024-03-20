@@ -14,7 +14,7 @@ parameters:
     description: Name of the Dockerfile to build
     type: string
     default: Dockerfile
-  build_args:
+  extra_build_args:
     description: Arguments to pass while building the docker image
     type: string
     default: ""
@@ -96,7 +96,7 @@ steps:
       image_repo: "<< parameters.image_repo >>"
       component: "<< parameters.component >>"
       dockerfile: "<< parameters.dockerfile >>"
-      build_args: "<< parameters.build_args >>"
+      extra_build_args: << parameters.extra_build_args >>
       build_context: "<< parameters.build_context >>"
       checkout: "<< parameters.checkout >>"
       request_remote_docker: "<< parameters.request_remote_docker >>"
