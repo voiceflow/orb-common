@@ -17,6 +17,9 @@ echo "USE_BUILDKIT: ${USE_BUILDKIT?}"
 echo "BUILDER_NAME: ${BUILDER_NAME-}"
 echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
 
+# force string to array
+read -r -a EXTRA_BUILD_ARGS <<< "$EXTRA_BUILD_ARGS"
+
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
 source "/tmp/IMAGE_STATUS"
