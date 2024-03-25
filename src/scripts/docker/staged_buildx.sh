@@ -10,6 +10,9 @@ echo "NO_CACHE_FILTER: ${NO_CACHE_FILTER:=runner}"
 echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
 echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
 
+# force string to array
+read -r -a EXTRA_BUILD_ARGS <<< "$EXTRA_BUILD_ARGS"
+
 if [ -z "${OUTPUT-}" ] ; then
   OUTPUT_ARG=(--load)
 else
