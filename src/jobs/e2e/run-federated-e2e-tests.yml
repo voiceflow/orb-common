@@ -1,0 +1,38 @@
+executor: smoke-executor
+parallelism: 4
+
+parameters:
+  e2e-env-name:
+    type: string
+    default: ""
+  target-url:
+    type: string
+    default: ""
+    description: "use this to override the e2e-env-name and set the full creator-app URL"
+steps:
+  # in the future this will be driven by a configuration file likely in some github repo
+  # for now we are just executing the `test:e2e` job on `creator-app
+
+  - clone_repo:
+      github_repo_name: creator-app
+      github_commit: master
+      path_to_clone: ~/project
+  - install_node_modules:
+      avoid_post_install_scripts: false
+      cache_prefix: e2e-test
+  - run:
+      name: Run E2E Tests
+      environment:
+        CREATOR_APP_URL: << parameters.target-url >><<^ parameters.target-url >>https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com<</ parameters.target-url >>
+      command: yarn test:e2e
+  - store_test_results:
+      path: test/e2e-test/cypress/results
+  - store_artifacts:
+      path: test/e2e-test/cypress/downloads
+      destination: downloads
+  - store_artifacts:
+      path: test/e2e-test/cypress/videos
+      destination: videos
+  - store_artifacts:
+      path: test/e2e-test/cypress/screenshots
+      destination: screenshots
