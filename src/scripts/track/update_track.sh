@@ -16,6 +16,7 @@ echo "PLATFORM: ${PLATFORM?}"
 echo "USE_BUILDKIT: ${USE_BUILDKIT?}"
 echo "BUILDER_NAME: ${BUILDER_NAME-}"
 echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
+echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
 
 # force string to array
 read -r -a EXTRA_BUILD_ARGS <<< "$EXTRA_BUILD_ARGS"
@@ -104,7 +105,12 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
           CACHE_FROM_ARG+=(--cache-from "${IMAGE_REPO-}:cache-${CACHE_BRANCH_NAME-}")
         fi
 
+        if [[ "${ENABLE_CACHE_TO-}" == "true" && "${CACHE_BRANCH_NAME}" == "master" ]] ; then
+          CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=cache-${CACHE_BRANCH_NAME-}")
+        fi
+
         BUILD_ARGS+=( "${CACHE_FROM_ARG[@]}" )
+        BUILD_ARGS+=( "${CACHE_TO_ARG[@]}" )
     fi
 
     docker $BUILD_COMMAND \

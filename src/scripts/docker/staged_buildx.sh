@@ -37,7 +37,7 @@ if [ "${BRANCH_NAME}" != "master" ] ; then
 fi
 
 IMAGE_CACHE_TAG_BASE="${IMAGE_REPO-}:cache-${BRANCH_NAME-}"
-if [ "${ENABLE_CACHE_TO-}" = "true" ] ; then
+if [ "${ENABLE_CACHE_TO-}" == "true" ] ; then
   CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=${IMAGE_CACHE_TAG_BASE}")
 fi
 
