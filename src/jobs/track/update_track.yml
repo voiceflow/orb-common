@@ -18,6 +18,10 @@ parameters:
     description: Arguments to pass while building the docker image
     type: string
     default: ""
+  enable_cache_to:
+    description: use --cache-to flag to push cache artifact to remote registry
+    type: boolean
+    default: false
   build_context:
     description: Path to the context for the docker build
     type: string
@@ -97,6 +101,7 @@ steps:
       component: "<< parameters.component >>"
       dockerfile: "<< parameters.dockerfile >>"
       extra_build_args: << parameters.extra_build_args >>
+      enable_cache_to: "<< parameters.enable_cache_to >>"
       build_context: "<< parameters.build_context >>"
       checkout: "<< parameters.checkout >>"
       request_remote_docker: "<< parameters.request_remote_docker >>"
