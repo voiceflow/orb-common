@@ -106,7 +106,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         fi
 
         if [[ "${ENABLE_CACHE_TO-}" -eq 1  && "${CACHE_BRANCH_NAME}" == "master" ]] ; then
-          CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=cache-${CACHE_BRANCH_NAME-}")
+          CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=${IMAGE_REPO-}:cache-${CACHE_BRANCH_NAME-}")
         fi
 
         BUILD_ARGS+=( "${CACHE_FROM_ARG[@]}" )
