@@ -16,3 +16,11 @@ steps:
   - monorepo_unit_tests:
       run_on_root: << parameters.run_on_root >>
       force_execution: true
+  - run:
+      name: collect test reports
+      command: |
+        # copy all .report.xml files to the root directory
+        # and give them unique names based on their paths
+        ls **/*.report.xml | xargs -I {} sh -c 'cp {} $(echo {} | tr "/" "_")'
+  - store_test_results:
+      path: "."
