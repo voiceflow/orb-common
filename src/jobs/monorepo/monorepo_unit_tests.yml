@@ -31,3 +31,4 @@ steps:
       paths:
         - "libs/test-common/sonar"
         - "libs/sdk-test/sonar"
+        - "apps/test-api/sonar"
