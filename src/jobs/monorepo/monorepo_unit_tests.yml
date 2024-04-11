@@ -29,4 +29,4 @@ steps:
   - persist_to_workspace:
       root: "."
       paths:
-        - "./**/sonar/**/lcov.info"
+        - "libs/test-common/sonar"
