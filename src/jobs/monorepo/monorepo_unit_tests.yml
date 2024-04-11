@@ -7,6 +7,10 @@ parameters:
     description: Executor to run the command on
     type: executor
     default: node-executor
+  collect_coverage:
+    description: Collect coverage information from sonar directories
+    type: boolean
+    default: false
 executor: << parameters.executor >>
 steps:
   - checkout
@@ -16,3 +20,20 @@ steps:
   - monorepo_unit_tests:
       run_on_root: << parameters.run_on_root >>
       force_execution: true
+  - run:
+      name: Collect test reports
+      command: |
+        mkdir -p reports
+
+        # copy all .report.xml files to the root directory
+        # and give them unique names based on their paths
+        find . -type f -name "*.report.xml" | xargs -I {} sh -c 'cp {} reports/$(echo {} | cut -c 3- | tr "/" "_")'
+  - store_test_results:
+      path: "./reports"
+  - when:
+      condition: << parameters.collect_coverage >>
+      steps:
+        - persist_to_workspace:
+            root: "."
+            paths:
+              - "*/*/sonar"

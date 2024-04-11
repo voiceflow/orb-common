@@ -22,3 +22,5 @@ steps:
       extra_args: << parameters.extra_args >>
       run_on_root: << parameters.run_on_root >>
       force_execution: << parameters.force_execution >>
+  - store_test_results:
+      path: "./reports"
