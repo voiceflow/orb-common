@@ -27,7 +27,6 @@ steps:
   - store_test_results:
       path: "./reports"
   - persist_to_workspace:
-      root: ~/voiceflow
+      root: "."
       paths:
-        - ./apps/*/sonar/**"
-        - ./libs/*/sonar/**"
+        - ./**/sonar/**/lcov.info"
