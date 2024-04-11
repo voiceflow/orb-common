@@ -29,5 +29,5 @@ steps:
   - persist_to_workspace:
       root: "."
       paths:
-        - apps/*/sonar/*/lcov-report"
-        - libs/*/sonar/*/lcov-report"
+        - apps/*/sonar/*/lcov.info"
+        - libs/*/sonar/*/lcov.info"
