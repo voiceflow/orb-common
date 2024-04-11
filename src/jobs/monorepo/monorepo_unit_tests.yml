@@ -29,6 +29,5 @@ steps:
   - persist_to_workspace:
       root: "."
       paths:
-        - "libs/test-common/sonar"
-        - "libs/sdk-test/sonar"
-        - "apps/test-api/sonar"
+        - "libs/*/sonar"
+        - "apps/*/sonar"
