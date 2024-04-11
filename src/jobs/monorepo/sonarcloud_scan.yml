@@ -6,5 +6,7 @@ parameters:
 executor: << parameters.executor >>
 steps:
   - checkout
+  - attach_workspace:
+      at: ~/voiceflow
   - sonarcloud/scan:
       cache_version: 2
