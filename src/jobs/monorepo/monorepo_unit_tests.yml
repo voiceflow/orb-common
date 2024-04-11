@@ -30,4 +30,4 @@ steps:
       root: "."
       paths:
         - "libs/test-common/sonar"
-        - "libs/test-common/build"
+        - "libs/sdk-test/sonar"
