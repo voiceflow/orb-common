@@ -3,10 +3,18 @@ parameters:
     description: Executor to run the command on
     type: executor
     default: java-executor
+  install_node_modules:
+    description: Install dependencies before scanning
+    type: boolean
+    default: false
 executor: << parameters.executor >>
 steps:
   - checkout
   - attach_workspace:
       at: ~/voiceflow
+  - when:
+      condition: << parameters.install_node_modules >>
+      steps:
+        - install_node_modules
   - sonarcloud/scan:
       cache_version: 2
