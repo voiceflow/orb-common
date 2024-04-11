@@ -21,7 +21,7 @@ steps:
       run_on_root: << parameters.run_on_root >>
       force_execution: true
   - run:
-      name: collect test reports
+      name: Collect test reports
       command: |
         mkdir -p reports
 
