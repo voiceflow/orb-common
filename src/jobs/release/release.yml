@@ -51,6 +51,7 @@ steps:
               # Git user must be set for yarn publish
               git config --global user.email "serviceaccount@voiceflow.com"
               git config --global user.name "Voiceflow"
+              yarn config set network-timeout 35000 -g
               yarn publish --new-version << parameters.prerelease_version >> --tag << parameters.prerelease_tag >>
   - unless:
       condition: << parameters.prerelease_version >>
