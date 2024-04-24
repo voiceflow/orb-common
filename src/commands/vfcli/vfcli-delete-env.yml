@@ -9,7 +9,19 @@ parameters:
     description: When to run this command
     default: always
 steps:
+  - attach_workspace:
+      at: workspace
   - run:
       name: Delete Env << parameters.env-name >>
       when: << parameters.when >>
-      command: vfcli env delete --name << parameters.env-name >> --interactive false
+      command: |
+        if [[ -f "workspace/env_name" ]]; then
+          env_name=$(cat workspace/env_name)
+          if [[ -n "$env_name" ]]; then
+            vfcli pool release-env --env-name "$env_name"
+          else
+            vfcli env delete --name "<< parameters.env-name >>" --interactive false
+          fi
+        else
+          vfcli env delete --name "<< parameters.env-name >>" --interactive false
+        fi
