@@ -32,7 +32,14 @@ parameters:
     description: Tag to use for prerelease (Must be used alongside prerelease_version)
     type: string
     default: ""
+  ssh_key:
+    description: The SSH key with write permissions to the repository
+    type: string
+    default: ""
 steps:
+  - add_ssh_keys:
+      fingerprints:
+        - "<< parameters.ssh_key >>"
   - checkout
   - install_node_modules:
       install_args: "<< parameters.install_args >>"
