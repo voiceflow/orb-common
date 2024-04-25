@@ -30,6 +30,8 @@ steps:
   - install_node_modules:
       avoid_post_install_scripts: false
       cache_prefix: smoke-test
+  - restore_cache:
+      key: "smoke-test-build-cache"
   - run:
       name: Run Smoke Tests
       environment:
@@ -37,6 +39,10 @@ steps:
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
       command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >>
+  - save_cache:
+      key: "smoke-test-build-cache"
+      paths:
+        - node_modules/.cache/turbo
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
