@@ -35,6 +35,7 @@ steps:
       package_folder: "{apps,libs}"
       monorepo_engine: "turborepo"
       cache_branch: "master"
+      cache_identifier: "smoke-test-build-cache"
   - run:
       name: Run Smoke Tests
       environment:
@@ -47,6 +48,7 @@ steps:
       package_folder: "{apps,libs}"
       monorepo_engine: "turborepo"
       cache_branch: "master"
+      cache_identifier: "smoke-test-build-cache"
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
