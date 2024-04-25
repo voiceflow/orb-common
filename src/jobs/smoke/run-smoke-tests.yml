@@ -30,6 +30,11 @@ steps:
   - install_node_modules:
       avoid_post_install_scripts: false
       cache_prefix: smoke-test
+  - monorepo_restore_cache:
+      package: "all"
+      package_folder: "{apps,libs}"
+      monorepo_engine: "turborepo"
+      cache_branch: "master"
   - run:
       name: Run Smoke Tests
       environment:
@@ -37,6 +42,11 @@ steps:
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
       command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >>
+  - monorepo_save_cache:
+      package: "all"
+      package_folder: "{apps,libs}"
+      monorepo_engine: "turborepo"
+      cache_branch: "master"
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
