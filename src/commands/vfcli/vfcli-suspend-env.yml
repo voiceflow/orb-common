@@ -20,4 +20,3 @@ steps:
         fi
 
         vfcli env suspend "$env_name" --interactive false --track-file "<< parameters.track-file >>"
-        
