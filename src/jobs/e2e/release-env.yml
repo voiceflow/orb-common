@@ -13,5 +13,5 @@ parameters:
 steps:
   - install-vfcli:
       init-cluster: << parameters.cluster >>
-  - vfcli-delete-env-or-release-env:
+  - vfcli-delete-or-release-env:
       env-name: << parameters.env-name >>

@@ -43,7 +43,7 @@ steps:
       path: *log_dir
       destination: logs
       when: on_fail
-  - vfcli-delete-env-or-release-env:
+  - vfcli-delete-or-release-env:
       env-name: << parameters.env-name >>
       when: on_fail
 
