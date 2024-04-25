@@ -27,6 +27,7 @@ steps:
   - vfcli-create-or-get-free-env-from-pool:
       env-name: << parameters.env-name >>
       track-file: *track_file
+      pool-id: << parameters.pool-id >>
   - run:
       name: Get pod list
       command: kubectl get pods -n << parameters.env-name >>
