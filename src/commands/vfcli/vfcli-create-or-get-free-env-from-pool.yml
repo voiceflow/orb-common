@@ -1,5 +1,3 @@
-version: 2.1
-
 description: Uses vfcli to create a new environment (vfcli must already be installed)
 
 parameters:
