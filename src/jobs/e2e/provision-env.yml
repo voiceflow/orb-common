@@ -17,6 +17,10 @@ parameters:
     type: string
     description: Branch to track for the specified components
     default: "master"
+  pool-id:
+    type: string
+    description: ID of the pool to get the environment from
+    default: ""
 steps:
   - install-vfcli:
       init-cluster: << parameters.cluster >>
