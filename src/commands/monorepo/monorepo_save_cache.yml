@@ -46,10 +46,10 @@ steps:
             condition:
               equal: ["turborepo", << parameters.monorepo_engine >>]
             steps:
-              - persist_to_workspace:
-                  root: "."
-                  paths:
-                    - node_modules/.cache/turbo
+              - run:
+                  name: Clean up the cache directory
+                  # deletes all files in the cache directory that are older than 7 days, only mtime is persisted properly
+                  command: find node_modules/.cache/turbo -type f -mtime +7 -delete
               - save_cache:
                   paths:
                     - node_modules/.cache/turbo
