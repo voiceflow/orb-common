@@ -15,7 +15,8 @@ steps:
       command: |
         if [[ -f "workspace/env_name" ]]; then
           env_name=$(cat workspace/env_name)
-          vfcli env suspend "$env_name" --interactive false --track-file "<< parameters.track-file >>"
         else
-          vfcli env suspend "<< parameters.env-name >>" --interactive false --track-file "<< parameters.track-file >>"
+          env_name="<< parameters.env-name >>"
         fi
+
+        vfcli env suspend "$env_name" --interactive false --track-file "<< parameters.track-file >>"

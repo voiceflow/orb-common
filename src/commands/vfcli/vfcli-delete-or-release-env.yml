@@ -8,6 +8,11 @@ parameters:
     type: string
     description: When to run this command
     default: always
+  force:
+    type: boolean
+    description: Whether to delete the environment forcefully
+    default: false
+
 steps:
   - attach_workspace:
       at: workspace
@@ -15,13 +20,15 @@ steps:
       name: Delete Env << parameters.env-name >>
       when: << parameters.when >>
       command: |
-        if [[ -f "workspace/env_name" ]]; then
+        if [[ $force == true ]]; then
+          vfcli env delete --name "<< parameters.env-name >>" --interactive false --force
+        else
           env_name=$(cat workspace/env_name)
           if [[ -n "$env_name" ]]; then
             vfcli pool release-env --env-name "$env_name"
+            vfcli env resume "$env_name" --interactive false
+            vfcli track attach --branch master --component all --name "$env_name" --interactive false
           else
             vfcli env delete --name "<< parameters.env-name >>" --interactive false
           fi
-        else
-          vfcli env delete --name "<< parameters.env-name >>" --interactive false
         fi

@@ -1,0 +1,55 @@
+version: 2.1
+
+description: Uses vfcli to create a new environment (vfcli must already be installed)
+
+parameters:
+  env-name:
+    type: string
+    description: Name of the environment to create
+  track-file:
+    type: string
+    description: Path to the track-mapping file to use
+    default: ""
+  lease:
+    type: string
+    description: Time to lease the environment for
+    default: 1h
+  node-group:
+    type: string
+    description: Name of the node group to use
+    default: "e2e"
+  force:
+    type: boolean
+    description: Whether to force environment creation without checking for free environment
+    default: false
+  pool-id:
+    type: string
+    description: ID of the pool to use for fetching the free environment
+
+steps:
+  - run:
+      name: Check for free environment or Create environment
+      command: |
+        if [[ $force ]]; then
+          echo "Force option is enabled... Proceeding with environment creation."
+        else
+          if [[ -n $pool_id ]]; then
+            result=$(vfcli get-free-env --pool-id $pool_id --output json)
+          else
+            result=$(vfcli get-free-env --output json)
+          fi
+          if [[ -z $result ]]; then
+            echo "No free environment found. Proceeding with environment creation."
+          else
+            echo "Free environment found: $result"
+            env_name=$(echo "$result" | jq -r '.name')
+            echo ${env_name} > workspace/env_name
+            echo "export ENV_NAME=${env_name}" >> $BASH_ENV
+            vfcli pool use-env --env-name ${env_name}
+            exit 0  # Skip environment creation
+          fi
+        fi
+  - run:
+      name: Create environment
+      command: |
+        vfcli env create "<< parameters.env-name >>" --interactive false --node-group "<< parameters.node-group >>" --prefix "" --lease "<< parameters.lease >>" "${TRACK_ARG[@]}"
