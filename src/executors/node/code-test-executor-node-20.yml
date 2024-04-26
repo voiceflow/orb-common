@@ -3,12 +3,15 @@ parameters:
     description: Default resource class for the executor
     type: string
     default: large
+  tag:
+    type: string
+    default: v3
 working_directory: ~/voiceflow # directory where steps will run
 resource_class: << parameters.default_resource_class >>
 environment:
   NODE_OPTIONS: --max-old-space-size=4096
 docker: # run the steps with Docker
-  - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:v3 # Test steps container
+  - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:<< parameters.tag >> # Test steps container
     aws_auth:
       aws_access_key_id: $AWS_ACCESS_KEY_ID
       aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
