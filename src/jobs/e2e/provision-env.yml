@@ -17,9 +17,9 @@ parameters:
     type: string
     description: Branch to track for the specified components
     default: "master"
-  pool-id:
+  pool-type:
     type: string
-    description: ID of the pool to get the environment from
+    description: Pool where a free environment will be fetched
     default: ""
 steps:
   - install-vfcli:
@@ -31,7 +31,7 @@ steps:
   - vfcli-create-or-get-free-env-from-pool:
       env-name: << parameters.env-name >>
       track-file: *track_file
-      pool-id: << parameters.pool-id >>
+      pool-type: << parameters.pool-type >>
   - run:
       name: Get pod list
       command: kubectl get pods -n << parameters.env-name >>

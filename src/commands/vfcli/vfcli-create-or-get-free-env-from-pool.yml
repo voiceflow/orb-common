@@ -20,9 +20,9 @@ parameters:
     type: boolean
     description: Whether to force environment creation without checking for free environment
     default: false
-  pool-id:
+  pool-type:
     type: string
-    description: ID of the pool to use for fetching the free environment
+    description: Type of the pool to get the environment from
 
 steps:
   - run:
@@ -31,11 +31,7 @@ steps:
         if [[ $force ]]; then
           echo "Force option is enabled... Proceeding with environment creation."
         else
-          if [[ -n $pool_id ]]; then
-            result=$(vfcli get-free-env --pool-id $pool_id --output json)
-          else
-            result=$(vfcli get-free-env --output json)
-          fi
+          result=$(vfcli get-free-env --pool-type "<< parameters.env-name >>" --output json)
           if [[ -z $result ]]; then
             echo "No free environment found. Proceeding with environment creation."
           else
