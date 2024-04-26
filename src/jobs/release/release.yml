@@ -65,4 +65,4 @@ steps:
         - run:
             name: Release Package with semantic-release
             working_directory: << parameters.working_directory >>
-            command: "SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release\n"
+            command: "SENTRY_PROJECT=<< parameters.sentry_project >> npx semantic-release --branches << parameters.prerelease_tag >> \n"
