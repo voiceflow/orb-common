@@ -80,7 +80,7 @@ parameters:
 steps:
   - run:
       name: Checkout code
-      command: git clone --depth=1 -b "$CIRCLE_BRANCH" "$CIRCLE_REPOSITORY_URL"
+      command: git clone --depth=1 -b "$CIRCLE_BRANCH" << pipeline.trigger_parameters.github_app.repo_url >>
   - when:
       condition: "<< parameters.attach_workspace >>"
       steps:
