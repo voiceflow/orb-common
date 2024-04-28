@@ -78,7 +78,9 @@ parameters:
     default: []
 
 steps:
-  - checkout
+  - run:
+      name: Checkout code
+      command: git clone --depth=1 -b "$CIRCLE_BRANCH" "$CIRCLE_REPOSITORY_URL"
   - when:
       condition: "<< parameters.attach_workspace >>"
       steps:
