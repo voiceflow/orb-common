@@ -30,7 +30,7 @@ steps:
           if [[ -n "$env_name" ]]; then
             vfcli pool release-env --env-name "$env_name"
             vfcli env resume "$env_name" --interactive false
-            vfcli track attach --branch master --component all --name "$env_name" --interactive false
+            vfcli track attach --branch master --components all --name "$env_name" --interactive false
           else
             vfcli env delete --name "<< parameters.env-name >>" --interactive false
           fi
