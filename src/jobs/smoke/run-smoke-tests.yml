@@ -31,7 +31,7 @@ steps:
       avoid_post_install_scripts: false
       cache_prefix: smoke-test
   - run:
-      name: "Derive commit SHA"
+      name: "Reference commit SHA"
       command: echo "SMOKE_TEST_COMMIT_SHA=$(git rev-parse HEAD)" >> $BASH_ENV
   - restore_cache:
       # use the commit of the smoke-test-runner repo as the cache key
