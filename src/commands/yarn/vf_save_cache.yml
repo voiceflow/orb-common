@@ -12,3 +12,5 @@ steps:
       key: node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
       paths:
         - << parameters.working_directory >>/.yarn/cache
+        - << parameters.working_directory >>/.yarn/install-state.gz
+        - << parameters.working_directory >>/node_modules
