@@ -1,5 +1,5 @@
 executor: smoke-executor
-parallelism: 5
+parallelism: 4
 
 parameters:
   e2e-env-name:
@@ -32,7 +32,7 @@ steps:
       cache_prefix: smoke-test
   - run:
       name: "Reference commit SHA"
-      command: echo "SMOKE_TEST_COMMIT_SHA=$(git rev-parse HEAD)" >> commit.txt
+      command: git rev-parse HEAD >> commit.txt
   - restore_cache:
       # use the commit of the smoke-test-runner repo as the cache key
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
