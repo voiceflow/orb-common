@@ -1,5 +1,5 @@
 executor: smoke-executor
-parallelism: 4
+parallelism: 5
 
 parameters:
   e2e-env-name:
