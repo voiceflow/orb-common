@@ -29,7 +29,6 @@ steps:
       path_to_clone: ~/project
   - install_node_modules:
       avoid_post_install_scripts: false
-      cache_prefix: smoke-test
   - run:
       name: "Reference commit SHA"
       command: git rev-parse HEAD >> commit.txt
