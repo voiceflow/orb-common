@@ -7,14 +7,18 @@ parameters:
   track-file:
     type: string
     description: Path to the track-mapping file to use
+  working_directory:
+    description: Directory of git repo
+    type: string
+    default: "."
 steps:
   - attach_workspace:
       at: workspace
   - run:
       name: Suspend Environment
       command: |
-        if [[ -f "<< parameters.working_directory >>/workspace/env_name" ]]; then
-          env_name=$(cat << parameters.working_directory >>/workspace/env_name)
+        if [[ -f "workspace/env_name" ]]; then
+          env_name=$(cat workspace/env_name)
         else
           env_name="<< parameters.env-name >>"
         fi
