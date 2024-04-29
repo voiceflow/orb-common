@@ -30,8 +30,12 @@ steps:
   - install_node_modules:
       avoid_post_install_scripts: false
       cache_prefix: smoke-test
+  - run:
+      name: "Reference commit SHA"
+      command: git rev-parse HEAD >> commit.txt
   - restore_cache:
-      key: "smoke-test-build-cache"
+      # use the commit of the smoke-test-runner repo as the cache key
+      key: smoke-test-build-cache-{{ checksum "commit.txt" }}
   - run:
       name: Run Smoke Tests
       environment:
@@ -40,7 +44,7 @@ steps:
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
       command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >>
   - save_cache:
-      key: "smoke-test-build-cache"
+      key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
         - node_modules/.cache/turbo
   - store_test_results:
