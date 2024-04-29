@@ -80,7 +80,7 @@ parameters:
 steps:
   - run:
       name: Checkout code
-      command: git clone --depth=1 -b "$CIRCLE_BRANCH" "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/voiceflow/creator-app"
+      command: git clone --depth=1 -b "$CIRCLE_BRANCH" "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/voiceflow/creator-app" .
   - when:
       condition: "<< parameters.attach_workspace >>"
       steps:
