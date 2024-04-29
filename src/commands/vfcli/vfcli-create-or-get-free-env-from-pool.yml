@@ -25,6 +25,7 @@ parameters:
     description: Type of the pool to get the environment from
 
 steps:
+  - run: mkdir -p workspace
   - run:
       name: Check for free environment or Create environment
       command: |
@@ -43,6 +44,10 @@ steps:
             exit 0  # Skip environment creation
           fi
         fi
+  - persist_to_workspace:
+      root: workspace
+      paths:
+        - env_name
   - run:
       name: Create environment
       command: |

@@ -13,8 +13,8 @@ steps:
   - run:
       name: Suspend Environment
       command: |
-        if [[ -f "workspace/env_name" ]]; then
-          env_name=$(cat workspace/env_name)
+        if [[ -f "<< parameters.working_directory >>/workspace/env_name" ]]; then
+          env_name=$(cat << parameters.working_directory >>/workspace/env_name)
         else
           env_name="<< parameters.env-name >>"
         fi
