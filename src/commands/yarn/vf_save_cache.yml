@@ -14,3 +14,4 @@ steps:
         - << parameters.working_directory >>/.yarn/cache
         - << parameters.working_directory >>/.yarn/install-state.gz
         - << parameters.working_directory >>/node_modules
+        - ~/.cache/Cypress
