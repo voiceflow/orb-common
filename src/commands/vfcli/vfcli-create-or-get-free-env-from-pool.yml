@@ -35,6 +35,7 @@ steps:
           result=$(vfcli pool get-free-env --pool-type "<< parameters.pool-type >>" --output json)
           if [[ -z $result ]] || [[ $(echo "$result" | jq 'keys | length') -eq 0 ]]; then
             echo "No free environment found. Proceeding with environment creation."
+            echo "null" > workspace/env_name  # Write 'null' to indicate no environment was found
           else
             echo "Free environment found: $result"
             env_name=$(echo "$result" | jq -r '.name')
