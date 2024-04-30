@@ -58,7 +58,13 @@ steps:
               # Git user must be set for yarn publish
               git config --global user.email "serviceaccount@voiceflow.com"
               git config --global user.name "Voiceflow"
-              yarn publish --new-version << parameters.prerelease_version >> --tag << parameters.prerelease_tag >>
+              YARN_VERSION=$(yarn --version)
+              if [ "${YARN_VERSION::1}" == "1" ] ; then
+                yarn publish --new-version << parameters.prerelease_version >> --tag << parameters.prerelease_tag >>
+              else
+                yarn version << parameters.prerelease_version >> --immediate
+                yarn npm publish --tag << parameters.prerelease_tag >>
+              fi
   - unless:
       condition: << parameters.prerelease_version >>
       steps:
