@@ -60,11 +60,11 @@ steps:
               git config --global user.name "Voiceflow"
               YARN_VERSION=$(yarn --version)
               if [ "${YARN_VERSION::1}" == "1" ] ; then
-                YARN_CMD=(yarn publish)
+                yarn publish --new-version << parameters.prerelease_version >> --tag << parameters.prerelease_tag >>
               else
-                YARN_CMD=(yarn npm publish)
+                yarn version << parameters.prerelease_version >> --immediate
+                yarn npm publish --tag << parameters.prerelease_tag >>
               fi
-              $YARN_CMD --new-version << parameters.prerelease_version >> --tag << parameters.prerelease_tag >>
   - unless:
       condition: << parameters.prerelease_version >>
       steps:
