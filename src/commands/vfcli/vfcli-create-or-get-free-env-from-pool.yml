@@ -43,18 +43,27 @@ steps:
               echo ${env_name} > workspace/env_name
               echo "export ENV_NAME=${env_name}" >> $BASH_ENV
               vfcli pool use-env --env-name ${env_name}
+              echo "skip" > workspace/skip_create_env  # Indicate no need to create environment
               exit 0  # Skip environment creation
             fi
           fi
         else
+          echo "Pool type not provided."
           echo "null" > workspace/env_name  # Handle case where pool-type is not provided
+          echo "create" > workspace/skip_create_env
         fi
 
   - persist_to_workspace:
       root: workspace
       paths:
         - env_name
+        - skip_create_env
+
   - run:
       name: Create environment
       command: |
-        vfcli env create "<< parameters.env-name >>" --interactive false --node-group "<< parameters.node-group >>" --prefix "" --lease "<< parameters.lease >>" "${TRACK_ARG[@]}"
+        if [[ $(cat workspace/skip_create_env) != "skip" ]]; then
+          vfcli env create "<< parameters.env-name >>" --interactive false --node-group "<< parameters.node-group >>" --prefix "" --lease "<< parameters.lease >>" "${TRACK_ARG[@]}"
+        else
+          echo "Environment creation skipped as a free environment was used."
+        fi
