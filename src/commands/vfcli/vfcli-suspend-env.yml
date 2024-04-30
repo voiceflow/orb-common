@@ -7,10 +7,6 @@ parameters:
   track-file:
     type: string
     description: Path to the track-mapping file to use
-  working_directory:
-    description: Directory of git repo
-    type: string
-    default: "."
 steps:
   - attach_workspace:
       at: workspace

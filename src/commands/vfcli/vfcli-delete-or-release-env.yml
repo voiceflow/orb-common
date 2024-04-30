@@ -12,10 +12,6 @@ parameters:
     type: boolean
     description: Whether to delete the environment forcefully
     default: false
-  # working_directory:
-  #   description: Directory of git repo
-  #   type: string
-  #   default: "."
 steps:
   - attach_workspace:
       at: workspace

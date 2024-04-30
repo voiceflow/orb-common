@@ -29,22 +29,27 @@ steps:
   - run:
       name: Check for free environment or Create environment
       command: |
-        if [[ $force ]]; then
-          echo "Force option is enabled... Proceeding with environment creation."
-        else
-          result=$(vfcli pool get-free-env --pool-type "<< parameters.pool-type >>" --output json)
-          if [[ -z $result ]] || [[ $(echo "$result" | jq 'keys | length') -eq 0 ]]; then
-            echo "No free environment found. Proceeding with environment creation."
-            echo "null" > workspace/env_name  # Write 'null' to indicate no environment was found
+        if [[ -n "<< parameters.pool-type >>" ]]; then
+          if [[ $force ]]; then
+            echo "Force option is enabled... Proceeding with environment creation."
           else
-            echo "Free environment found: $result"
-            env_name=$(echo "$result" | jq -r '.name')
-            echo ${env_name} > workspace/env_name
-            echo "export ENV_NAME=${env_name}" >> $BASH_ENV
-            vfcli pool use-env --env-name ${env_name}
-            exit 0  # Skip environment creation
+            result=$(vfcli pool get-free-env --pool-type "<< parameters.pool-type >>" --output json)
+            if [[ -z $result ]] || [[ $(echo "$result" | jq 'keys | length') -eq 0 ]]; then
+              echo "No free environment found. Proceeding with environment creation."
+              echo "null" > workspace/env_name  # Write 'null' to indicate no environment was found
+            else
+              echo "Free environment found: $result"
+              env_name=$(echo "$result" | jq -r '.name')
+              echo ${env_name} > workspace/env_name
+              echo "export ENV_NAME=${env_name}" >> $BASH_ENV
+              vfcli pool use-env --env-name ${env_name}
+              exit 0  # Skip environment creation
+            fi
           fi
+        else
+          echo "null" > workspace/env_name  # Handle case where pool-type is not provided
         fi
+
   - persist_to_workspace:
       root: workspace
       paths:
