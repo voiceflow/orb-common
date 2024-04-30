@@ -33,7 +33,7 @@ steps:
           echo "Force option is enabled... Proceeding with environment creation."
         else
           result=$(vfcli pool get-free-env --pool-type "<< parameters.pool-type >>" --output json)
-          if [[ -z $result ]]; then
+          if [[ -z $result ]] || [[ $(echo "$result" | jq 'keys | length') -eq 0 ]]; then
             echo "No free environment found. Proceeding with environment creation."
           else
             echo "Free environment found: $result"
