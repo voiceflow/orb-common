@@ -8,6 +8,15 @@ parameters:
     type: string
     description: Path to the track-mapping file to use
 steps:
+  - attach_workspace:
+      at: workspace
   - run:
-      name: Suspend Env << parameters.env-name >>
-      command: vfcli env suspend << parameters.env-name >> --interactive false --track-file << parameters.track-file >>
+      name: Suspend Environment
+      command: |
+        env_name=$(cat workspace/env_name)
+        if [[ "$env_name" == "null" ]] || [[ -z "$env_name" ]]; then
+          # If env_name from file is "null" or empty, use the default parameter
+          env_name="<< parameters.env-name >>"
+        fi
+
+        vfcli env suspend "$env_name" --interactive false --track-file "<< parameters.track-file >>"

@@ -30,6 +30,21 @@ steps:
   - install_node_modules:
       avoid_post_install_scripts: false
       cache_prefix: smoke-test
+  - attach_workspace:
+      at: workspace
+  - run:
+      name: "Set Environment Variables"
+      command: |
+        # workspace/env_name is used to store the e2e env name and passed to the smoke tests
+        # uses e2e-env-name is workspace/env_name is 'null'
+        if [ ! -z "<< parameters.target-url >>" ]; then
+          echo 'export CREATOR_APP_URL=<< parameters.target-url >>' >> $BASH_ENV
+        elif [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
+          echo 'export CREATOR_APP_URL=https://creator-$(cat workspace/env_name).br.development.voiceflow.com' >> $BASH_ENV
+        else
+          echo 'export CREATOR_APP_URL=https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com' >> $BASH_ENV
+        fi
+      shell: /bin/bash
   - run:
       name: "Reference commit SHA"
       command: git rev-parse HEAD >> commit.txt
@@ -39,7 +54,6 @@ steps:
   - run:
       name: Run Smoke Tests
       environment:
-        CREATOR_APP_URL: << parameters.target-url >><<^ parameters.target-url >>https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com<</ parameters.target-url >>
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
       command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >>

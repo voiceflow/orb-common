@@ -17,6 +17,10 @@ parameters:
     type: string
     description: Branch to track for the specified components
     default: "master"
+  pool-type:
+    type: string
+    description: Pool where a free environment will be fetched
+    default: ""
 steps:
   - install-vfcli:
       init-cluster: << parameters.cluster >>
@@ -24,9 +28,10 @@ steps:
       track-file: &track_file /tmp/tracks.yaml
       components: << parameters.tracked-components >>
       track: << parameters.branch >>
-  - vfcli-create-env:
+  - vfcli-create-or-get-free-env-from-pool:
       env-name: << parameters.env-name >>
       track-file: *track_file
+      pool-type: << parameters.pool-type >>
   - run:
       name: Get pod list
       command: kubectl get pods -n << parameters.env-name >>
@@ -43,6 +48,6 @@ steps:
       path: *log_dir
       destination: logs
       when: on_fail
-  - vfcli-delete-env:
+  - vfcli-delete-or-release-env:
       env-name: << parameters.env-name >>
       when: on_fail
