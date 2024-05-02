@@ -29,6 +29,9 @@ steps:
   - run:
       name: Check for free environment or Create environment
       command: |
+        # fetches a free environment from the pool if pool-type is provided
+        # otherwise creates a new environment with the provided name
+        # and stores the env name in workspace/env_name
         if [[ -n "<< parameters.pool-type >>" ]]; then
           if [[ $force ]]; then
             echo "Force option is enabled... Proceeding with environment creation."

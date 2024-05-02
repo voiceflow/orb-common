@@ -35,6 +35,8 @@ steps:
   - run:
       name: "Set Environment Variables"
       command: |
+        # workspace/env_name is used to store the e2e env name and passed to the smoke tests
+        # uses e2e-env-name is workspace/env_name is 'null'
         if [ ! -z "<< parameters.target-url >>" ]; then
           echo 'export CREATOR_APP_URL=<< parameters.target-url >>' >> $BASH_ENV
         elif [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
