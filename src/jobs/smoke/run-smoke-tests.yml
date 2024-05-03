@@ -6,7 +6,7 @@ parameters:
     type: string
     default: ""
   parallelism:
-    type: number
+    type: integer
     default: 6
   target-url:
     type: string
