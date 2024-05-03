@@ -1,0 +1,39 @@
+parameters:
+  github_username:
+    description: username for cloning git repositories
+    type: env_var_name
+    default: GITHUB_USERNAME
+  github_token:
+    description: token for cloning git repositories
+    type: env_var_name
+    default: GITHUB_TOKEN
+  github_branch:
+    description: git branch for the repo provided
+     type: env_var_name
+    default: CIRCLE_BRANCH
+  github_tag:
+    description: git tag for the repo provided
+     type: env_var_name
+    default: CIRCLE_TAG
+  github_repo_name:
+    description: github repo name
+    type: string
+  path_to_clone:
+    description: Path to clone the github repo
+    type: string
+    default: '.'
+  step_name:
+    description: Name of the step
+    type: string
+    default: Checkout Code with shallow clone
+  run_in_background:
+    description: run the command in background
+    type: boolean
+    default: false
+steps:
+  - run:
+      name: << parameters.step_name >>
+      background: << parameters.run_in_background >>
+      command: |
+        git clone --depth=1 -b ${<< parameters.github_branch >>:-${<< parameters.github_tag >>:?}} https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/<< parameters.github_repo_name >> << parameters.path_to_clone >>
+ 

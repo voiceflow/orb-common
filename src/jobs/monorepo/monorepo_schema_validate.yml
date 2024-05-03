@@ -19,7 +19,7 @@ executor: << parameters.executor >>
 steps:
   - setup_remote_docker:
       version: default
-  - checkout
+  - checkout_shallow_clone
   - install_node_modules:
       avoid_post_install_scripts: false
   - attach_workspace:

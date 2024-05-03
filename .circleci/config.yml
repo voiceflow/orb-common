@@ -13,7 +13,7 @@ tags_filter: &tags_filter
 # the appropriate root directories before packing
 # Necessary because of https://github.com/CircleCI-Public/circleci-cli/issues/755
 extract_sections_from_subdirectories: &extract_sections_from_subdirectories
-  - checkout
+  - shallow_clone_repo
   - run:
       name: Copy configuration from subdirectories
       command: |

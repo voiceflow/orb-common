@@ -78,7 +78,7 @@ parameters:
     default: []
 
 steps:
-  - checkout
+  - checkout_shallow_clone
   - when:
       condition: "<< parameters.attach_workspace >>"
       steps:

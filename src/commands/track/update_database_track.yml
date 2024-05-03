@@ -25,7 +25,7 @@ steps:
   - when:
       condition: << parameters.checkout >>
       steps:
-        - checkout # special step to check out source code to working directory
+        - checkout_shallow_clone # special step to check out source code to working directory
   - check_track_exists:
       component: << parameters.component >>
   - attach_workspace:
