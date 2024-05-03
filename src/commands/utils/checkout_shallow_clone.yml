@@ -36,4 +36,4 @@ steps:
       name: << parameters.step_name >>
       background: << parameters.run_in_background >>
       command: |
-        git clone --depth=1 -b ${<< parameters.github_branch >>:-${<< parameters.github_tag >>:?}} https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/<< parameters.github_repo_name >> << parameters.path_to_clone >>
+      git clone --depth=1 -b ${<< parameters.github_branch >>:-${<< parameters.github_tag >>:?}} https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/<< parameters.github_repo_name >> << parameters.path_to_clone >>

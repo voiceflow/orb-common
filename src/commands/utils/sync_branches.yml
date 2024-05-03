@@ -1,4 +1,4 @@
-# We should not use branch targetted shallow cloning for this command as it uses multiple git branches 
+# We should not use branch targetted shallow cloning for this command as it uses multiple git branches
 parameters:
   checkout:
     description: Checkout code
