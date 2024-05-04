@@ -7,7 +7,7 @@ parameters:
     description: SSH Key
     type: string
 steps:
-  - checkout
+  - checkout_shallow_clone
   - add_ssh_keys:
       fingerprints:
         - "<< parameters.ssh_fingerprint >>"
