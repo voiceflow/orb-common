@@ -38,4 +38,4 @@ steps:
       command: |
         git clone --depth=1 -b ${<< parameters.github_branch >>:-${<< parameters.github_tag >>:?}} https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/${<< parameters.github_repo_name >>} << parameters.path_to_clone >>
         # cd ${<< parameters.github_repo_name >>}
-        git fetch origin master --depth=1
+        git fetch origin master --depth=2
