@@ -25,7 +25,7 @@ steps:
   - when:
       condition: << parameters.checkout >>
       steps:
-        - checkout # special step to check out source code to working directory
+        - checkout_shallow_clone # special step to check out source code to working directory
   - check_track_exists:
       component: << parameters.component >>
   - attach_workspace:
@@ -38,6 +38,7 @@ steps:
         COMPONENT: '<< parameters.component >>'
       command: <<include(scripts/track/update_database_track.sh)>>
   - build_push_image:
+      checkout: false
       image_repo: << parameters.image_repo >>
       image_tag: '<< parameters.semantic_version >>'
       sem_ver_override: '<< parameters.semantic_version >>'
