@@ -5,7 +5,7 @@ parameters:
     default: go-executor
 executor: "<< parameters.executor >>"
 steps:
-  - checkout
+  - checkout_shallow_clone
   - run:
       name: Install CDK
       command: sudo npm install -g aws-cdk
