@@ -35,7 +35,17 @@ steps:
   - run:
       name: << parameters.step_name >>
       background: << parameters.run_in_background >>
+      # The first command is a shallow clone of the repo where we use depth = 1 
+      # https://github.blog/2020-12-21-get-up-to-speed-with-partial-clone-and-shallow-clone/
+      # -b flag is used to specify the branch to clone
+      # In circleci we checkout code either from branches or tags, so we use the branch if it exists, otherwise the tag
+      # In git both a branch and a tag are treated as a branch, so we take advantage of this to have one command for both
+      # The circleci environment variable for current branch is CIRCLE_BRANCH, and for current tag is CIRCLE_TAG
+      # There will always be one of them set at any given time and the other one will be empty
+      # These have been defined as parameters to allow for easy customization
+      # We use bash conditionals to check if the branch is set, otherwise use the tag environment variables.If both are not set then fail
+      # The second command checks out the previous 2 commits of master.
+      # Its not enough to shallow clone the most recent commit of your PR branch or tag, some tools we use for UI tests need master branch  (HEAD) and master -1 (HEAD^) to do certain comparisons
       command: |
         git clone --depth=1 -b ${<< parameters.github_branch >>:-${<< parameters.github_tag >>:?}} https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/${<< parameters.github_repo_name >>} << parameters.path_to_clone >>
-        # cd ${<< parameters.github_repo_name >>}
         git fetch origin master --depth=2
