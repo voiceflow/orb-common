@@ -95,7 +95,7 @@ steps:
   - when:
       condition: << parameters.checkout >>
       steps:
-        - checkout # special step to check out source code to working directory
+        - checkout # special step to check out source code to working directory.
         - run:
             name: "Get latest tags"
             command: git pull || echo "Nothing to pull"
