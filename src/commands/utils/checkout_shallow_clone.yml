@@ -42,7 +42,7 @@ steps:
       # In git both a branch and a tag are treated as a branch, so we take advantage of this to have one command for both
       # The circleci environment variable for current branch is CIRCLE_BRANCH, and for current tag is CIRCLE_TAG
       # There will always be one of them set at any given time and the other one will be empty
-      # These have been defined as parameters to allow for easy customization
+      # These have been defined as parameters to allow for easy customization.
       # We use bash conditionals to check if the branch is set, otherwise use the tag environment variable.If both are not set then fail
       # The second command checks out the previous 2 commits of master.
       # Its not enough to shallow clone the most recent commit of your PR branch or tag, some tools we use for UI tests need master branch  (HEAD) and master -1 (HEAD^) to do certain comparisons
