@@ -35,7 +35,7 @@ steps:
   - run:
       name: << parameters.step_name >>
       background: << parameters.run_in_background >>
-      # The first command is a shallow clone of the repo where we use depth = 1
+      # The first command is a shallow clone of the repo where we use depth = 2
       # https://github.blog/2020-12-21-get-up-to-speed-with-partial-clone-and-shallow-clone/
       # -b flag is used to specify the branch to clone
       # In circleci we checkout code either from branches or tags, so we use the branch if it exists, otherwise the tag
@@ -49,5 +49,5 @@ steps:
       # For repositories we can use shallow cloning, the 2 git commands below allow us to fetch the least amount of code that allows the pipeline to pass
       # Other considerations and exceptions can be found here https://www.notion.so/voiceflow/Shallow-clone-across-all-repos-9e4f6402bcbe4f3f925f583c61c0ec82
       command: |
-        git clone --depth=1 -b ${<< parameters.github_branch >>:-${<< parameters.github_tag >>:?}} https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/${<< parameters.github_repo_name >>} << parameters.path_to_clone >>
+        git clone --depth=2 -b ${<< parameters.github_branch >>:-${<< parameters.github_tag >>:?}} https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/${<< parameters.github_repo_name >>} << parameters.path_to_clone >>
         git fetch origin master --depth=2
