@@ -141,7 +141,7 @@ steps:
       cache_branch: "<< parameters.cache_branch >>"
       paths_to_cache: << parameters.paths_to_cache >>
 
-  # Persist build to workspace
+  # Persist build to workspace.
   - when:
       condition:
         equal:
