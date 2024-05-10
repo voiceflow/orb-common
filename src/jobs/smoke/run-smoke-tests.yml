@@ -29,6 +29,10 @@ parameters:
     type: string
     description: When to run this command
     default: always
+  force:
+    type: boolean
+    description: Whether to delete the environment forcefully
+    default: false
 steps:
   - clone_repo:
       github_repo_name: automated-testing
@@ -84,7 +88,7 @@ steps:
       when: << parameters.when >>
       command: |
         if [[ << parameters.force >> == true ]]; then
-          vfcli env delete --name "<< parameters.env-name >>" --interactive false --force
+          vfcli env delete --name "<< parameters.e2e-env-name >>" --interactive false --force
         else
           env_name=$(cat workspace/env_name)
           if [[ "$env_name" != "null" ]] && [[ -n "$env_name" ]]; then
@@ -92,6 +96,6 @@ steps:
             vfcli env resume "$env_name" --interactive false
             vfcli track attach --branch master --components all --name "$env_name" --interactive false
           else
-            vfcli env delete --name "<< parameters.env-name >>" --interactive false
+            vfcli env delete --name "<< parameters.e2e-env-name >>" --interactive false
           fi
         fi
