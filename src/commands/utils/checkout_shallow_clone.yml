@@ -44,10 +44,10 @@ steps:
       # There will always be one of them set at any given time and the other one will be empty
       # These have been defined as parameters to allow for easy customization
       # We use bash conditionals to check if the branch is set, otherwise use the tag environment variable.If both are not set then fail
-      # The second command checks out the previous 10 commits of master.
+      # The second command checks out the previous 2 commits of master.
       # Its not enough to shallow clone the most recent commit of your PR branch or tag, some tools we use for UI tests need master branch  (HEAD) and master -1 (HEAD^) to do certain comparisons
       # For repositories we can use shallow cloning, the 2 git commands below allow us to fetch the least amount of code that allows the pipeline to pass
       # Other considerations and exceptions can be found here https://www.notion.so/voiceflow/Shallow-clone-across-all-repos-9e4f6402bcbe4f3f925f583c61c0ec82
       command: |
         git clone --depth=1 -b ${<< parameters.github_branch >>:-${<< parameters.github_tag >>:?}} https://${<< parameters.github_username >>}:${<< parameters.github_token >>}@github.com/voiceflow/${<< parameters.github_repo_name >>} << parameters.path_to_clone >>
-        git fetch origin master --depth=10
+        git fetch origin master --depth=2
