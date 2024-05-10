@@ -56,6 +56,10 @@ parameters:
     description: Attach workspace to the current working directory
     type: boolean
     default: false
+  use_shallow_clone:
+    description: Use shallow clone to checkout code
+    type: boolean
+    default: true
   executor:
     description: The executor used to run this job
     type: executor
@@ -78,7 +82,14 @@ parameters:
     default: []
 
 steps:
-  - checkout_shallow_clone
+  - when:
+      condition: "<< parameters.use_shallow_clone >>"
+      steps:
+        - checkout_shallow_clone
+  - unless:
+      condition: "<< parameters.use_shallow_clone >>"
+      steps:
+        - checkout
   - when:
       condition: "<< parameters.attach_workspace >>"
       steps:
