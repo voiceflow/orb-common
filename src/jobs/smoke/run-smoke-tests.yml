@@ -33,11 +33,17 @@ parameters:
     type: boolean
     description: Whether to delete the environment forcefully
     default: false
+  cluster:
+    type: string
+    description: Name of the cluster in which the environment exists
+    default: "cm4-vf-dev-br-2-0-p1"
 steps:
   - clone_repo:
       github_repo_name: automated-testing
       github_commit: << parameters.branch-or-commit >>
       path_to_clone: ~/project
+  - install-vfcli:
+      init-cluster: << parameters.cluster >>
   - install_node_modules:
       avoid_post_install_scripts: false
       cache_prefix: smoke-test
