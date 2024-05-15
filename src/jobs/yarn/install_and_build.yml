@@ -16,6 +16,10 @@ parameters:
     description: Run build in remote Docker container
     type: boolean
     default: true
+  use_shallow_clone:
+    description: Use shallow clone to checkout code
+    type: boolean
+    default: true
   run_install_node_modules_in_container:
     description: Run install node_modules in remote Docker container
     type: boolean
@@ -78,7 +82,14 @@ parameters:
     default: []
 
 steps:
-  - checkout_shallow_clone
+ - when:
+      condition: "<< parameters.use_shallow_clone >>"
+      steps:
+        - checkout_shallow_clone
+  - unless:
+      condition: "<< parameters.use_shallow_clone >>"
+      steps:
+        - checkout
   - when:
       condition: "<< parameters.attach_workspace >>"
       steps:
