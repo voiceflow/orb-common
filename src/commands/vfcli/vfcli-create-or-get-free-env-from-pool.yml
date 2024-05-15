@@ -66,6 +66,9 @@ steps:
       name: Create environment
       command: |
         if [[ $(cat workspace/skip_create_env) != "skip" ]]; then
+          if [ -n "<< parameters.track-file >>" ]; then
+            TRACK_ARG=("--track-file" "<< parameters.track-file >>")
+          fi
           vfcli env create "<< parameters.env-name >>" --interactive false --node-group "<< parameters.node-group >>" --prefix "" --lease "<< parameters.lease >>" "${TRACK_ARG[@]}"
         else
           echo "Environment creation skipped as a free environment was used."
