@@ -82,7 +82,7 @@ parameters:
     default: []
 
 steps:
- - when:
+  - when:
       condition: "<< parameters.use_shallow_clone >>"
       steps:
         - checkout_shallow_clone
