@@ -34,12 +34,10 @@ if [[ "$TRACK_EXISTS" != "true" ]]; then
     exit 0
 fi
 
-BRANCH_NAME="$CIRCLE_BRANCH"
 if [[ -z "$CIRCLE_BRANCH" && -n "$CIRCLE_TAG" ]]; then
     BRANCH_NAME="master"
-    CACHE_BRANCH_NAME="master"
 else
-    CACHE_BRANCH_NAME="${CIRCLE_BRANCH//[^[:alnum:]]/-}" # Change all non alphanumeric characters to -
+    BRANCH_NAME="${CIRCLE_BRANCH//[^[:alnum:]]/-}" # Change all non alphanumeric characters to -
 fi
 
 IMAGE_TAG="${IMAGE_TAG_OVERRIDE:-"k8s-$CIRCLE_SHA1"}"
@@ -92,7 +90,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     BUILD_COMMAND="build"
     if (( USE_BUILDKIT )); then
         # NOTE: think of this as the CircleCI DLC key
-        echo "BUILDER_NAME: ${BUILDER_NAME:=buildy-${CACHE_BRANCH_NAME-}}"
+        echo "BUILDER_NAME: ${BUILDER_NAME:=buildy-${BRANCH_NAME-}}"
 
         BUILDER_ARGS=(--name "${BUILDER_NAME-}")
         docker buildx create --use --platform="$PLATFORM" \
@@ -108,12 +106,12 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         NPM_TOKEN_SECRET=(--secret id=NPM_TOKEN)
 
         CACHE_FROM_ARG=(--cache-from "${IMAGE_REPO-}:cache-master")
-        if [ "${CACHE_BRANCH_NAME}" != "master" ] ; then
-          CACHE_FROM_ARG+=(--cache-from "${IMAGE_REPO-}:cache-${CACHE_BRANCH_NAME-}")
+        if [ "${BRANCH_NAME}" != "master" ] ; then
+          CACHE_FROM_ARG+=(--cache-from "${IMAGE_REPO-}:cache-${BRANCH_NAME-}")
         fi
 
-        if [[ "${ENABLE_CACHE_TO-}" -eq 1  && "${CACHE_BRANCH_NAME}" == "master" ]] ; then
-          CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=${IMAGE_REPO-}:cache-${CACHE_BRANCH_NAME-}")
+        if [[ "${ENABLE_CACHE_TO-}" -eq 1  && "${BRANCH_NAME}" == "master" ]] ; then
+          CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=${IMAGE_REPO-}:cache-${BRANCH_NAME-}")
         fi
 
         BUILD_ARGS+=( "${CACHE_FROM_ARG[@]}" )
