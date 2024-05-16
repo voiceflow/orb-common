@@ -116,6 +116,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
 
         BUILD_ARGS+=( "${CACHE_FROM_ARG[@]}" )
         BUILD_ARGS+=( "${CACHE_TO_ARG[@]}" )
+        BUILD_ARGS+=( --builder "${BUILDER_NAME-}")
     fi
 
     TAGS=(-t "$IMAGE_NAME")
