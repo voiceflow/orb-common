@@ -79,6 +79,10 @@ parameters:
     description: Use buildkit to build the image
     type: boolean
     default: false
+  enable_push:
+    description: Push the built image into remote registry without loading to docker
+    type: boolean
+    default: false
   platform:
     description: Platform to build the image
     type: string
@@ -140,6 +144,7 @@ steps:
         DOCKERFILE: "<< parameters.dockerfile >>"
         INJECT_AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
         USE_BUILDKIT: "<< parameters.use_buildkit >>"
+        ENABLE_PUSH: "<< parameters.enable_push >>"
         PLATFORM: "<< parameters.platform >>"
         BUILDER_NAME: "<< parameters.builder_name >>"
       command: <<include(scripts/track/update_track.sh)>>

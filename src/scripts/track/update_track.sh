@@ -17,6 +17,7 @@ echo "USE_BUILDKIT: ${USE_BUILDKIT?}"
 echo "BUILDER_NAME: ${BUILDER_NAME-}"
 echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
 echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
+echo "ENABLE_PUSH: ${ENABLE_PUSH:=0}"
 
 # force string to array
 read -r -a EXTRA_BUILD_ARGS <<< "$EXTRA_BUILD_ARGS"
@@ -97,7 +98,13 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         docker buildx create --use --platform="$PLATFORM" \
           "${BUILDER_ARGS[@]}"
         docker buildx inspect --bootstrap
-        BUILD_COMMAND="buildx build --load"
+
+        if (( ENABLE_PUSH )); then
+          OUTPUT_ARGS=(--push)
+        else
+          OUTPUT_ARGS=(--load)
+        fi
+
         NPM_TOKEN_SECRET=(--secret id=NPM_TOKEN)
 
         CACHE_FROM_ARG=(--cache-from "${IMAGE_REPO-}:cache-master")
@@ -113,6 +120,13 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         BUILD_ARGS+=( "${CACHE_TO_ARG[@]}" )
     fi
 
+    TAGS=(-t "$IMAGE_NAME")
+
+    if [[ -z "$IMAGE_TAG_OVERRIDE" ]]; then
+        TAGS+=(-t "$IMAGE_REPO:latest-$BRANCH_NAME")
+        TAGS+=(-t "$IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1")
+    fi
+
     docker $BUILD_COMMAND \
         --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
         --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \
@@ -124,50 +138,27 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         "${AWS_CREDENTIALS_ARG[@]}" \
         "${NPM_TOKEN_SECRET[@]}" \
         "${BUILD_ARGS[@]}" \
+        "${OUTPUT_ARGS[@]}" \
         --platform "$PLATFORM" \
         -f "$BUILD_CONTEXT/$DOCKERFILE" \
-        -t "$IMAGE_NAME" "$BUILD_CONTEXT"
+        "${TAGS[@]}" \
+        "$BUILD_CONTEXT"
     echo "BUILD_ARGS: ${BUILD_ARGS[*]} $PLATFORM"
-    docker push "$IMAGE_NAME"
+
+    IMAGE_DIGEST=$(crane digest "$IMAGE_NAME")
 
     # Signing Docker Image
-    cosign sign --key "$KMS_KEY" "$IMAGE_NAME"
-
-    # if a tag is set, do not push to latest-$BRANCH_NAME
-    if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
-        if [[ -z "$CIRCLE_BRANCH" && -n "$CIRCLE_TAG" ]]; then
-            BRANCH_NAME="master"
-        else
-            BRANCH_NAME="${CIRCLE_BRANCH//[^[:alnum:]]/-}" # Change all non alphanumeric characters to -
-        fi
-
-        docker tag "$IMAGE_NAME" "$IMAGE_REPO:latest-$BRANCH_NAME"
-        docker push "$IMAGE_REPO:latest-$BRANCH_NAME"
-
-        # Signing Docker Image
-        cosign sign --key "$KMS_KEY" "$IMAGE_REPO:latest-$BRANCH_NAME"
-
-        # To not to have untagged images
-        docker tag "$IMAGE_NAME" "$IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1"
-        docker push "$IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1"
-        cosign sign --key "$KMS_KEY" "$IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1"
-    fi
+    cosign sign --key "$KMS_KEY" "$IMAGE_REPO@$IMAGE_DIGEST"
 fi
 
-# Pull the image to get the sha is needed.
-# If the image has been built, the following command will not pull the image because it exists locally
-TMPFILE="$(mktemp)"
-docker pull "$IMAGE_NAME" | tee -a "$TMPFILE"
-# Get image SHA
-IMAGE_SHA=$(awk '/Digest: / {print $2}' "$TMPFILE")
+IMAGE_SHA=$(crane digest "$IMAGE_NAME")
 # Remove the sha256: string
 IMAGE_SHA="${IMAGE_SHA//sha256:/}"
-rm "$TMPFILE"
 
 # update the track
 TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
 echo "TRACK: $TRACK"
-pip3 install yq
+
 # the file /tmp/$TRACK is downloaded in the check_track_exists step
 yq -y -i --arg tag "${IMAGE_TAG}" ".\"$COMPONENT\".image.tag=\$tag" "/tmp/$TRACK"
 yq -y -i --arg sha "${IMAGE_SHA}" ".\"$COMPONENT\".image.sha=\$sha" "/tmp/$TRACK"

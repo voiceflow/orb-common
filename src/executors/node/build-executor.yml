@@ -5,7 +5,7 @@ parameters:
     default: medium
 working_directory: ~/voiceflow
 docker:
-  - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-image:v5
+  - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-image:25.0.5-dind-vf-2
     aws_auth:
       aws_access_key_id: $AWS_ACCESS_KEY_ID
       aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
