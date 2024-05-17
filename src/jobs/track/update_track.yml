@@ -83,8 +83,8 @@ parameters:
     description: Use buildkit to build the image
     type: boolean
     default: false
-  enable_push:
-    description: Push the built image into remote registry without loading to docker
+  enable_load:
+    description: Load image into local docker
     type: boolean
     default: false
   platform:
@@ -123,5 +123,5 @@ steps:
       use_buildkit: "<< parameters.use_buildkit >>"
       platform: "<< parameters.platform >>"
       enable_dlc: "<< parameters.enable_dlc >>"
-      enable_push: "<< parameters.enable_push >>"
+      enable_load: "<< parameters.enable_load >>"
       builder_name: "<< parameters.builder_name >>"

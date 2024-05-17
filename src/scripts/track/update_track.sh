@@ -17,7 +17,7 @@ echo "USE_BUILDKIT: ${USE_BUILDKIT?}"
 echo "BUILDER_NAME: ${BUILDER_NAME-}"
 echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
 echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
-echo "ENABLE_PUSH: ${ENABLE_PUSH:=0}"
+echo "ENABLE_LOAD: ${ENABLE_LOAD:=0}"
 
 # force string to array
 read -r -a EXTRA_BUILD_ARGS <<< "$EXTRA_BUILD_ARGS"
@@ -97,10 +97,9 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
           "${BUILDER_ARGS[@]}"
         docker buildx inspect --bootstrap
 
-        if (( ENABLE_PUSH )); then
-          OUTPUT_ARGS=(--push)
-        else
-          OUTPUT_ARGS=(--load)
+        OUTPUT_ARGS=(--push)
+        if (( ENABLE_LOAD )); then
+          OUTPUT_ARGS+=(--load)
         fi
 
         NPM_TOKEN_SECRET=(--secret id=NPM_TOKEN)
