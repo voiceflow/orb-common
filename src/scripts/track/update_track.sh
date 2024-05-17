@@ -13,7 +13,6 @@ echo "LOCAL_REGISTRY: ${LOCAL_REGISTRY?}"
 echo "DOCKERFILE: ${DOCKERFILE?}"
 echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
 echo "PLATFORM: ${PLATFORM?}"
-echo "USE_BUILDKIT: ${USE_BUILDKIT?}"
 echo "BUILDER_NAME: ${BUILDER_NAME-}"
 echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
 echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
@@ -87,36 +86,33 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
       BUILD_ARGS+=(--build-arg "${arg}")
     done
 
-    BUILD_COMMAND="build"
-    if (( USE_BUILDKIT )); then
-        # NOTE: think of this as the CircleCI DLC key
-        echo "BUILDER_NAME: ${BUILDER_NAME:=buildy-${BRANCH_NAME-}}"
+    # NOTE: think of this as the CircleCI DLC key
+    echo "BUILDER_NAME: ${BUILDER_NAME:=buildy-${BRANCH_NAME-}}"
 
-        BUILDER_ARGS=(--name "${BUILDER_NAME-}")
-        docker buildx create --use --platform="$PLATFORM" \
-          "${BUILDER_ARGS[@]}"
-        docker buildx inspect --bootstrap
+    BUILDER_ARGS=(--name "${BUILDER_NAME-}")
+    docker buildx create --use --platform="$PLATFORM" \
+      "${BUILDER_ARGS[@]}"
+    docker buildx inspect --bootstrap
 
-        OUTPUT_ARGS=(--push)
-        if (( ENABLE_LOAD )); then
-          OUTPUT_ARGS+=(--load)
-        fi
-
-        NPM_TOKEN_SECRET=(--secret id=NPM_TOKEN)
-
-        CACHE_FROM_ARG=(--cache-from "${IMAGE_REPO-}:cache-master")
-        if [ "${BRANCH_NAME}" != "master" ] ; then
-          CACHE_FROM_ARG+=(--cache-from "${IMAGE_REPO-}:cache-${BRANCH_NAME-}")
-        fi
-
-        if [[ "${ENABLE_CACHE_TO-}" -eq 1  && "${BRANCH_NAME}" == "master" ]] ; then
-          CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=${IMAGE_REPO-}:cache-${BRANCH_NAME-}")
-        fi
-
-        BUILD_ARGS+=( "${CACHE_FROM_ARG[@]}" )
-        BUILD_ARGS+=( "${CACHE_TO_ARG[@]}" )
-        BUILD_ARGS+=( --builder "${BUILDER_NAME-}")
+    OUTPUT_ARGS=(--push)
+    if (( ENABLE_LOAD )); then
+      OUTPUT_ARGS+=(--load)
     fi
+
+    NPM_TOKEN_SECRET=(--secret id=NPM_TOKEN)
+
+    CACHE_FROM_ARG=(--cache-from "${IMAGE_REPO-}:cache-master")
+    if [ "${BRANCH_NAME}" != "master" ] ; then
+      CACHE_FROM_ARG+=(--cache-from "${IMAGE_REPO-}:cache-${BRANCH_NAME-}")
+    fi
+
+    if [[ "${ENABLE_CACHE_TO-}" -eq 1  && "${BRANCH_NAME}" == "master" ]] ; then
+      CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=${IMAGE_REPO-}:cache-${BRANCH_NAME-}")
+    fi
+
+    BUILD_ARGS+=( "${CACHE_FROM_ARG[@]}" )
+    BUILD_ARGS+=( "${CACHE_TO_ARG[@]}" )
+    BUILD_ARGS+=( --builder "${BUILDER_NAME-}")
 
     TAGS=(-t "$IMAGE_NAME")
 
@@ -125,7 +121,8 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         TAGS+=(-t "$IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1")
     fi
 
-    docker $BUILD_COMMAND \
+    echo "BUILD_ARGS: ${BUILD_ARGS[*]} $PLATFORM"
+    docker buildx build \
         --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
         --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \
         --build-arg build_BUILD_URL="${CIRCLE_BUILD_URL}" \
@@ -141,7 +138,6 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         -f "$BUILD_CONTEXT/$DOCKERFILE" \
         "${TAGS[@]}" \
         "$BUILD_CONTEXT"
-    echo "BUILD_ARGS: ${BUILD_ARGS[*]} $PLATFORM"
 
     IMAGE_DIGEST=$(crane digest "$IMAGE_NAME")
 
