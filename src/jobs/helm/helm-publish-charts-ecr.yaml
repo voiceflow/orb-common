@@ -1,0 +1,20 @@
+executor: build-executor
+parameters:
+  chart_directory:
+    description: Directory containining charts
+    type: string
+    default: .
+  charts:
+    description: List of charts to publish
+    type: string
+    default: ""
+steps:
+  - checkout_shallow_clone
+  - helm-add-repos
+  - run: &package-publish-charts-ecr
+      name: Package and publish charts
+      working_directory: << parameters.chart_directory >>
+      command: <<include(scripts/helm/package-publish-charts-ecr.sh)>>
+      environment:
+        CHARTS: << parameters.charts >>
+  - run: *package-publish-charts-ecr
