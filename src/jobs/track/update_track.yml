@@ -79,8 +79,8 @@ parameters:
     description: container image to run verdaccio
     type: string
     default: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
-  use_buildkit:
-    description: Use buildkit to build the image
+  enable_load:
+    description: Load image into local docker
     type: boolean
     default: false
   platform:
@@ -116,7 +116,7 @@ steps:
       kms_key: "<< parameters.kms_key >>"
       inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
       local_registry_container_image: "<< parameters.local_registry_container_image >>"
-      use_buildkit: "<< parameters.use_buildkit >>"
       platform: "<< parameters.platform >>"
       enable_dlc: "<< parameters.enable_dlc >>"
+      enable_load: "<< parameters.enable_load >>"
       builder_name: "<< parameters.builder_name >>"
