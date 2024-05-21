@@ -35,8 +35,10 @@ for chart in ${CHARTS?}; do
         repo="voiceflow-charts-public"
     fi
 
-    FULL_ECR_URL="$ECR_REPOSITORY_URI/$repo/$chart:$chart_version"
+    # Construct the full ECR URL with the OCI protocol
+    FULL_ECR_URL="oci://$ECR_REPOSITORY_URI/$repo/$chart:$chart_version"
 
+    # Push the chart to ECR using the OCI protocol
     helm push "$dist/$packaged_chart" "$FULL_ECR_URL"
 
     rm -rf "$dist"

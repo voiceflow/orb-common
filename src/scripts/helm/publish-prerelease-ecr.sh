@@ -9,6 +9,9 @@ ECR_REPOSITORY_URI=${ECR_REPOSITORY_URI:-"168387678261.dkr.ecr.us-east-1.amazona
 
 echo "ECR_REPOSITORY_URI: ${ECR_REPOSITORY_URI}"
 
+# Enable experimental OCI support in Helm
+export HELM_EXPERIMENTAL_OCI=1
+
 # Login to ECR
 aws ecr get-login-password --region "$AWS_REGION" | helm registry login --username AWS --password-stdin "$ECR_REPOSITORY_URI"
 
@@ -30,12 +33,9 @@ for file in * ; do
             exit 3
         fi
 
-        # Construct the full ECR URL
-        FULL_ECR_URL="$ECR_REPOSITORY_URI/voiceflow-charts-beta/$file:$BETA_VERSION"
-
         # Push the chart to ECR
         helm push "$CHART" "oci://$ECR_REPOSITORY_URI/voiceflow-charts-beta"
-
+        
         cd ..
     fi
 done
