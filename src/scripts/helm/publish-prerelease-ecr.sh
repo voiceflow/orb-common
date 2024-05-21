@@ -2,8 +2,12 @@
 
 # Expected environment variables:
 echo "BETA_VERSION: ${BETA_VERSION:?}"
-echo "ECR_REPOSITORY_URI: ${ECR_REPOSITORY_URI:?}"
 echo "AWS_REGION: ${AWS_REGION:?}"
+
+# Set a default value for ECR_REPOSITORY_URI if not set
+ECR_REPOSITORY_URI=${ECR_REPOSITORY_URI:-"168387678261.dkr.ecr.us-east-1.amazonaws.com"}
+
+echo "ECR_REPOSITORY_URI: ${ECR_REPOSITORY_URI}"
 
 # Login to ECR
 aws ecr get-login-password --region "$AWS_REGION" | helm registry login --username AWS --password-stdin "$ECR_REPOSITORY_URI"
@@ -29,9 +33,8 @@ for file in * ; do
         # Construct the full ECR URL
         FULL_ECR_URL="$ECR_REPOSITORY_URI/voiceflow-charts-beta/$file:$BETA_VERSION"
 
-        # Save and push the chart to ECR
-        helm chart save "$CHART" "$FULL_ECR_URL"
-        helm chart push "$FULL_ECR_URL"
+        # Push the chart to ECR
+        helm push "$CHART" "oci://$ECR_REPOSITORY_URI/voiceflow-charts-beta"
 
         cd ..
     fi
