@@ -8,8 +8,13 @@ parameters:
     description: List of charts to publish
     type: string
     default: ""
+  prepublish_steps:
+    description: Steps to run on repo before publishing charts
+    type: steps
+    default: []
 steps:
   - checkout_shallow_clone
+  - steps: << parameters.prepublish_steps >>
   - helm-add-repos
   - run: &package-publish-charts-ecr
       name: Package and publish charts
