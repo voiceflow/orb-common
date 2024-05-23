@@ -16,10 +16,9 @@ steps:
   - checkout_shallow_clone
   - steps: << parameters.prepublish_steps >>
   - helm-add-repos
-  - run: &package-publish-charts-ecr
+  - run:
       name: Package and publish charts
       working_directory: << parameters.chart_directory >>
       command: <<include(scripts/helm/package-publish-charts-ecr.sh)>>
       environment:
         CHARTS: << parameters.charts >>
-  - run: *package-publish-charts-ecr
