@@ -1,0 +1,6 @@
+executor: vfcommon/node-executor-node-20
+
+steps:
+  - run:
+      name: Report Test Failures
+      command: npx --package=@voiceflow/test-cli -- testcli report
