@@ -63,7 +63,7 @@ steps:
       environment:
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
-      command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >>; true
+      command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >> || true
   - save_cache:
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
