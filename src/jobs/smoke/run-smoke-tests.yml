@@ -63,7 +63,13 @@ steps:
       environment:
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
+      # TODO: handle the case where the smoke test command fails but no report was written
+      # otherwise we could end up ignoring a whole batch of tests that were skipped
       command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >> || true
+  - persist_to_workspace:
+      root: "."
+      paths:
+        - apps/smoke-test-runner/cypress/results/*
   - save_cache:
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
