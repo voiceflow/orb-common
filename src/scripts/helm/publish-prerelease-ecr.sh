@@ -34,7 +34,7 @@ for file in * ; do
         fi
 
         # Push the chart to ECR
-        helm push "$CHART" "oci://$ECR_REPOSITORY_URI/voiceflow-charts-beta"
+        helm push "$CHART" "oci://$ECR_REPOSITORY_URI/voiceflow-charts-private"
         
         cd ..
     fi
