@@ -9,4 +9,4 @@ echo "Getting short SHA1 of git commit"
 # Export to subsequent steps
 # echo "export BETA_VERSION=\"${VERSION}-${SHA}\"" >> "$BASH_ENV"
 
-echo "export BETA_VERSION=\"1.0.278\"" >> "$BASH_ENV"
+echo "export BETA_VERSION=\"1.0.279\"" >> "$BASH_ENV"
