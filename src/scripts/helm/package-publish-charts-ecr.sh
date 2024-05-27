@@ -26,7 +26,6 @@ for chart in ${CHARTS?}; do
 
     # Get the chart version from the packaged chart
     packaged_chart="$(ls "$dist")"
-    chart_version=$(helm show chart "$dist/$packaged_chart" | yq --raw-output '.version')
     channel=$(helm show chart "$chart/$chart" | yq --raw-output '.annotations."release-repository"')
     echo "Publishing in $channel channel"
 
