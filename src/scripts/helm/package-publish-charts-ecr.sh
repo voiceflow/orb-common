@@ -26,7 +26,6 @@ for chart in ${CHARTS?}; do
 
     # Get the chart version from the packaged chart
     packaged_chart="$(ls "$dist")"
-    chart_version=$(helm show chart "$dist/$packaged_chart" | yq --raw-output '.version')
     channel=$(helm show chart "$chart/$chart" | yq --raw-output '.annotations."release-repository"')
     echo "Publishing in $channel channel"
 
@@ -36,7 +35,7 @@ for chart in ${CHARTS?}; do
     fi
 
     # Construct the full ECR URL with the OCI protocol
-    FULL_ECR_URL="oci://$ECR_REPOSITORY_URI/$repo/$chart:$chart_version"
+    FULL_ECR_URL="oci://$ECR_REPOSITORY_URI/$repo"
 
     # Push the chart to ECR using the OCI protocol
     helm push "$dist/$packaged_chart" "$FULL_ECR_URL"
