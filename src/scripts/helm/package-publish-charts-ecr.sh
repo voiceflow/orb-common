@@ -26,7 +26,13 @@ for chart in ${CHARTS?}; do
 
     # Get the chart version from the packaged chart
     packaged_chart="$(ls "$dist")"
+    chart_version=$(helm show chart "$dist/$packaged_chart" | yq --raw-output '.version')
     channel=$(helm show chart "$chart/$chart" | yq --raw-output '.annotations."release-repository"')
+
+    # Remove any leading/trailing whitespace
+    chart_version=$(echo "$chart_version" | xargs)
+    channel=$(echo "$channel" | xargs)
+
     echo "Publishing in $channel channel"
 
     repo="voiceflow-charts-private"
@@ -34,11 +40,16 @@ for chart in ${CHARTS?}; do
         repo="voiceflow-charts-public"
     fi
 
-    # Construct the full ECR URL with the OCI protocol
-    FULL_ECR_URL="oci://$ECR_REPOSITORY_URI/$repo"
+    # Tag the chart with the full ECR URL
+    FULL_ECR_URL="${ECR_REPOSITORY_URI}/${repo}/${chart}:${chart_version}"
 
+    echo "Tagging and pushing to $FULL_ECR_URL"
+
+    # Save the chart with the appropriate tag for OCI
+    helm chart save "$dist/$packaged_chart" "$FULL_ECR_URL"
+    
     # Push the chart to ECR using the OCI protocol
-    helm push "$dist/$packaged_chart" "$FULL_ECR_URL"
+    helm chart push "$FULL_ECR_URL"
 
     rm -rf "$dist"
 done

@@ -15,6 +15,6 @@ steps:
   - steps: << parameters.prepublish_steps >>
   - helm-add-repos
   - run:
-      name: Package and publish charts
+      name: Package and publish charts to ECR
       working_directory: << parameters.working_directory >>
       command: <<include(scripts/helm/publish-prerelease-ecr.sh)>>
