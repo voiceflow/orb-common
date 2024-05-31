@@ -2,6 +2,9 @@ executor: smoke-executor
 parallelism: << parameters.parallelism >>
 
 parameters:
+  cluster:
+    type: string
+    default: "cm4-vf-dev-br-2-0-p1"
   e2e-env-name:
     type: string
     default: ""
