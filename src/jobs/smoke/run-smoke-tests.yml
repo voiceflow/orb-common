@@ -53,7 +53,7 @@ steps:
           }
 
           mkdir "${LOG_DIR:?}"
-          capture_logs realtime-http 
+          capture_logs realtime-http
   - run:
       name: "Set Environment Variables"
       command: |
