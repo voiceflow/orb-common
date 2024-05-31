@@ -60,7 +60,13 @@ steps:
         command: |
           function capture_logs() {
             #stern -n "${ENV_NAME:?}" -l "app.kubernetes.io/name=$1"  --tail 20 > "${LOG_DIR:?}/$1.log"
-            kubectl logs -n "${ENV_NAME:?}" -l "app.kubernetes.io/name=$1" -f >> "${LOG_DIR:?}/$1.log"
+            if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
+               DEV_ENV_NAME=$(cat workspace/env_name)
+            else
+              DEV_ENV_NAME=<< parameters.e2e-env-name >>
+            fi
+
+            kubectl logs -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$1" -f >> "${LOG_DIR:?}/$1.log"
           }
 
           mkdir "${LOG_DIR:?}"
