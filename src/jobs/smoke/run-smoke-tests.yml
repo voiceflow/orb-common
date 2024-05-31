@@ -38,7 +38,7 @@ steps:
       cache_prefix: smoke-test
   - attach_workspace:
       at: workspace
-  - vfcommon/install-vfcli:
+  - install-vfcli:
       init-cluster: << parameters.cluster >>
   - run:
       name: Install stern
