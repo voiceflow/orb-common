@@ -53,7 +53,8 @@ steps:
         background: true
         command: |
           function capture_logs() {
-            stern -n "${ENV_NAME:?}" -l "app.kubernetes.io/name=$1"  --tail 20 > "${LOG_DIR:?}/$1.log"
+            #stern -n "${ENV_NAME:?}" -l "app.kubernetes.io/name=$1"  --tail 20 > "${LOG_DIR:?}/$1.log"
+            kubectl logs -n "${ENV_NAME:?}" -l "app.kubernetes.io/name=$1" -f >> "${LOG_DIR:?}/$1.log"
           }
 
           mkdir "${LOG_DIR:?}"
