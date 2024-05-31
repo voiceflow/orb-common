@@ -35,6 +35,25 @@ steps:
       cache_prefix: smoke-test
   - attach_workspace:
       at: workspace
+  - vfcommon/install-vfcli:
+      init-cluster: << parameters.cluster >>
+  - run:
+      name: Install stern
+      command: |
+        curl -sSL https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository | sudo bash
+        sudo apt install stern
+  - run:
+        name: Gather Logs
+        environment:
+          ENV_NAME: {{ .values.e2e_env_name }}
+          LOG_DIR: &log_dir /tmp/pod-logs-{{ .values.e2e_env_name }}
+        command: |
+          function capture_logs() {
+            stern -n "${ENV_NAME:?}" -l "app.kubernetes.io/name=$1"  --tail 20 > "${LOG_DIR:?}/$1.log"
+          }
+
+          mkdir "${LOG_DIR:?}"
+          capture_logs realtime-http 
   - run:
       name: "Set Environment Variables"
       command: |
@@ -75,3 +94,9 @@ steps:
   - store_artifacts:
       path: apps/smoke-test-runner/cypress/screenshots
       destination: screenshots
+  - store_artifacts:
+        name: Store Logs
+        path: *log_dir
+        destination: logs
+        when: always
+
