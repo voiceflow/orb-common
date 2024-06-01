@@ -76,7 +76,7 @@ steps:
           }
 
           mkdir "${LOG_DIR:?}"
-          capture_logs 
+          capture_logs
   - run:
       name: "Set Environment Variables"
       command: |
