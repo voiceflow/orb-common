@@ -68,6 +68,8 @@ steps:
             vfcli env set-active "${DEV_ENV_NAME:?}"
             components=$( vfcli component list |awk '{if(NR>3) print $1}')
 
+            echo "Capturing logs for components: $components"
+
             for component in $components; do
               kubectl logs -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" -f >> "${LOG_DIR:?}/$component.log" &
             done
