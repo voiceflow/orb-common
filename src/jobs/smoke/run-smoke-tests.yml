@@ -65,9 +65,9 @@ steps:
             else
               DEV_ENV_NAME=<< parameters.e2e-env-name >>
             fi
-            vfcli env set-active "${DEV_ENV_NAME:?}"
-            components=$( vfcli component list |awk '{if(NR>3) print $1}')
 
+            components=$( vfcli component list -n "${DEV_ENV_NAME:?}" |awk '{if(NR>3) print $1}')
+            
             echo "Capturing logs for components: $components"
 
             for component in $components; do
