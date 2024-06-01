@@ -65,12 +65,18 @@ steps:
             else
               DEV_ENV_NAME=<< parameters.e2e-env-name >>
             fi
+            vfcli env set-active "${DEV_ENV_NAME:?}"
+            components=$( vfcli component list |awk '{if(NR>3) print $1}')
 
-            kubectl logs -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$1" -f >> "${LOG_DIR:?}/$1.log"
+            for component in $components; do
+              kubectl logs -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" -f >> "${LOG_DIR:?}/$component.log" &
+            done
+
+            # kubectl logs -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$1" -f >> "${LOG_DIR:?}/$1.log"
           }
 
           mkdir "${LOG_DIR:?}"
-          capture_logs realtime-http
+          capture_logs 
   - run:
       name: "Set Environment Variables"
       command: |
