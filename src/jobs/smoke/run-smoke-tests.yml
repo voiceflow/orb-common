@@ -67,7 +67,6 @@ steps:
             fi
 
             components=$( vfcli component list -n "${DEV_ENV_NAME:?}" |awk '{if(NR>3) print $1}')
-            
             echo "Capturing logs for components: $components"
 
             for component in $components; do
