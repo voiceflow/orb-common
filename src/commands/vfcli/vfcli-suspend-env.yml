@@ -24,7 +24,6 @@ steps:
         ls -al
         echo "Listing contents of /home/circleci/voiceflow/:"
         ls -al /home/circleci/voiceflow/
-
         if [[ -f << parameters.env-name-path >> ]]; then
           env_name=$(cat << parameters.env-name-path >>)
         else
