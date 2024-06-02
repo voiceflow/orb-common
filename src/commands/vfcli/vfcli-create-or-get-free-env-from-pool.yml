@@ -64,7 +64,6 @@ steps:
   - persist_to_workspace:
       root: workspace
       paths:
-        - env_name
         - skip_create_env
 
   - run:
