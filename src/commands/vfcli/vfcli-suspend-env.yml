@@ -10,7 +10,6 @@ parameters:
 steps:
   - restore_cache:
       key: env_name_cache
-
   - run:
       name: Suspend Environment
       command: |
@@ -19,7 +18,6 @@ steps:
         else
           env_name="<< parameters.env-name >>"
         fi
-        
         if [[ "$env_name" == "null" ]] || [[ -z "$env_name" ]]; then
           # If env_name from file is "null" or empty, use the default parameter
           env_name="<< parameters.env-name >>"
