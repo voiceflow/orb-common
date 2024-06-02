@@ -7,14 +7,18 @@ parameters:
   track-file:
     type: string
     description: Path to the track-mapping file to use
+  env-name-path:
+    type: string
+    description: Path to the env_name file
+    default: "/home/circleci/voiceflow/env_name.txt"
 steps:
   - restore_cache:
       key: env_name_cache
   - run:
       name: Suspend Environment
       command: |
-        if [[ -f env_name.txt ]]; then
-          env_name=$(cat env_name.txt)
+        if [[ -f << parameters.env-name-path >> ]]; then
+          env_name=$(cat << parameters.env-name-path >>)
         else
           env_name="<< parameters.env-name >>"
         fi

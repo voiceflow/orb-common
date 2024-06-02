@@ -37,6 +37,10 @@ parameters:
     type: string
     description: Name of the cluster in which the environment exists
     default: "cm4-vf-dev-br-2-0-p1"
+  env-name-path:
+    type: string
+    description: Path to the env_name file
+    default: "/home/circleci/voiceflow/env_name.txt"
 steps:
   - clone_repo:
       github_repo_name: automated-testing
@@ -54,8 +58,8 @@ steps:
         # uses e2e-env-name if env_name.txt is 'null'
         if [ ! -z "<< parameters.target-url >>" ]; then
           echo 'export CREATOR_APP_URL=<< parameters.target-url >>' >> $BASH_ENV
-        elif [ -f env_name.txt ] && [ "$(cat env_name.txt)" != "null" ]; then
-          echo 'export CREATOR_APP_URL=https://creator-$(cat env_name.txt).br.development.voiceflow.com' >> $BASH_ENV
+        elif [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >>)" != "null" ]; then
+          echo 'export CREATOR_APP_URL=https://creator-$(cat << parameters.env-name-path >>).br.development.voiceflow.com' >> $BASH_ENV
         else
           echo 'export CREATOR_APP_URL=https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com' >> $BASH_ENV
         fi
