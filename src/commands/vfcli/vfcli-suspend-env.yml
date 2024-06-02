@@ -17,6 +17,14 @@ steps:
   - run:
       name: Suspend Environment
       command: |
+        
+        # Debugging information
+        echo "Current directory: $(pwd)"
+        echo "Listing contents of current directory:"
+        ls -al
+        echo "Listing contents of /home/circleci/voiceflow/:"
+        ls -al /home/circleci/voiceflow/
+
         if [[ -f << parameters.env-name-path >> ]]; then
           env_name=$(cat << parameters.env-name-path >>)
         else
