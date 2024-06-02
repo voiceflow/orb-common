@@ -13,8 +13,8 @@ parameters:
     description: Whether to delete the environment forcefully
     default: false
 steps:
-  - attach_workspace:
-      at: workspace
+  - restore_cache:
+      key: env_name_cache
   - run:
       name: Delete Env << parameters.env-name >>
       when: << parameters.when >>
@@ -22,7 +22,12 @@ steps:
         if [[ $force == true ]]; then
           vfcli env delete --name "<< parameters.env-name >>" --interactive false --force
         else
-          env_name=$(cat workspace/env_name)
+          if [[ -f env_name.txt ]]; then
+            env_name=$(cat env_name.txt)
+          else
+            env_name="null"
+          fi
+
           if [[ "$env_name" != "null" ]] && [[ -n "$env_name" ]]; then
             vfcli pool release-env --env-name "$env_name"
             vfcli env resume "$env_name" --interactive false
@@ -31,3 +36,4 @@ steps:
             vfcli env delete --name "<< parameters.env-name >>" --interactive false
           fi
         fi
+

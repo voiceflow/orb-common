@@ -31,7 +31,7 @@ steps:
       command: |
         # fetches a free environment from the pool if pool-type is provided
         # otherwise creates a new environment with the provided name
-        # and stores the env name in workspace/env_name
+        # and stores the env name in the cache
         if [[ -n "<< parameters.pool-type >>" ]]; then
           if [[ $force ]]; then
             echo "Force option is enabled... Proceeding with environment creation."
@@ -39,11 +39,11 @@ steps:
             result=$(vfcli pool get-free-env --pool-type "<< parameters.pool-type >>" --output json)
             if [[ -z $result ]] || [[ $(echo "$result" | jq 'keys | length') -eq 0 ]]; then
               echo "No free environment found. Proceeding with environment creation."
-              echo "null" > workspace/env_name  # Write 'null' to indicate no environment was found
+              echo "null" > env_name.txt  # Write 'null' to indicate no environment was found
             else
               echo "Free environment found: $result"
               env_name=$(echo "$result" | jq -r '.name')
-              echo ${env_name} > workspace/env_name
+              echo ${env_name} > env_name.txt
               echo "export ENV_NAME=${env_name}" >> $BASH_ENV
               vfcli pool use-env --env-name ${env_name}
               echo "skip" > workspace/skip_create_env  # Indicate no need to create environment
@@ -52,9 +52,14 @@ steps:
           fi
         else
           echo "Pool type not provided."
-          echo "null" > workspace/env_name  # Handle case where pool-type is not provided
+          echo "null" > env_name.txt  # Handle case where pool-type is not provided
           echo "create" > workspace/skip_create_env
         fi
+
+  - save_cache:
+      key: env_name_cache
+      paths:
+        - env_name.txt
 
   - persist_to_workspace:
       root: workspace
