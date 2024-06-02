@@ -13,16 +13,11 @@ parameters:
     default: "/home/circleci/voiceflow/env_name.txt"
 steps:
   - restore_cache:
-      key: env_name_cache
+      key: env_name_cache-{{ .BuildNumber }}
   - run:
       name: Suspend Environment
       command: |
         # Debugging information
-        echo "Current directory: $(pwd)"
-        echo "Listing contents of current directory:"
-        ls -al
-        echo "Listing contents of /home/circleci/voiceflow/:"
-        ls -al /home/circleci/voiceflow/
         echo "Contents of << parameters.env-name-path >>:"
         cat << parameters.env-name-path >>
         if [[ -f << parameters.env-name-path >> ]]; then

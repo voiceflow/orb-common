@@ -44,6 +44,7 @@ steps:
               echo "Free environment found: $result"
               env_name=$(echo "$result" | jq -r '.name')
               echo ${env_name} > env_name.txt
+              cat env_name.txt
               echo "export ENV_NAME=${env_name}" >> $BASH_ENV
               vfcli pool use-env --env-name ${env_name}
               echo "skip" > workspace/skip_create_env  # Indicate no need to create environment
@@ -57,7 +58,7 @@ steps:
         fi
 
   - save_cache:
-      key: env_name_cache
+      key: env_name_cache-{{ .BuildNumber }}
       paths:
         - env_name.txt
 
