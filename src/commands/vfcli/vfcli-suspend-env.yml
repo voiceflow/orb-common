@@ -13,7 +13,7 @@ parameters:
     default: "/home/circleci/voiceflow/env_name.txt"
 steps:
   - restore_cache:
-      key: env_name_cache-{{ .BuildNumber }}
+      key: env_name_cache-{{ .BuildNum }}
   - run:
       name: Suspend Environment
       command: |

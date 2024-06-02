@@ -58,7 +58,7 @@ steps:
         fi
 
   - save_cache:
-      key: env_name_cache-{{ .BuildNumber }}
+      key: env_name_cache-{{ .BuildNum }}
       paths:
         - env_name.txt
 
