@@ -42,8 +42,6 @@ steps:
       github_repo_name: automated-testing
       github_commit: << parameters.branch-or-commit >>
       path_to_clone: ~/project
-  - install-vfcli:
-      init-cluster: << parameters.cluster >>
   - install_node_modules:
       avoid_post_install_scripts: false
       cache_prefix: smoke-test
@@ -89,19 +87,4 @@ steps:
   - store_artifacts:
       path: apps/smoke-test-runner/cypress/screenshots
       destination: screenshots
-  - run:
-      name: "Release or Delete Env"
-      when: << parameters.when >>
-      command: |
-        if [[ << parameters.force >> == true ]]; then
-          vfcli env delete --name "<< parameters.e2e-env-name >>" --interactive false --force
-        else
-          env_name=$(cat workspace/env_name)
-          if [[ "$env_name" != "null" ]] && [[ -n "$env_name" ]]; then
-            vfcli pool release-env --env-name "$env_name"
-            vfcli env resume "$env_name" --interactive false
-            vfcli track attach --branch master --components all --name "$env_name" --interactive false
-          else
-            vfcli env delete --name "<< parameters.e2e-env-name >>" --interactive false
-          fi
-        fi
+
