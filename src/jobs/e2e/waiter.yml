@@ -1,5 +1,5 @@
 description: Waiter job to be used as a dependency for the Release and Delete job
-executor: default-executor
+executor: circleci/node
 
 steps:
   - run: |
