@@ -18,7 +18,7 @@ parameters:
     default: "/home/circleci/voiceflow/env_name.txt"
 steps:
   - restore_cache:
-      key: env_name_cache-{{ .BuildNum }}
+      key: env_name_cache-{{ .Revision }}
   - run:
       name: Delete Env << parameters.env-name >>
       when: << parameters.when >>

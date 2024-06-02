@@ -23,6 +23,6 @@ steps:
       force_execution: true
   - save_cache:
       name: Saving eslint Cache
-      key: eslint-cache-{{`{{ .Branch }}`}}-{{`{{ .BuildNum }}`}}
+      key: eslint-cache-{{`{{ .Branch }}`}}-{{`{{ .Revision }}`}}
       paths:
         - ~/voiceflow/apps/creator-app/.eslintcache

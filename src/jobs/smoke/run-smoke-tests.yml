@@ -50,7 +50,7 @@ steps:
       avoid_post_install_scripts: false
       cache_prefix: smoke-test
   - restore_cache:
-      key: env_name_cache-{{ .BuildNum }}
+      key: env_name_cache-{{ .Revision }}
   - run:
       name: "Set Environment Variables"
       command: |
