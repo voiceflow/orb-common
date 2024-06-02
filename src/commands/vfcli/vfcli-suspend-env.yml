@@ -23,6 +23,8 @@ steps:
         ls -al
         echo "Listing contents of /home/circleci/voiceflow/:"
         ls -al /home/circleci/voiceflow/
+        echo "Contents of << parameters.env-name-path >>:"
+        cat << parameters.env-name-path >>
         if [[ -f << parameters.env-name-path >> ]]; then
           env_name=$(cat << parameters.env-name-path >>)
         else
