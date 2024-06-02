@@ -1,6 +1,7 @@
 description: Waiter job to be used as a dependency for the Release and Delete job
-executor: circleci/node
-
+docker:
+  - image: circleci/node
+  
 steps:
   - run: |
       while [[ $(curl --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CCI_Token"| jq -r '.items[]|select(.name != "waiter")|.status' | grep -c "running") -gt 0 ]]
