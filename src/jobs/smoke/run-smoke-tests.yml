@@ -196,4 +196,3 @@ steps:
       path: *log_dir
       destination: logs
       when: always
-      
