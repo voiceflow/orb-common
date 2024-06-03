@@ -163,6 +163,7 @@ steps:
           echo 'export CREATOR_APP_URL=https://creator-$(cat workspace/env_name).br.development.voiceflow.com' >> $BASH_ENV
         else
           echo 'export CREATOR_APP_URL=https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com' >> $BASH_ENV
+        fi  
       shell: /bin/bash
   - run:
       name: "Reference commit SHA"
