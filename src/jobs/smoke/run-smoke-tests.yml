@@ -124,7 +124,7 @@ steps:
         done
   - run:
       name: Remove background log collection processes
-      command: | 
+      command: |
         killall stern
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
