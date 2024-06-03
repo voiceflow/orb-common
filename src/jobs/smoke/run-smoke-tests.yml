@@ -59,124 +59,29 @@ steps:
         LOG_DIR: &log_dir /tmp/pod-logs-<< parameters.e2e-env-name >>
       background: true
       command: |
-        # function categorize_logs_by_service() {
-        #   while read -r line; do
-        #     case "$line" in
-        #       "admin-api"*)
-        #         echo "$line" >> "$LOG_DIR/admin-api.log"
-        #         ;;
-        #       "alexa-runtime"*)
-        #         echo "$line" >> "$LOG_DIR/alexa-runtime.log"
-        #         ;;
-        #       "alexa-service"*)
-        #         echo "$line" >> "$LOG_DIR/alexa-service.log"
-        #         ;;
-        #       "analytics-api"*)
-        #         echo "$line" >> "$LOG_DIR/analytics-api.log"
-        #         ;;
-        #       "billing-api"*)
-        #         echo "$line" >> "$LOG_DIR/billing-api.log"
-        #         ;;
-        #       "canvas-export"*)
-        #         echo "$line" >> "$LOG_DIR/canvas-export.log"
-        #         ;;
-        #       "creator-api"*)
-        #         echo "$line" >> "$LOG_DIR/creator-api.log"
-        #         ;;
-        #       "creator-app"*)
-        #         echo "$line" >> "$LOG_DIR/creator-app.log"
-        #         ;;
-        #       "database-cli"*)
-        #         echo "$line" >> "$LOG_DIR/database-cli.log"
-        #         ;;
-        #       "event-ingestion-service"*)
-        #         echo "$line" >> "$LOG_DIR/event-ingestion-service.log"
-        #         ;;
-        #       "general-runtime"*)
-        #         echo "$line" >> "$LOG_DIR/general-runtime.log"
-        #         ;;
-        #       "general-service"*)
-        #         echo "$line" >> "$LOG_DIR/general-service.log"
-        #         ;;
-        #       "identity-api"*)
-        #         echo "$line" >> "$LOG_DIR/identity-api.log"
-        #         ;;
-        #       "kl-parser"*)
-        #         echo "$line" >> "$LOG_DIR/kl-parser.log"
-        #         ;;
-        #       "kl-retriever"*)
-        #         echo "$line" >> "$LOG_DIR/kl-retriever.log"
-        #         ;;
-        #       "ml-gateway"*)
-        #         echo "$line" >> "$LOG_DIR/ml-gateway.log"
-        #         ;;
-        #       "nlu-gateway"*)
-        #         echo "$line" >> "$LOG_DIR/nlu-gateway.log"
-        #         ;;
-        #       "nlu-inference-api-beta"*)
-        #         echo "$line" >> "$LOG_DIR/nlu-inference-api-beta.log"
-        #         ;;
-        #       "nlu-inference-api"*)
-        #         echo "$line" >> "$LOG_DIR/nlu-inference-api.log"
-        #         ;;
-        #       "productized-test-suite"*)
-        #         echo "$line" >> "$LOG_DIR/productized-test-suite.log"
-        #         ;;
-        #       "realtime-http"*)
-        #         echo "$line" >> "$LOG_DIR/realtime-http.log"
-        #         ;;
-        #       "realtime"*)
-        #         echo "$line" >> "$LOG_DIR/realtime.log"
-        #         ;;
-        #       "runtime-api"*)
-        #         echo "$line" >> "$LOG_DIR/runtime-api.log"
-        #         ;;
-        #       "test-api"*)
-        #         echo "$line" >> "$LOG_DIR/test-api.log"
-        #         ;;
-        #       "user-model-loader-beta"*)
-        #         echo "$line" >> "$LOG_DIR/user-model-loader-beta.log"
-        #         ;;
-        #       "user-model-loader"*)
-        #         echo "$line" >> "$LOG_DIR/user-model-loader.log"
-        #         ;;
-        #     esac
-        #   done
-        # }
-        # mkdir -p "${LOG_DIR:?}"
-        # # get the env name
-        # if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
-        #   DEV_ENV_NAME=$(cat workspace/env_name)
-        # else
-        #   DEV_ENV_NAME=<< parameters.e2e-env-name >>
-        # fi     
-
-        # # capture_logs
-        # stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/managed-by=helm" | categorize_logs_by_service 
-
-        function capture_logs() {
-            #stern -n "${ENV_NAME:?}" -l "app.kubernetes.io/name=$1"  --tail 20 > "${LOG_DIR:?}/$1.log"
-            if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
+      function capture_logs() {
+          if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
                DEV_ENV_NAME=$(cat workspace/env_name)
             else
               DEV_ENV_NAME=<< parameters.e2e-env-name >>
             fi
+          # Read components into an array directly from the command output
+          components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))   
 
-            components=$( vfcli component list -n "${DEV_ENV_NAME:?}" |awk '{if(NR>3) print $1}')
-            echo "Capturing logs for components: $components"
-
-            for component in $components; do
-              # kubectl logs -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" -f >> "${LOG_DIR:?}/$component.log"
+          # Iterate over the first n-1 components.Process log collection in parallel as background processes
+          for ((i = 0; i < ${#components[@]} - 1; i++)); do
+              component=${components[$i]}
+              echo "Capturing logs for component $component"
               stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" >>"${LOG_DIR:?}/$component.log" &
-            done
-
-            # kubectl logs -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$1" -f >> "${LOG_DIR:?}/$1.log" &
-             stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=database-cli" >>"${LOG_DIR:?}/database-cli_1.log"
-          }
-         
-          mkdir "${LOG_DIR:?}"
-          capture_logs
-
+          done
+          # Handle the last component separately to introduce blocking.If all components' log collection is done as non blocking tasks,
+          # the circleci step will terminate.So having last component as blocking ensures the collect logs step continues executing
+          last_component=${components[${#components[@]}-1]}
+          echo "Capturing logs for last component $last_component"
+          stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>"${LOG_DIR:?}/$last_component.log"
+      }  
+      mkdir "${LOG_DIR:?}"
+      capture_logs
   - run:
       name: "Set Environment Variables"
       command: |
