@@ -50,7 +50,7 @@ steps:
       avoid_post_install_scripts: false
       cache_prefix: smoke-test
   - restore_cache:
-      key: env_name_cache-{{ .Revision }}
+      key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
       name: "Set Environment Variables"
       command: |
