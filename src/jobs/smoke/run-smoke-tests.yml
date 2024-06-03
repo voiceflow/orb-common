@@ -111,7 +111,7 @@ steps:
                         ;;
                   "nlu-gateway"*)
                         echo "$line" >> "$LOG_DIR/nlu-gateway.log"
-                        ;;   
+                        ;;
                   "nlu-inference-api-beta"*)
                         echo "$line" >> "$LOG_DIR/nlu-inference-api-beta.log"
                         ;;
@@ -120,7 +120,7 @@ steps:
                         ;;
                   "productized-test-suite"*)
                         echo "$line" >> "$LOG_DIR/productized-test-suite.log"
-                        ;;          
+                        ;;       
                   "realtime-http"*)
                         echo "$line" >> "$LOG_DIR/realtime-http.log"
                         ;;
@@ -132,13 +132,13 @@ steps:
                         ;;
                   "test-api"*)
                         echo "$line" >> "$LOG_DIR/test-api.log"
-                        ;;            
+                        ;;         
                   "user-model-loader-beta"*)
                         echo "$line" >> "$LOG_DIR/user-model-loader-beta.log"
                         ;;     
                     "user-model-loader"*)
                         echo "$line" >> "$LOG_DIR/user-model-loader.log"
-                        ;;         
+                        ;;      
                 esac
             done
         }
