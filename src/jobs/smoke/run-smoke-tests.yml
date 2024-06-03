@@ -28,6 +28,7 @@ parameters:
   stable-only:
     type: boolean
     default: true
+
 steps:
   - clone_repo:
       github_repo_name: automated-testing
@@ -54,115 +55,114 @@ steps:
   - run:
       name: Gather Logs
       environment:
-        ENV_NAME: << parameters.e2e-env-name>>
+        ENV_NAME: << parameters.e2e-env-name >>
         LOG_DIR: &log_dir /tmp/pod-logs-<< parameters.e2e-env-name >>
       background: true
       command: |
-         function segregate_logs() {
-            while read -r line; do
-                case "$line" in
-                  "admin-api"*)
-                        echo "$line" >> "$LOG_DIR/admin-api.log"
-                        ;;
-                  "alexa-runtime"*)
-                        echo "$line" >> "$LOG_DIR//alexa-runtime.log"
-                        ;;
-                  "alexa-service"*)
-                        echo "$line" >> "$LOG_DIR//alexa-service.log"
-                        ;;
-                  "analytics-api"*)
-                        echo "$line" >> "$LOG_DIR/analytics-api.log"
-                        ;;
-                  "billing-api"*)
-                        echo "$line" >> "$LOG_DIR/billing-api.log"
-                        ;;
-                  "canvas-export"*)
-                        echo "$line" >> "$LOG_DIR/canvas-export.log"
-                        ;;
-                  "creator-api"*)
-                        echo "$line" >> "$LOG_DIR/creator-api.log"
-                        ;;
-                  "creator-app"*)
-                        echo "$line" >> "$LOG_DIR/creator-app.log"
-                        ;;
-                  "database-cli"*)
-                        echo "$line" >> "$LOG_DIR/database-cli.log"
-                        ;;
-                  "event-ingestion-service"*)
-                        echo "$line" >> "$LOG_DIR/event-ingestion-service.log"
-                        ;;
-                  "general-runtime"*)
-                        echo "$line" >> "$LOG_DIR/general-runtime.log"
-                        ;;
-                  "general-service"*)
-                        echo "$line" >> "$LOG_DIR/general-service.log"
-                        ;;
-                  "identity-api"*)
-                        echo "$line" >> "$LOG_DIR/identity-api.log"
-                        ;;
-                  "kl-parser"*)
-                        echo "$line" >> "$LOG_DIR/kl-parser.log"
-                        ;;
-                  "kl-retriever"*)
-                        echo "$line" >> "$LOG_DIR/kl-retriever.log"
-                        ;;
-                  "ml-gateway"*)
-                        echo "$line" >> "$LOG_DIR/ml-gateway.log"
-                        ;;
-                  "nlu-gateway"*)
-                        echo "$line" >> "$LOG_DIR/nlu-gateway.log"
-                        ;;
-                  "nlu-inference-api-beta"*)
-                        echo "$line" >> "$LOG_DIR/nlu-inference-api-beta.log"
-                        ;;
-                    "nlu-inference-api"*)
-                        echo "$line" >> "$LOG_DIR/nlu-inference-api.log"
-                        ;;
-                  "productized-test-suite"*)
-                        echo "$line" >> "$LOG_DIR/productized-test-suite.log"
-                        ;;
-                  "realtime-http"*)
-                        echo "$line" >> "$LOG_DIR/realtime-http.log"
-                        ;;
-                  "realtime"*)
-                        echo "$line" >> "$LOG_DIR/realtime.log"
-                        ;;
-                  "runtime-api"*)
-                        echo "$line" >> "$LOG_DIR/runtime-api.log"
-                        ;;
-                  "test-api"*)
-                        echo "$line" >> "$LOG_DIR/test-api.log"
-                        ;;
-                  "user-model-loader-beta"*)
-                        echo "$line" >> "$LOG_DIR/user-model-loader-beta.log"
-                        ;;
-                  "user-model-loader"*)
-                        echo "$line" >> "$LOG_DIR/user-model-loader.log"
-                        ;;
-                esac
-            done
+        function categorize_logs_by_service() {
+          while read -r line; do
+            case "$line" in
+              "admin-api"*)
+                echo "$line" >> "$LOG_DIR/admin-api.log"
+                ;;
+              "alexa-runtime"*)
+                echo "$line" >> "$LOG_DIR/alexa-runtime.log"
+                ;;
+              "alexa-service"*)
+                echo "$line" >> "$LOG_DIR/alexa-service.log"
+                ;;
+              "analytics-api"*)
+                echo "$line" >> "$LOG_DIR/analytics-api.log"
+                ;;
+              "billing-api"*)
+                echo "$line" >> "$LOG_DIR/billing-api.log"
+                ;;
+              "canvas-export"*)
+                echo "$line" >> "$LOG_DIR/canvas-export.log"
+                ;;
+              "creator-api"*)
+                echo "$line" >> "$LOG_DIR/creator-api.log"
+                ;;
+              "creator-app"*)
+                echo "$line" >> "$LOG_DIR/creator-app.log"
+                ;;
+              "database-cli"*)
+                echo "$line" >> "$LOG_DIR/database-cli.log"
+                ;;
+              "event-ingestion-service"*)
+                echo "$line" >> "$LOG_DIR/event-ingestion-service.log"
+                ;;
+              "general-runtime"*)
+                echo "$line" >> "$LOG_DIR/general-runtime.log"
+                ;;
+              "general-service"*)
+                echo "$line" >> "$LOG_DIR/general-service.log"
+                ;;
+              "identity-api"*)
+                echo "$line" >> "$LOG_DIR/identity-api.log"
+                ;;
+              "kl-parser"*)
+                echo "$line" >> "$LOG_DIR/kl-parser.log"
+                ;;
+              "kl-retriever"*)
+                echo "$line" >> "$LOG_DIR/kl-retriever.log"
+                ;;
+              "ml-gateway"*)
+                echo "$line" >> "$LOG_DIR/ml-gateway.log"
+                ;;
+              "nlu-gateway"*)
+                echo "$line" >> "$LOG_DIR/nlu-gateway.log"
+                ;;
+              "nlu-inference-api-beta"*)
+                echo "$line" >> "$LOG_DIR/nlu-inference-api-beta.log"
+                ;;
+              "nlu-inference-api"*)
+                echo "$line" >> "$LOG_DIR/nlu-inference-api.log"
+                ;;
+              "productized-test-suite"*)
+                echo "$line" >> "$LOG_DIR/productized-test-suite.log"
+                ;;
+              "realtime-http"*)
+                echo "$line" >> "$LOG_DIR/realtime-http.log"
+                ;;
+              "realtime"*)
+                echo "$line" >> "$LOG_DIR/realtime.log"
+                ;;
+              "runtime-api"*)
+                echo "$line" >> "$LOG_DIR/runtime-api.log"
+                ;;
+              "test-api"*)
+                echo "$line" >> "$LOG_DIR/test-api.log"
+                ;;
+              "user-model-loader-beta"*)
+                echo "$line" >> "$LOG_DIR/user-model-loader-beta.log"
+                ;;
+              "user-model-loader"*)
+                echo "$line" >> "$LOG_DIR/user-model-loader.log"
+                ;;
+            esac
+          done
         }
         mkdir -p "${LOG_DIR:?}"
         # get the env name
         if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
-              DEV_ENV_NAME=$(cat workspace/env_name)
-          else
-            DEV_ENV_NAME=<< parameters.e2e-env-name >>
-          fi
+          DEV_ENV_NAME=$(cat workspace/env_name)
+        else
+          DEV_ENV_NAME=<< parameters.e2e-env-name >>
+        fi
         # capture_logs
-        stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/managed-by=helm" | segregate_logs
+        stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/managed-by=helm" | categorize_logs_by_service
   - run:
       name: "Set Environment Variables"
       command: |
         # workspace/env_name is used to store the e2e env name and passed to the smoke tests
-        # uses e2e-env-name is workspace/env_name is 'null'
+        # uses e2e-env-name if workspace/env_name is 'null'
         if [ ! -z "<< parameters.target-url >>" ]; then
           echo 'export CREATOR_APP_URL=<< parameters.target-url >>' >> $BASH_ENV
         elif [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
           echo 'export CREATOR_APP_URL=https://creator-$(cat workspace/env_name).br.development.voiceflow.com' >> $BASH_ENV
         else
           echo 'export CREATOR_APP_URL=https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com' >> $BASH_ENV
-        fi
       shell: /bin/bash
   - run:
       name: "Reference commit SHA"
@@ -192,8 +192,7 @@ steps:
       path: apps/smoke-test-runner/cypress/screenshots
       destination: screenshots
   - store_artifacts:
-        name: Store Logs
-        path: *log_dir
-        destination: logs
-        when: always
-
+      name: Store Logs
+      path: *log_dir
+      destination: logs
+      when: always
