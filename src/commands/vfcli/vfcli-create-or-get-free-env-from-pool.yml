@@ -40,7 +40,7 @@ steps:
             if [[ -z $result ]] || [[ $(echo "$result" | jq 'keys | length') -eq 0 ]]; then
               echo "No free environment found. Proceeding with environment creation."
               echo "null" > env_name.txt  # Write 'null' to indicate no environment was found
-              echo "create" > workspace/skip_create_env
+              echo "create" > skip_create_env
             else
               echo "Free environment found: $result"
               env_name=$(echo "$result" | jq -r '.name')
@@ -48,14 +48,14 @@ steps:
               cat env_name.txt
               echo "export ENV_NAME=${env_name}" >> $BASH_ENV
               vfcli pool use-env --env-name ${env_name}
-              echo "skip" > workspace/skip_create_env  # Indicate no need to create environment
+              echo "skip" > skip_create_env  # Indicate no need to create environment
               exit 0  # Skip environment creation
             fi
           fi
         else
           echo "Pool type not provided."
           echo "null" > env_name.txt  # Handle case where pool-type is not provided
-          echo "create" > workspace/skip_create_env
+          echo "create" > skip_create_env
         fi
 
   - save_cache:
@@ -63,15 +63,10 @@ steps:
       paths:
         - env_name.txt
 
-  - persist_to_workspace:
-      root: workspace
-      paths:
-        - skip_create_env
-
   - run:
       name: Create environment
       command: |
-        if [[ $(cat workspace/skip_create_env) != "skip" ]]; then
+        if [[ -f skip_create_env && $(cat skip_create_env) != "skip" ]]; then
           if [ -n "<< parameters.track-file >>" ]; then
             TRACK_ARG=("--track-file" "<< parameters.track-file >>")
           fi
