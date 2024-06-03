@@ -40,6 +40,7 @@ steps:
             if [[ -z $result ]] || [[ $(echo "$result" | jq 'keys | length') -eq 0 ]]; then
               echo "No free environment found. Proceeding with environment creation."
               echo "null" > env_name.txt  # Write 'null' to indicate no environment was found
+              echo "create" > workspace/skip_create_env
             else
               echo "Free environment found: $result"
               env_name=$(echo "$result" | jq -r '.name')
