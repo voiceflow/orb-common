@@ -62,9 +62,9 @@ steps:
       function capture_logs() {
           if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
                DEV_ENV_NAME=$(cat workspace/env_name)
-            else
+          else
               DEV_ENV_NAME=<< parameters.e2e-env-name >>
-            fi
+          fi
           # Read components into an array directly from the command output
           components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))   
 
@@ -79,7 +79,7 @@ steps:
           last_component=${components[${#components[@]}-1]}
           echo "Capturing logs for last component $last_component"
           stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>"${LOG_DIR:?}/$last_component.log"
-      }  
+      }
       mkdir "${LOG_DIR:?}"
       capture_logs
   - run:
@@ -93,7 +93,7 @@ steps:
           echo 'export CREATOR_APP_URL=https://creator-$(cat workspace/env_name).br.development.voiceflow.com' >> $BASH_ENV
         else
           echo 'export CREATOR_APP_URL=https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com' >> $BASH_ENV
-        fi  
+        fi
       shell: /bin/bash
   - run:
       name: "Reference commit SHA"
