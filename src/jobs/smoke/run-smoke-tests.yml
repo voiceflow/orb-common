@@ -53,7 +53,7 @@ steps:
         chmod +x ./kubectl && \
         mv ./kubectl /usr/local/bin/kubectl
   - run:
-      name: Gather Logs
+      name: Gather Application Logs
       environment:
         ENV_NAME: << parameters.e2e-env-name >>
         LOG_DIR: &log_dir /tmp/pod-logs-<< parameters.e2e-env-name >>
@@ -67,6 +67,9 @@ steps:
             fi
             # Read components into an array directly from the command output
             components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
+
+             echo "export DEV_ENV_NAME=$DEV_ENV_NAME >> "$BASH_ENV"
+             echo "export COMPONENTS=$components >> "$BASH_ENV"
 
             # Iterate over the first n-1 components.Process log collection in parallel as background processes
             for ((i = 0; i < ${#components[@]} - 1; i++)); do
@@ -111,6 +114,18 @@ steps:
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
         - node_modules/.cache/turbo
+  - run:
+      name: Gather Kubernetes State
+      LOG_DIR: *log_dir
+      command: | 
+      kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state.log"
+      for component in $COMPONENTS; do
+        kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/$component-state.log"
+      done
+  - run:
+      name: Remove background log collection processes
+      command: | 
+       killall stern  
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
