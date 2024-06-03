@@ -7,13 +7,23 @@ parameters:
   track-file:
     type: string
     description: Path to the track-mapping file to use
+  env-name-path:
+    type: string
+    description: Path to the env_name file
+    default: "/home/circleci/voiceflow/env_name.txt"
 steps:
-  - attach_workspace:
-      at: workspace
+  - restore_cache:
+      key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
       name: Suspend Environment
       command: |
-        env_name=$(cat workspace/env_name)
+        echo "Contents of << parameters.env-name-path >>:"
+        cat << parameters.env-name-path >>
+        if [[ -f << parameters.env-name-path >> ]]; then
+          env_name=$(cat << parameters.env-name-path >>)
+        else
+          env_name="<< parameters.env-name >>"
+        fi
         if [[ "$env_name" == "null" ]] || [[ -z "$env_name" ]]; then
           # If env_name from file is "null" or empty, use the default parameter
           env_name="<< parameters.env-name >>"

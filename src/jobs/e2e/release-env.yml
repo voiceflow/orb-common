@@ -10,8 +10,13 @@ parameters:
     type: string
     description: Name of the cluster in which the environment exists
     default: "cm4-vf-dev-br-2-0-p1"
+  when:
+    type: string
+    description: When to run this command
+    default: always
 steps:
   - install-vfcli:
       init-cluster: << parameters.cluster >>
   - vfcli-delete-or-release-env:
       env-name: << parameters.env-name >>
+      when: << parameters.when >>
