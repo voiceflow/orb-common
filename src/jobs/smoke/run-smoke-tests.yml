@@ -52,12 +52,12 @@ steps:
         chmod +x ./kubectl && \
         mv ./kubectl /usr/local/bin/kubectl
   - run:
-        name: Gather Logs
-        environment:
-          ENV_NAME: << parameters.e2e-env-name>>
-          LOG_DIR: &log_dir /tmp/pod-logs-<< parameters.e2e-env-name >>
-        background: true
-        command: |
+      name: Gather Logs
+      environment:
+        ENV_NAME: << parameters.e2e-env-name>>
+        LOG_DIR: &log_dir /tmp/pod-logs-<< parameters.e2e-env-name >>
+      background: true
+      command: |
          function segregate_logs() {
             while read -r line; do
                 case "$line" in
