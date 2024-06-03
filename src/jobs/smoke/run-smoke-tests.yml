@@ -116,7 +116,7 @@ steps:
         - node_modules/.cache/turbo
   - run:
       name: Gather Kubernetes State
-      LOG_DIR: *log_dir
+      LOG_DIR: /tmp/pod-logs-<< parameters.e2e-env-name >>
       command: |
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state.log"
         for component in $COMPONENTS; do
