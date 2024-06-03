@@ -171,8 +171,9 @@ steps:
             done
 
             # kubectl logs -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$1" -f >> "${LOG_DIR:?}/$1.log" &
+             stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=database-cli" >>"${LOG_DIR:?}/database-cli_1.log"
           }
-          stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=database-cli" >>"${LOG_DIR:?}/database-cli_1.log"
+         
           mkdir "${LOG_DIR:?}"
           capture_logs
 
