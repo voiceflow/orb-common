@@ -61,22 +61,22 @@ steps:
          function segregate_logs() {
             while read -r line; do
                 case "$line" in
-                    "admin-api"*)
+                  "admin-api"*)
                         echo "$line" >> "$LOG_DIR/admin-api.log"
                         ;;
-                    "alexa-runtime"*)
+                  "alexa-runtime"*)
                         echo "$line" >> "$LOG_DIR//alexa-runtime.log"
                         ;;
-                    "alexa-service"*)
+                  "alexa-service"*)
                         echo "$line" >> "$LOG_DIR//alexa-service.log"
                         ;;
-                    "analytics-api"*)
+                  "analytics-api"*)
                         echo "$line" >> "$LOG_DIR/analytics-api.log"
                         ;;
-                    "billing-api"*)
+                  "billing-api"*)
                         echo "$line" >> "$LOG_DIR/billing-api.log"
                         ;;
-                    "canvas-export"*)
+                  "canvas-export"*)
                         echo "$line" >> "$LOG_DIR/canvas-export.log"
                         ;;
                   "creator-api"*)
@@ -136,15 +136,14 @@ steps:
                   "user-model-loader-beta"*)
                         echo "$line" >> "$LOG_DIR/user-model-loader-beta.log"
                         ;;
-                    "user-model-loader"*)
+                  "user-model-loader"*)
                         echo "$line" >> "$LOG_DIR/user-model-loader.log"
                         ;;
                 esac
             done
         }
-
         mkdir -p "${LOG_DIR:?}"
-        # get the env name 
+        # get the env name
         if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
               DEV_ENV_NAME=$(cat workspace/env_name)
           else
