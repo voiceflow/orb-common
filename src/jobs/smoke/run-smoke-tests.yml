@@ -104,7 +104,7 @@ steps:
   - restore_cache:
       # use the commit of the smoke-test-runner repo as the cache key
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
- -  run:
+  - run:
       name: Gather Kubernetes state before run
       environment:
         LOG_DIR: *log_dir
