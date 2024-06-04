@@ -69,7 +69,6 @@ steps:
             components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
 
              echo "export DEV_ENV_NAME=$DEV_ENV_NAME >> "$BASH_ENV"
-             echo "export COMPONENTS=$components >> "$BASH_ENV"
 
             # Iterate over the first n-1 components.Process log collection in parallel as background processes
             for ((i = 0; i < ${#components[@]} - 1; i++)); do
@@ -120,13 +119,11 @@ steps:
         LOG_DIR: *log_dir
       command: |
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state.log"
-        for component in $COMPONENTS; do
+
+        components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
+        for component in $components; do
           kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${component}-k8-state.log"
         done
-  - run:
-      name: Remove background log collection processes
-      command: |
-        ps -ef | grep 'stern' | awk '{print $2}' | xargs kill -9 ||true
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
