@@ -121,12 +121,12 @@ steps:
       command: |
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state.log"
         for component in $COMPONENTS; do
-          kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/$component-state.log"
+          kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${component}-k8-state.log"
         done
   - run:
       name: Remove background log collection processes
       command: |
-        killall stern
+        ps -ef | grep 'stern' | awk '{print $2}' | xargs kill -9 ||true 
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
