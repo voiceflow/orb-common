@@ -128,10 +128,10 @@ steps:
       environment:
         LOG_DIR: *log_dir
       command: |
-         source $BASH_ENV
-         echo "Gathering Kubernetes state after run for env $DEV_ENV_NAME"
-         echo "Gathering Kubernetes state after run for components $COMPONENTS"
-       # Gather summary state of all pods in the namespace
+        source $BASH_ENV
+        echo "Gathering Kubernetes state after run for env $DEV_ENV_NAME"
+        echo "Gathering Kubernetes state after run for components $COMPONENTS"
+        # Gather summary state of all pods in the namespace
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-after-run.log"
         # Gather detailed state of all pods in the namespace
         for component in $COMPONENTS; do
