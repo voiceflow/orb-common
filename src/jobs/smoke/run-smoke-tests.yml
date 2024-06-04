@@ -68,7 +68,8 @@ steps:
             # Read components into an array directly from the command output
             components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
 
-             echo "export DEV_ENV_NAME=$DEV_ENV_NAME >> "$BASH_ENV"
+             echo "export DEV_ENV_NAME=$DEV_ENV_NAME" >> "$BASH_ENV"
+             echo "export COMPONENTS=$components" >> "$BASH_ENV"
 
             # Iterate over the first n-1 components.Process log collection in parallel as background processes
             for ((i = 0; i < ${#components[@]} - 1; i++)); do
@@ -103,6 +104,13 @@ steps:
   - restore_cache:
       # use the commit of the smoke-test-runner repo as the cache key
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
+ - run:
+      name: Gather Kubernetes state before run
+      environment:
+        LOG_DIR: *log_dir
+      command: |
+       # Gather summary state of all pods in the namespace
+        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-before-run.log"        
   - run:
       name: Run Smoke Tests
       environment:
@@ -114,16 +122,22 @@ steps:
       paths:
         - node_modules/.cache/turbo
   - run:
-      name: Gather Kubernetes State
+      name: Gather Kubernetes state after run
       environment:
         LOG_DIR: *log_dir
       command: |
-        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state.log"
-
-        components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
-        for component in $components; do
+        echo "Gathering Kubernetes state after run for env $DEV_ENV_NAME"
+        echo "Gathering Kubernetes state after run for components $COMPONENTS"
+        # Gather summary state of all pods in the namespace
+        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-after-run.log"
+        # Gather detailed state of all pods in the namespace
+        for component in $COMPONENTS; do
           kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${component}-k8-state.log"
         done
+  - run:
+      name: Remove background log collection processes
+      command: |
+        ps -ef | grep 'stern' | awk '{print $2}' | xargs kill -9 ||true
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
