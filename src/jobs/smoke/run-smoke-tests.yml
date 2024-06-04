@@ -126,7 +126,7 @@ steps:
   - run:
       name: Remove background log collection processes
       command: |
-        ps -ef | grep 'stern' | awk '{print $2}' | xargs kill -9 ||true 
+        ps -ef | grep 'stern' | awk '{print $2}' | xargs kill -9 ||true
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
