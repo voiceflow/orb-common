@@ -111,8 +111,8 @@ steps:
       command: |
         source $BASH_ENV
        # Gather summary state of all pods in the namespace
-         echo "Gathering Kubernetes state after run for env $DEV_ENV_NAME"
-         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-before-run.log"
+        echo "Gathering Kubernetes state after run for env $DEV_ENV_NAME"
+        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-before-run.log"
   - run:
       name: Run Smoke Tests
       environment:
