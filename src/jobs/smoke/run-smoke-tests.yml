@@ -66,7 +66,7 @@ steps:
                 DEV_ENV_NAME=<< parameters.e2e-env-name >>
             fi
             # Read components into an array directly from the command output
-            components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))     
+            components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
 
             # Iterate over the first n-1 components.Process log collection in parallel as background processes
             for ((i = 0; i < ${#components[@]} - 1; i++)); do
@@ -110,7 +110,7 @@ steps:
             DEV_ENV_NAME=$(cat workspace/env_name)
         else
             DEV_ENV_NAME=<< parameters.e2e-env-name >>
-        fi   
+        fi
         # Gather summary state of all pods in the namespace
         echo "Gathering Kubernetes state before run for env $DEV_ENV_NAME"
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-before-run.log"
@@ -135,7 +135,7 @@ steps:
           DEV_ENV_NAME=<< parameters.e2e-env-name >>
         fi
         # Read components into an array directly from the command output
-        components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))     
+        components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}')) 
         # Gather summary state of all pods in the namespace
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-after-run.log"
         # Gather detailed state of all pods in the namespace
