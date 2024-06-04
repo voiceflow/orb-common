@@ -85,6 +85,7 @@ steps:
         }
         mkdir "${LOG_DIR:?}"
         capture_logs
+      shell: /bin/bash
   - run:
       name: "Set Environment Variables"
       command: |
@@ -113,6 +114,7 @@ steps:
         # Gather summary state of all pods in the namespace
         echo "Gathering Kubernetes state after run for env $DEV_ENV_NAME"
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-before-run.log"
+      shell: /bin/bash
   - run:
       name: Run Smoke Tests
       environment:
@@ -137,10 +139,7 @@ steps:
         for component in $COMPONENTS; do
           kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${component}-k8-state.log"
         done
-  - run:
-      name: Remove background log collection processes
-      command: |
-        ps -ef | grep 'stern' | awk '{print $2}' | xargs kill -9 ||true
+      shell: /bin/bash
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
