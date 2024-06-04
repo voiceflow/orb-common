@@ -104,13 +104,14 @@ steps:
   - restore_cache:
       # use the commit of the smoke-test-runner repo as the cache key
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
- - run:
+ -  run:
       name: Gather Kubernetes state before run
       environment:
         LOG_DIR: *log_dir
       command: |
        # Gather summary state of all pods in the namespace
-        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-before-run.log"        
+        echo "Gathering Kubernetes state after run for env $DEV_ENV_NAME"
+        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-before-run.log"    
   - run:
       name: Run Smoke Tests
       environment:
