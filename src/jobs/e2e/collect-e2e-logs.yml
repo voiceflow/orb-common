@@ -1,0 +1,73 @@
+description: Prepare an existing environment for e2e tests
+executor: default-executor
+
+parameters:
+    cluster:
+      type: string
+      description: Name of the cluster in which the environment exists
+      default: "cm4-vf-dev-br-2-0-p1"
+    e2e-env-name:
+      type: string
+      description: Name of the environment to collect logs from
+    env-name-path:
+      type: string
+      description: Path to the env_name file
+      default: "/home/circleci/voiceflow/env_name.txt"
+steps:
+  - vfcommon/install-vfcli:
+      init-cluster: << parameters.cluster >>
+  - run:
+      name: Install stern
+      command: |
+        curl -sSL https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository | sudo bash
+        sudo apt install stern
+  - restore_cache:
+      key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+  - run:
+      name: Gather Logs
+      environment:
+        ENV_NAME: {{ .values.e2e_env_name }}
+        LOG_DIR: &log_dir /tmp/pod-logs-{{ .values.e2e_env_name }}
+      background: true
+      command: |
+        function capture_logs() {
+            echo "Contents of << parameters.env-name-path >>:"
+              cat << parameters.env-name-path >>
+            if [[ -f << parameters.env-name-path >> ]]; then
+                DEV_ENV_NAME=$(cat << parameters.env-name-path >>)
+            else
+                DEV_ENV_NAME=<< parameters.e2e-env-name >>
+            fi
+            echo "Capturing logs for environment $DEV_ENV_NAME"
+            # Read components into an array directly from the command output
+            components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
+            # Iterate over the first n-1 components.Process log collection in parallel as background processes
+            for ((i = 0; i < ${#components[@]} - 1; i++)); do
+                component=${components[$i]}
+                echo "Capturing logs for component $component"
+                stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" >>"${LOG_DIR:?}/$component.log" &
+            done
+            # Handle the last component separately to introduce blocking.If all components' log collection is done as non blocking tasks,
+            # the circleci step will terminate.So having last component as blocking ensures the collect logs step continues executing
+            last_component=${components[${#components[@]}-1]}
+            echo "Capturing logs for last component $last_component"
+            stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>"${LOG_DIR:?}/$last_component.log"
+        }
+        mkdir "${LOG_DIR:?}"
+        capture_logs
+
+  - run: |
+      # The waiter job keeps looping through to check if the smoke-tests job has been completed
+      while [[ $(curl --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CIRCLE_TOKEN"| jq -r '.items[]|select(.name == "vfcommon/run-smoke-tests")|.status' | grep -c "running") -gt 0 ]]
+        do
+          sleep 5
+        done
+  - run: echo "All required jobs have now completed"
+  - store_artifacts:
+      name: Store Logs
+      path: *log_dir
+      destination: logs
+  - store_artifacts:
+      name: Store Cluster Info
+      path: /tmp/cluster-info
+      destination: cluster-info
