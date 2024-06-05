@@ -15,12 +15,7 @@ parameters:
       default: "/home/circleci/voiceflow/env_name.txt"
 steps:
   - install-vfcli:
-      init-cluster: << parameters.cluster >>
-  - run:
-      name: Install stern
-      command: |
-        curl -sSL https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository | sudo bash
-        sudo apt install stern
+      init-cluster: << parameters.cluster >> 
   - restore_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
@@ -68,13 +63,13 @@ steps:
             for ((i = 0; i < ${#components[@]} - 1; i++)); do
                 component=${components[$i]}
                 echo "Capturing logs for component $component"
-                stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" >>"${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$component.log" --since 1m &
+                stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" >>"${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$component.log" --since 5m &
             done
             # Handle the last component separately to introduce blocking.If all components' log collection is done as non blocking tasks,
             # the circleci step will terminate.So having last component as blocking ensures the collect logs step continues executing
             last_component=${components[${#components[@]}-1]}
             echo "Capturing logs for last component $last_component"
-            stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>"${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$last_component.log" --since 1m
+            stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>"${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$last_component.log" --since 5m
         }
         capture_logs
 
