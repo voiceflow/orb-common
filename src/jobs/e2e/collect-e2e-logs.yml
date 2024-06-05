@@ -15,7 +15,7 @@ parameters:
       default: "/home/circleci/voiceflow/env_name.txt"
 steps:
   - install-vfcli:
-      init-cluster: << parameters.cluster >> 
+      init-cluster: << parameters.cluster >>
   - restore_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
