@@ -24,9 +24,18 @@ steps:
   - restore_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
+    name: Create directories
+    environment:
+      LOG_DIR: &log_dir  /tmp/logs-<< parameters.e2e-env-name >>
+      COMPONENT_LOG_DIR: &component_log_dir component-logs
+      KUBE_STATE_DIR: &kube_state_dir kubernetes-state"
+    command: |
+      mkdir -p "${LOG_DIR:?}/{${component-logs:?},${kubernetes-state:?}}"
+  - run:
       name: Gather Kubernetes state before run
       environment:
-        LOG_DIR: &log_dir  /tmp/pod-logs-{{ .values.e2e_env_name }}
+        LOG_DIR: *log_dir
+        KUBE_STATE_DIR: *kube_state_dir
       command: |
         echo "Contents of << parameters.env-name-path >>:"
         cat << parameters.env-name-path >>
@@ -37,11 +46,12 @@ steps:
         fi
         # Gather summary state of all pods in the namespace
         echo "Gathering Kubernetes state before run for env $DEV_ENV_NAME"
-        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-before-run.log"
+        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR}/pods-summary-state-before-run.log"
   - run:
       name: Gather Logs
       environment:
         LOG_DIR:  *log_dir
+        COMPONENT_LOG_DIR: *component_log_dir
       background: true
       command: |
         function capture_logs() {
@@ -59,15 +69,14 @@ steps:
             for ((i = 0; i < ${#components[@]} - 1; i++)); do
                 component=${components[$i]}
                 echo "Capturing logs for component $component"
-                stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" >>"${LOG_DIR:?}/$component.log" &
+                stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" >>"${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$component.log" &
             done
             # Handle the last component separately to introduce blocking.If all components' log collection is done as non blocking tasks,
             # the circleci step will terminate.So having last component as blocking ensures the collect logs step continues executing
             last_component=${components[${#components[@]}-1]}
             echo "Capturing logs for last component $last_component"
-            stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>"${LOG_DIR:?}/$last_component.log"
+            stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>""${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$last_component.log"
         }
-        mkdir "${LOG_DIR:?}"
         capture_logs
 
   - run:
@@ -83,6 +92,7 @@ steps:
       name: Gather Kubernetes state after run
       environment:
         LOG_DIR: *log_dir
+        KUBE_STATE_DIR: *kube_state_dir
       command: |
         echo "Contents of << parameters.env-name-path >>:"
         cat << parameters.env-name-path >>
@@ -104,7 +114,7 @@ steps:
          # Handle the last component separately to introduce blocking.If all components' log collection is done as non blocking tasks,
          # the circleci step will terminate.So having last component as blocking ensures the collect logs step continues executing
          last_component=${components[${#components[@]}-1]}
-         kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${last_component}-k8-state.log"
+         kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/${last_component}-k8-state.log"
 
   - store_artifacts:
       name: Store Logs
