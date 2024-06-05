@@ -26,7 +26,6 @@ steps:
   - run:
       name: Gather Logs
       environment:
-        ENV_NAME: {{ .values.e2e_env_name }}
         LOG_DIR: &log_dir /tmp/pod-logs-{{ .values.e2e_env_name }}
       background: true
       command: |
