@@ -24,13 +24,13 @@ steps:
   - restore_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
-    name: Create directories
-    environment:
-      LOG_DIR: &log_dir  /tmp/logs-<< parameters.e2e-env-name >>
-      COMPONENT_LOG_DIR: &component_log_dir component-logs
-      KUBE_STATE_DIR: &kube_state_dir kubernetes-state"
-    command: |
-      mkdir -p "${LOG_DIR:?}/{${component-logs:?},${kubernetes-state:?}}"
+      name: Create directories
+      environment:
+        LOG_DIR: &log_dir  /tmp/logs-<< parameters.e2e-env-name >>
+        COMPONENT_LOG_DIR: &component_log_dir component-logs
+        KUBE_STATE_DIR: &kube_state_dir kubernetes-state"
+      command: |
+        mkdir -p "${LOG_DIR:?}/{${component-logs:?},${kubernetes-state:?}}"
   - run:
       name: Gather Kubernetes state before run
       environment:
