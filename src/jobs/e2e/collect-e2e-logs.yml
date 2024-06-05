@@ -14,7 +14,7 @@ parameters:
       description: Path to the env_name file
       default: "/home/circleci/voiceflow/env_name.txt"
 steps:
-  - vfcommon/install-vfcli:
+  - install-vfcli:
       init-cluster: << parameters.cluster >>
   - run:
       name: Install stern
