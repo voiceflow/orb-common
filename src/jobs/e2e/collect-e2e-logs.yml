@@ -28,10 +28,12 @@ steps:
       environment:
         LOG_DIR: &log_dir  /tmp/pod-logs-{{ .values.e2e_env_name }}
       command: |
-        if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
-            DEV_ENV_NAME=$(cat workspace/env_name)
+        echo "Contents of << parameters.env-name-path >>:"
+        cat << parameters.env-name-path >>
+        if [[ -f << parameters.env-name-path >> ]]; then
+          DEV_ENV_NAME=$(cat << parameters.env-name-path >>)
         else
-            DEV_ENV_NAME=<< parameters.e2e-env-name >>
+          DEV_ENV_NAME=<< parameters.e2e-env-name >>
         fi
         # Gather summary state of all pods in the namespace
         echo "Gathering Kubernetes state before run for env $DEV_ENV_NAME"
@@ -68,7 +70,9 @@ steps:
         mkdir "${LOG_DIR:?}"
         capture_logs
 
-  - run: |
+  - run:
+     name: Wait for smoke-tests job to complete
+     command: |
       # The waiter job keeps looping through to check if the smoke-tests job has been completed
       while [[ $(curl --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CIRCLE_TOKEN"| jq -r '.items[]|select(.name == "vfcommon/run-smoke-tests")|.status' | grep -c "running") -gt 0 ]]
         do
@@ -80,8 +84,10 @@ steps:
       environment:
         LOG_DIR: *log_dir
       command: |
-        if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
-          DEV_ENV_NAME=$(cat workspace/env_name)
+        echo "Contents of << parameters.env-name-path >>:"
+        cat << parameters.env-name-path >>
+        if [[ -f << parameters.env-name-path >> ]]; then
+          DEV_ENV_NAME=$(cat << parameters.env-name-path >>)
         else
           DEV_ENV_NAME=<< parameters.e2e-env-name >>
         fi
