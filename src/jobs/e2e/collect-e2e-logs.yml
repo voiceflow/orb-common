@@ -30,7 +30,8 @@ steps:
         COMPONENT_LOG_DIR: &component_log_dir component-logs
         KUBE_STATE_DIR: &kube_state_dir kubernetes-state
       command: |
-        mkdir -p "${LOG_DIR:?}/{${COMPONENT_LOG_DIR:?},${KUBE_STATE_DIR:?}}"
+        mkdir -p "${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}"
+        mkdir -p "${LOG_DIR:?}/${KUBE_STATE_DIR:?}"
   - run:
       name: Gather Kubernetes state before run
       environment:
@@ -46,7 +47,7 @@ steps:
         fi
         # Gather summary state of all pods in the namespace
         echo "Gathering Kubernetes state before run for env $DEV_ENV_NAME"
-        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR}/pods-summary-state-before-run.log"
+        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/pods-summary-state-before-run.log"
   - run:
       name: Gather Logs
       environment:
