@@ -40,11 +40,11 @@ steps:
       command: |
         echo "Contents of << parameters.env-name-path >>:"
         cat << parameters.env-name-path >>
-        if [[ -f << parameters.env-name-path >> ]]; then
-          DEV_ENV_NAME=$(cat << parameters.env-name-path >>)
-        else
-          DEV_ENV_NAME=<< parameters.e2e-env-name >>
-        fi
+        if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
+                DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
+            else
+                DEV_ENV_NAME=<< parameters.e2e-env-name >>
+            fi
         # Gather summary state of all pods in the namespace
         echo "Gathering Kubernetes state before run for env $DEV_ENV_NAME"
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/pods-summary-state-before-run.log"
@@ -56,10 +56,8 @@ steps:
       background: true
       command: |
         function capture_logs() {
-            echo "Contents of << parameters.env-name-path >>:"
-              cat << parameters.env-name-path >>
-            if [[ -f << parameters.env-name-path >> ]]; then
-                DEV_ENV_NAME=$(cat << parameters.env-name-path >>)
+            if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
+                DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
             else
                 DEV_ENV_NAME=<< parameters.e2e-env-name >>
             fi
@@ -76,7 +74,7 @@ steps:
             # the circleci step will terminate.So having last component as blocking ensures the collect logs step continues executing
             last_component=${components[${#components[@]}-1]}
             echo "Capturing logs for last component $last_component"
-            stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>""${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$last_component.log"
+            stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>"${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$last_component.log"
         }
         capture_logs
 
@@ -95,13 +93,11 @@ steps:
         LOG_DIR: *log_dir
         KUBE_STATE_DIR: *kube_state_dir
       command: |
-        echo "Contents of << parameters.env-name-path >>:"
-        cat << parameters.env-name-path >>
-        if [[ -f << parameters.env-name-path >> ]]; then
-          DEV_ENV_NAME=$(cat << parameters.env-name-path >>)
-        else
-          DEV_ENV_NAME=<< parameters.e2e-env-name >>
-        fi
+        if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
+              DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
+          else
+              DEV_ENV_NAME=<< parameters.e2e-env-name >>
+          fi
         # Read components into an array directly from the command output
         components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
         # Gather summary state of all pods in the namespace
