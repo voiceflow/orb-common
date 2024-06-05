@@ -24,9 +24,22 @@ steps:
   - restore_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
+      name: Gather Kubernetes state before run
+      environment:
+        LOG_DIR: &log_dir  /tmp/pod-logs-{{ .values.e2e_env_name }}
+      command: |
+        if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
+            DEV_ENV_NAME=$(cat workspace/env_name)
+        else
+            DEV_ENV_NAME=<< parameters.e2e-env-name >>
+        fi
+        # Gather summary state of all pods in the namespace
+        echo "Gathering Kubernetes state before run for env $DEV_ENV_NAME"
+        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-before-run.log"
+  - run:
       name: Gather Logs
       environment:
-        LOG_DIR: &log_dir /tmp/pod-logs-{{ .values.e2e_env_name }}
+        LOG_DIR:  *log_dir
       background: true
       command: |
         function capture_logs() {
@@ -62,6 +75,31 @@ steps:
           sleep 5
         done
   - run: echo "All required jobs have now completed"
+  - run:
+      name: Gather Kubernetes state after run
+      environment:
+        LOG_DIR: *log_dir
+      command: |
+        if [ -f workspace/env_name ] && [ "$(cat workspace/env_name)" != "null" ]; then
+          DEV_ENV_NAME=$(cat workspace/env_name)
+        else
+          DEV_ENV_NAME=<< parameters.e2e-env-name >>
+        fi
+        # Read components into an array directly from the command output
+        components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
+        # Gather summary state of all pods in the namespace
+        kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/pods-summary-state-after-run.log"
+        # Gather detailed state of all pods in the namespace
+        for ((i = 0; i < ${#components[@]} - 1; i++)); do
+            component=${components[$i]}
+            echo "Capturing logs for component $component"
+            kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${component}-k8-state.log" &
+         done
+         # Handle the last component separately to introduce blocking.If all components' log collection is done as non blocking tasks,
+         # the circleci step will terminate.So having last component as blocking ensures the collect logs step continues executing
+         last_component=${components[${#components[@]}-1]}
+         kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${last_component}-k8-state.log"
+
   - store_artifacts:
       name: Store Logs
       path: *log_dir
