@@ -30,7 +30,7 @@ steps:
         COMPONENT_LOG_DIR: &component_log_dir component-logs
         KUBE_STATE_DIR: &kube_state_dir kubernetes-state
       command: |
-        mkdir -p "${LOG_DIR:?}/{${component-logs:?},${kubernetes-state:?}}"
+        mkdir -p "${LOG_DIR:?}/{${COMPONENT_LOG_DIR:?},${KUBE_STATE_DIR:?}}"
   - run:
       name: Gather Kubernetes state before run
       environment:
