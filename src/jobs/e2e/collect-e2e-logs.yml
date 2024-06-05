@@ -28,7 +28,7 @@ steps:
       environment:
         LOG_DIR: &log_dir  /tmp/logs-<< parameters.e2e-env-name >>
         COMPONENT_LOG_DIR: &component_log_dir component-logs
-        KUBE_STATE_DIR: &kube_state_dir kubernetes-state"
+        KUBE_STATE_DIR: &kube_state_dir kubernetes-state
       command: |
         mkdir -p "${LOG_DIR:?}/{${component-logs:?},${kubernetes-state:?}}"
   - run:
