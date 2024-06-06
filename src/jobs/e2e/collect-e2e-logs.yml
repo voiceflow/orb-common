@@ -127,4 +127,4 @@ steps:
   - store_artifacts:
       name: Store compressed logs
       path: /tmp/logs.tar.gz
-      destination: compressed-logs
+      destination: compressed-logs.tar.gz
