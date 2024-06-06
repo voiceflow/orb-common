@@ -1,4 +1,4 @@
-docker: # run the steps with Docker
+docker: # run the steps with Docker.
   - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-e2e-image:v1
     user: root
     aws_auth:
@@ -11,3 +11,4 @@ docker: # run the steps with Docker
       MKCERT_VERSION: v1.4.0
       NODE_VERSION: v20.10.0
       NODE_OPTIONS: --max_old_space_size=8192
+resource_class: xlarge
