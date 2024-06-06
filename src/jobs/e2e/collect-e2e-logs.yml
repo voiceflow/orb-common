@@ -1,5 +1,4 @@
 description: Prepare an existing environment for e2e tests
-executor: default-executor
 
 parameters:
     cluster:
@@ -13,6 +12,11 @@ parameters:
       type: string
       description: Path to the env_name file
       default: "/home/circleci/voiceflow/env_name.txt"
+    executor:
+     description: Executor to run the command on
+     type: executor
+     default: default-executor
+executor: << parameters.executor >>
 steps:
   - install-vfcli:
       init-cluster: << parameters.cluster >>
