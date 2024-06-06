@@ -118,7 +118,7 @@ steps:
         LOG_DIR: *log_dir
       command: |
         mkdir -p /tmp/logs/compressed
-        cp -r ${ LOG_DIR:?} /tmp/logs/compressed
+        cp -r ${LOG_DIR:?} /tmp/logs/compressed
         tar -czf /tmp/logs.tar.gz /tmp/logs/compressed
   - store_artifacts:
       name: Store uncompressed logs
