@@ -1,13 +1,11 @@
 description: Waiter job to be used as a dependency for the Release and Delete job
 docker:
   - image: circleci/node
-
 parameters:
   waiter-duration:
-    type: number
+    type: integer
     description: Waiter Sleep time
     default: 5
-
 steps:
   - run: |
       ## The waiter job keeps looping through to check if all running jobs have been completed
