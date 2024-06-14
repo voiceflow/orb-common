@@ -48,7 +48,7 @@ steps:
           continue
         elif [[ $status -eq 2 ]]; then
           echo "All jobs completed."
-          break
+          exit 0
         else
           echo "Jobs are still running, checking again in << parameters.wait-duration >> seconds..."
           sleep << parameters.wait-duration >>
