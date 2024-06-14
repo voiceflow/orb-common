@@ -119,7 +119,7 @@ steps:
         LOG_DIR: *log_dir
       command: |
         tar -czf /tmp/logs.tar.gz ${LOG_DIR:?}
-    
+
   - store_artifacts:
       name: Store compressed logs
       path: /tmp/logs.tar.gz
