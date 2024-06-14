@@ -101,29 +101,25 @@ steps:
         components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
         # Gather summary state of all pods in the namespace
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/pods-summary-state-after-run.log"
-        # Gather detailed state of all pods in the namespace
-        for ((i = 0; i < ${#components[@]} - 1; i++)); do
+        # Gather detailed state of all pods in the namespace.
+        for ((i = 0; i < ${#components[@]}; i++)); do
             component=${components[$i]}
             echo "Capturing logs for component $component"
             kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/${component}-k8-state.log" &
          done
-         # Handle the last component separately to introduce blocking.If all components' log collection is done as non blocking tasks,
-         # the circleci step will terminate.So having last component as blocking ensures the collect logs step continues executing
-         last_component=${components[${#components[@]}-1]}
-         kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/${last_component}-k8-state.log"
+         wait
+  - store_artifacts:
+      name: Store uncompressed logs
+      path: *log_dir
+      destination: logs
 
   - run:
       name: Compress logs
       environment:
         LOG_DIR: *log_dir
       command: |
-        mkdir -p /tmp/logs/compressed
-        cp -r ${LOG_DIR:?} /tmp/logs/compressed
-        tar -czf /tmp/logs.tar.gz /tmp/logs/compressed
-  - store_artifacts:
-      name: Store uncompressed logs
-      path: *log_dir
-      destination: logs
+        tar -czf /tmp/logs.tar.gz ${LOG_DIR:?}
+
   - store_artifacts:
       name: Store compressed logs
       path: /tmp/logs.tar.gz
