@@ -108,11 +108,6 @@ steps:
             kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/${component}-k8-state.log" &
          done
          wait
-         # Handle the last component separately to introduce blocking.If all components' log collection is done as non blocking tasks,
-         # the circleci step will terminate.So having last component as blocking ensures the collect logs step continues executing
-        #  last_component=${components[${#components[@]}-1]}
-        #  kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/${last_component}-k8-state.log"
-
   - store_artifacts:
       name: Store uncompressed logs
       path: *log_dir
@@ -124,7 +119,7 @@ steps:
         LOG_DIR: *log_dir
       command: |
         tar -czf /tmp/logs.tar.gz ${LOG_DIR:?}
-        
+    
   - store_artifacts:
       name: Store compressed logs
       path: /tmp/logs.tar.gz
