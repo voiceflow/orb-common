@@ -10,18 +10,25 @@ steps:
   - run: |
       ## Function to check if the API request was successful and process the response
       check_jobs() {
+        echo "Fetching jobs from CircleCI API..."
         response=$(curl --silent --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CCI_Token")
+        
         if [[ $? -ne 0 ]]; then
           echo "Error: Failed to fetch jobs from CircleCI API"
           return 1
         fi
 
+        echo "API response received:"
+        echo "$response"
+
         if echo "$response" | jq -e . >/dev/null 2>&1; then
           statuses=$(echo "$response" | jq -r '.items[]|select(.name != "vfcommon/waiter")|.status')
           if [[ -z "$statuses" ]]; then
-            echo "No jobs found or unexpected response format"
+            echo "No job statuses found or unexpected response format"
             return 1
           fi
+          echo "Job statuses extracted:"
+          echo "$statuses"
           echo "$statuses"
         else
           echo "Error: Malformed JSON response"
@@ -36,13 +43,13 @@ steps:
         statuses=$(check_jobs)
         if [[ $? -ne 0 ]]; then
           echo "Retrying in 10 seconds..."
-          sleep << parameters.waiter-duration >>
+          sleep 10
           continue
         fi
 
         if echo "$statuses" | grep -q "running"; then
           echo "Jobs are still running, checking again in 10 seconds..."
-          sleep << parameters.waiter-duration >>
+          sleep 10
         else
           echo "All jobs completed."
           break
