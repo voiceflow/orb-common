@@ -113,18 +113,18 @@ steps:
         #  last_component=${components[${#components[@]}-1]}
         #  kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/${last_component}-k8-state.log"
 
+  - store_artifacts:
+      name: Store uncompressed logs
+      path: *log_dir
+      destination: logs
+
   - run:
       name: Compress logs
       environment:
         LOG_DIR: *log_dir
       command: |
-        mkdir -p /tmp/logs/compressed
-        cp -r ${LOG_DIR:?} /tmp/logs/compressed
-        tar -czf /tmp/logs.tar.gz /tmp/logs/compressed
-  - store_artifacts:
-      name: Store uncompressed logs
-      path: *log_dir
-      destination: logs
+        tar -czf /tmp/logs.tar.gz ${LOG_DIR:?}
+        
   - store_artifacts:
       name: Store compressed logs
       path: /tmp/logs.tar.gz
