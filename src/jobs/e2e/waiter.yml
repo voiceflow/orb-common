@@ -2,17 +2,66 @@ description: Waiter job to be used as a dependency for the Release and Delete jo
 docker:
   - image: circleci/node
 parameters:
-  waiter-duration:
+  wait-duration:
     type: integer
     description: Waiter Sleep time
-    default: 5
+    default: 10
 steps:
-  - run: |
-      ## The waiter job keeps looping through to check if all running jobs have been completed
-      ## The job could either be successful or failed. Once there are jobs in running state
-      ## it ends the loop and trigger the downstream job that depends on it
-      while [[ $(curl --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CCI_Token"| jq -r '.items[]|select(.name != "vfcommon/waiter")|.status' | grep -c "running") -gt 0 ]]
-        do
-          sleep << parameters.waiter-duration >>
+  - run:
+      name: Check if all jobs have completed
+      command: |
+        # Global variable to store the status code
+        check_jobs_status=0
+        ## Function to check if the API request was successful and process the response
+        check_jobs() {
+          echo "Fetching jobs from CircleCI API..."
+          response=$(curl --silent --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CIRCLECI_API_TOKEN")
+          if [[ $? -ne 0 ]]; then
+            echo "Error: Failed to fetch jobs from CircleCI API"
+            check_jobs_status=1
+            return
+          fi
+          echo "API response received:" >&2
+          echo "$response" >&2
+          if echo "$response" | jq -e . >/dev/null 2>&1; then
+            statuses=$(echo "$response" | jq -r '.items[] | select(.name != "vfcommon/waiter") | .status')
+            if [[ -z "$statuses" ]]; then
+              echo "No job statuses found or unexpected response format"
+              check_jobs_status=1
+              return
+            fi
+            echo "Job statuses extracted:"
+            echo "$statuses"
+          else
+            echo "Error: Malformed JSON response"
+            check_jobs_status=1
+            return
+          fi
+          ## Check if any job is still running
+          if echo "$statuses" | grep -q "running"; then
+            echo "There are still running jobs."
+            check_jobs_status=0  # jobs are still running
+          else
+            echo "No jobs are running."
+            check_jobs_status=2  # all jobs are completed successfully
+          fi
+        }
+        ## The waiter job keeps looping through to check if all running jobs have been completed
+        while true; do
+          echo "Running check_jobs function..."
+          check_jobs
+          status=$check_jobs_status
+          echo "Status returned from check_jobs: $status"
+          if [[ $status -eq 1 ]]; then
+            echo "Retrying in << parameters.wait-duration >> seconds due to error..."
+            sleep << parameters.wait-duration >>
+            continue
+          elif [[ $status -eq 2 ]]; then
+            echo "All jobs completed successfully."
+            exit 0  # success
+          else
+            echo "Jobs are still running, checking again in << parameters.wait-duration >> seconds..."
+            sleep << parameters.wait-duration >>
+          fi
         done
   - run: echo "All required jobs have now completed"
