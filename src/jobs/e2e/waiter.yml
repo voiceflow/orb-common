@@ -5,7 +5,7 @@ parameters:
   wait-duration:
     type: integer
     description: Waiter Sleep time
-    default: 5
+    default: 10
 steps:
   - run:
       name: Check if all jobs have completed
