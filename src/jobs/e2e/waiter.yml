@@ -11,7 +11,7 @@ steps:
       ## Function to check if the API request was successful and process the response
       check_jobs() {
         echo "Fetching jobs from CircleCI API..."
-        response=$(curl --silent --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CCI_Token")
+        response=$(curl --silent --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CIRCLECI_API_TOKEN")
         if [[ $? -ne 0 ]]; then
           echo "Error: Failed to fetch jobs from CircleCI API"
           return 1
