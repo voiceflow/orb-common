@@ -7,7 +7,7 @@ parameters:
     description: Waiter Sleep time
     default: 5
 steps:
-  - run: 
+  - run:
       name: Check if all jobs have completed
       command: |
         # Global variable to store the status code
