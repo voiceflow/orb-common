@@ -2,7 +2,7 @@ description: Waiter job to be used as a dependency for the Release and Delete jo
 docker:
   - image: circleci/node
 parameters:
-  waiter-duration:
+  wait-duration:
     type: integer
     description: Waiter Sleep time
     default: 5
@@ -19,35 +19,39 @@ steps:
         echo "API response received:"
         echo "$response"
         if echo "$response" | jq -e . >/dev/null 2>&1; then
-          statuses=$(echo "$response" | jq -r '.items[]|select(.name != "vfcommon/waiter")|.status')
+          statuses=$(echo "$response" | jq -r '.items[] | select(.name != "vfcommon/waiter") | .status')
           if [[ -z "$statuses" ]]; then
             echo "No job statuses found or unexpected response format"
             return 1
           fi
           echo "Job statuses extracted:"
           echo "$statuses"
-          echo "$statuses"
         else
           echo "Error: Malformed JSON response"
           return 1
         fi
+        ## Check if any job is still running
+        if echo "$statuses" | grep -q "running"; then
+          return 0
+        else
+          return 2
+        fi
       }
       ## The waiter job keeps looping through to check if all running jobs have been completed
-      ## The job could either be successful or failed. Once there are jobs in running state
-      ## it ends the loop and trigger the downstream job that depends on it
       while true; do
-        statuses=$(check_jobs)
-        if [[ $? -ne 0 ]]; then
-          echo "Retrying in 10 seconds..."
-          sleep 10
+        check_jobs
+        status=$?
+
+        if [[ $status -eq 1 ]]; then
+          echo "Retrying in << parameters.wait-duration >> seconds..."
+          sleep << parameters.wait-duration >>
           continue
-        fi
-        if echo "$statuses" | grep -q "running"; then
-          echo "Jobs are still running, checking again in 10 seconds..."
-          sleep 10
-        else
+        elif [[ $status -eq 2 ]]; then
           echo "All jobs completed."
           break
+        else
+          echo "Jobs are still running, checking again in << parameters.wait-duration >> seconds..."
+          sleep << parameters.wait-duration >>
         fi
       done
   - run: echo "All required jobs have now completed"
