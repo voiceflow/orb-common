@@ -101,7 +101,7 @@ steps:
         components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
         # Gather summary state of all pods in the namespace
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/pods-summary-state-after-run.log"
-        # Gather detailed state of all pods in the namespace
+        # Gather detailed state of all pods in the namespace.
         for ((i = 0; i < ${#components[@]}; i++)); do
             component=${components[$i]}
             echo "Capturing logs for component $component"
