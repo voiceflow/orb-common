@@ -20,6 +20,7 @@ steps:
         echo "Contents of << parameters.env-name-path >>:"
         cat << parameters.env-name-path >>
         if [[ -f << parameters.env-name-path >> ]]; then
+          echo "Using env_name from file << parameters.env-name-path >> in the suspend action"
           env_name=$(cat << parameters.env-name-path >>)
         else
           env_name="<< parameters.env-name >>"
