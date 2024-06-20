@@ -20,7 +20,7 @@ steps:
   - restore_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
-      name: Delete Env << parameters.env-name >>
+      name: Release or Delete Env
       when: << parameters.when >>
       command: |
         if [[ $force == true ]]; then
@@ -28,14 +28,18 @@ steps:
         else
           if [[ -f << parameters.env-name-path >> ]]; then
             env_name=$(cat << parameters.env-name-path >>)
+            echo "Env: $env_name will be released"
           else
             env_name="null"
+            echo "Env name file was not found. Will proceed to deleting the environment."
           fi
           if [[ "$env_name" != "null" ]] && [[ -n "$env_name" ]]; then
+            echo "Releasing the environment..... $env_name"
             vfcli pool release-env --env-name "$env_name"
             vfcli env resume "$env_name" --interactive false
             vfcli track attach --branch master --components all --name "$env_name" --interactive false
           else
+            echo "Kick-starting the deletion of the environment."
             vfcli env delete --name "<< parameters.env-name >>" --interactive false
           fi
         fi
