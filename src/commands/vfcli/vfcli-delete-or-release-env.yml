@@ -38,6 +38,7 @@ steps:
             vfcli pool release-env --env-name "$env_name"
             vfcli env resume "$env_name" --interactive false
             vfcli track attach --branch master --components all --name "$env_name" --interactive false
+            vfcli pool free-env --env-name "$env_name"
           else
             echo "Kick-starting the deletion of the environment."
             vfcli env delete --name "<< parameters.env-name >>" --interactive false
