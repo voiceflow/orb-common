@@ -51,6 +51,7 @@ steps:
                   name: Clean cache directory
                   command: find node_modules/.cache/turbo -type f -mtime +7 -delete
               - save_cache:
+                  name: Save turborepo cache
                   paths:
                     - node_modules/.cache/turbo
                   # Only use << parameters.cache_branch >> if it is not empty

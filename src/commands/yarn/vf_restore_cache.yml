@@ -9,5 +9,6 @@ parameters:
     default: ''
 steps:
   - restore_cache:
+      name: Restore yarn cache
       keys:
         - node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
