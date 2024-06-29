@@ -27,7 +27,8 @@ steps:
   - when:
       condition: << parameters.checkout >>
       steps:
-        - checkout
+        - checkout_clone:
+            clone_type: treeless
   - add_ssh_keys: # To enable write access to repository
       fingerprints:
         - << parameters.ssh_key >>
@@ -36,7 +37,7 @@ steps:
   - run:
       name: << parameters.step_name >>
       command: |
-        git fetch
+        git checkout << parameters.source_branch_name >>
         git checkout << parameters.destination_branch_name >>
         git rebase << parameters.source_branch_name >>
         git push origin << parameters.destination_branch_name >>

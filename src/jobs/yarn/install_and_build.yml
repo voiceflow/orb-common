@@ -85,7 +85,7 @@ steps:
   - when:
       condition: "<< parameters.use_shallow_clone >>"
       steps:
-        - checkout_shallow_clone
+        - checkout_clone
   - unless:
       condition: "<< parameters.use_shallow_clone >>"
       steps:
