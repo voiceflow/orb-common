@@ -9,7 +9,7 @@ parameters:
     type: steps
     default: []
 steps:
-  - checkout_shallow_clone
+  - checkout_clone
   - set-beta-version:
       working_directory: << parameters.working_directory >>
   - steps: << parameters.prepublish_steps >>

@@ -36,7 +36,7 @@ parameters:
     type: boolean
     default: false
 steps:
-  - checkout_shallow_clone
+  - checkout_clone
   - add_ssh_keys: # To enable write access to repository
       fingerprints:
         - << parameters.ssh_key >>

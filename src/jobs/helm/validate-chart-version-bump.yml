@@ -9,7 +9,7 @@ parameters:
     type: string
     default: ""
 steps:
-  - checkout_shallow_clone
+  - checkout_clone
   - helm-add-repos
   - run:
       name: Ensure chart versions have been bumped

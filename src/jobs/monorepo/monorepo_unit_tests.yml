@@ -13,7 +13,7 @@ parameters:
     default: false
 executor: << parameters.executor >>
 steps:
-  - checkout_shallow_clone
+  - checkout_clone
   - attach_workspace:
       at: ~/voiceflow
   - install_node_modules
