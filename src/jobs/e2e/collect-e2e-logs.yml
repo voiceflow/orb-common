@@ -109,11 +109,11 @@ steps:
          done
          wait
   - run:
-      name: Gather Kubernetes events 
+      name: Gather Kubernetes events
       environment:
         LOG_DIR: *log_dir
         KUBE_STATE_DIR: *kube_state_dir
-      command: |       
+      command: |
         if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
             DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
         else
