@@ -122,7 +122,24 @@ steps:
         # Gather all events in the namespace except those from external-secrets and secret-store
         # These doppler sync events are very verbose and are not relevant to the e2e tests
         # Kubernetes events have a ttl of 1 hr.The way we have implemented the events capture allows us to view them in an ordered way that allows us to correlate them with the e2e test run
-        kubectl get event -n "${DEV_ENV_NAME:?}" --field-selector 'source!=external-secrets,source!=secret-store' >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/k8-events.log"
+        kubectl get events -n "${DEV_ENV_NAME:?}" -o json | jq -r  '
+          ["LAST-SEEN", "NAME", "REASON", "SOURCE_COMPONENT", "TYPE", "MESSAGE"],
+            (.items[]
+               | select(.source.component != "external-secrets")
+               | select(.source.component != "secret-store")
+              | [
+                .lastTimestamp,
+                .metadata.name,
+                (.reason // "-"),
+                (.source.component // "-"),
+                (.type // "-"),
+                (.message // "-")
+              ]
+            )
+            | map(. | tostring | gsub("\n"; " "))
+            | @tsv
+          ' | column -t -s $'\t' >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/k8-events.log"
+
 
   - store_artifacts:
       name: Store uncompressed logs
