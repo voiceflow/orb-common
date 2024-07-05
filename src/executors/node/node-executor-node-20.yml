@@ -4,12 +4,12 @@ parameters:
     type: string
     default: medium+
   default_node_memory:
-    description: Default node memory
+    description: Default node memory.
     type: string
     default: '4096'
   tag:
     type: string
-    default: v3
+    default: 20.11.1-vf-4
 working_directory: ~/voiceflow
 docker:
   - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:<< parameters.tag >>

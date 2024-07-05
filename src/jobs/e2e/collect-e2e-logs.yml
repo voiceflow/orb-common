@@ -108,6 +108,40 @@ steps:
             kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/${component}-k8-state.log" &
          done
          wait
+  - run:
+      name: Gather Kubernetes events
+      environment:
+        LOG_DIR: *log_dir
+        KUBE_STATE_DIR: *kube_state_dir
+      command: |
+        if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
+            DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
+        else
+            DEV_ENV_NAME=<< parameters.e2e-env-name >>
+        fi
+        # Gather all events in the namespace except those from external-secrets and secret-store
+        # These doppler sync events are very verbose and are not relevant to the e2e tests
+        # Kubernetes events have a ttl of 1 hr, return all relevant namespace events.Use jq to return actual timestamp of event so it can be corelated to service logs.
+        # The entries are then manipulated to return only the required fields in readable format
+        kubectl get events -n "${DEV_ENV_NAME:?}" -o json | jq -r  '
+          ["LAST-SEEN", "NAME", "REASON", "SOURCE_COMPONENT", "TYPE", "MESSAGE"],
+            (.items[]
+               | select(.source.component != "external-secrets")
+               | select(.source.component != "secret-store")
+              | [
+                .lastTimestamp,
+                .metadata.name,
+                (.reason // "-"),
+                (.source.component // "-"),
+                (.type // "-"),
+                (.message // "-")
+              ]
+            )
+            | map(. | tostring | gsub("\n"; " "))
+            | @tsv
+          ' | column -t -s $'\t' >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/k8-events.log"
+
+
   - store_artifacts:
       name: Store uncompressed logs
       path: *log_dir
