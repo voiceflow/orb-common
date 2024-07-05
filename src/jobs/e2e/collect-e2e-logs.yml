@@ -122,7 +122,7 @@ steps:
         # Gather all events in the namespace except those from external-secrets and secret-store
         # These doppler sync events are very verbose and are not relevant to the e2e tests
         # Kubernetes events have a ttl of 1 hr, return all relevant namespace events.Use jq to return actual timestamp of event so it can be corelated to service logs.
-        # The entries are then manipulated to return only the required fields in readable format  
+        # The entries are then manipulated to return only the required fields in readable format
         kubectl get events -n "${DEV_ENV_NAME:?}" -o json | jq -r  '
           ["LAST-SEEN", "NAME", "REASON", "SOURCE_COMPONENT", "TYPE", "MESSAGE"],
             (.items[]
