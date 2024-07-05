@@ -4,7 +4,7 @@ parameters:
     type: string
     default: medium+
   default_node_memory:
-    description: Default node memory
+    description: Default node memory.
     type: string
     default: '4096'
   tag:
