@@ -91,6 +91,10 @@ parameters:
     description: named builder for use with DLC
     type: string
     default: ""
+  update_track_file:
+    description: Determines if the track file will be updated or not
+    type: boolean
+    default: true
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -143,4 +147,5 @@ steps:
         ENABLE_LOAD: "<< parameters.enable_load >>"
         PLATFORM: "<< parameters.platform >>"
         BUILDER_NAME: "<< parameters.builder_name >>"
+        UPDATE_TRACK_FILE: << parameters.update_track_file >>
       command: <<include(scripts/track/update_track.sh)>>

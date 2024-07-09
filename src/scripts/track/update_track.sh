@@ -17,6 +17,8 @@ echo "BUILDER_NAME: ${BUILDER_NAME-}"
 echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
 echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
 echo "ENABLE_LOAD: ${ENABLE_LOAD:=0}"
+echo "UPDATE_TRACK_FILE: ${UPDATE_TRACK_FILE:=0}"
+
 
 # force string to array
 read -r -a EXTRA_BUILD_ARGS <<< "$EXTRA_BUILD_ARGS"
@@ -149,11 +151,16 @@ IMAGE_SHA=$(crane digest "$IMAGE_NAME")
 # Remove the sha256: string
 IMAGE_SHA="${IMAGE_SHA//sha256:/}"
 
-# update the track
-TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
-echo "TRACK: $TRACK"
+if (( UPDATE_TRACK_FILE )); then
+    # update the track
+    TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
+    echo "TRACK: $TRACK"
 
-# the file /tmp/$TRACK is downloaded in the check_track_exists step
-yq -y -i --arg tag "${IMAGE_TAG}" ".\"$COMPONENT\".image.tag=\$tag" "/tmp/$TRACK"
-yq -y -i --arg sha "${IMAGE_SHA}" ".\"$COMPONENT\".image.sha=\$sha" "/tmp/$TRACK"
-aws s3 cp "/tmp/$TRACK" "s3://$BUCKET/$TRACK"
+    # the file /tmp/$TRACK is downloaded in the check_track_exists step
+    yq -y -i --arg tag "${IMAGE_TAG}" ".\"$COMPONENT\".image.tag=\$tag" "/tmp/$TRACK"
+    yq -y -i --arg sha "${IMAGE_SHA}" ".\"$COMPONENT\".image.sha=\$sha" "/tmp/$TRACK"
+    aws s3 cp "/tmp/$TRACK" "s3://$BUCKET/$TRACK"
+else
+    echo "Skipping track update"
+fi
+

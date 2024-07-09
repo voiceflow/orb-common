@@ -95,6 +95,10 @@ parameters:
     description: named builder for use with DLC
     type: string
     default: ""
+  update_track_file:
+    description: Determines if the track file will be updated or not
+    type: boolean
+    default: true
 steps:
   - update_track:
       image_repo: "<< parameters.image_repo >>"
@@ -120,3 +124,4 @@ steps:
       enable_dlc: "<< parameters.enable_dlc >>"
       enable_load: "<< parameters.enable_load >>"
       builder_name: "<< parameters.builder_name >>"
+      update_track_file: "<< parameters.update_track_file >>"
