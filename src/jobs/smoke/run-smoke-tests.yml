@@ -29,6 +29,9 @@ parameters:
     type: string
     description: Path to the env_name file
     default: "/home/circleci/voiceflow/env_name.txt"
+  notify_on_fail:
+      type: boolean
+      default: true
 steps:
   - clone_repo:
       github_repo_name: automated-testing
@@ -82,4 +85,11 @@ steps:
   - store_artifacts:
       path: apps/smoke-test-runner/cypress/logs
       destination: logs
-
+  - when:
+      condition: << parameters.notify_on_fail >>
+      steps:
+        - notify_slack:
+            channel: test_failures
+            event: fail
+            mentions: "@eng_dx"
+            template: basic_fail_1
