@@ -31,6 +31,7 @@ steps:
       command: |
         mkdir -p "${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}"
         mkdir -p "${LOG_DIR:?}/${KUBE_STATE_DIR:?}"
+        mkdir -p "${LOG_DIR:?}/${POD_STATUS_DIR:?}"
   - run:
       name: Gather Kubernetes state before run
       environment:
@@ -76,6 +77,32 @@ steps:
             stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>"${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$last_component.log" --since 5m
         }
         capture_logs
+
+  - run:
+      name: Monitor Pod Status
+      environment:
+        POD_STATUS_DIR: *pod_status_dir
+      background: true
+      command: |
+        function monitor_pods() {
+            if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
+                DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
+            else
+                DEV_ENV_NAME=<< parameters.e2e-env-name >>
+            fi
+            while true; do
+                kubectl get pods -n $DEV_ENV_NAME -o json | jq -r '
+                  .items[] |
+                  select(.status.containerStatuses != null) |
+                  .metadata.name as $pod_name |
+                  .status.containerStatuses[] |
+                  select(.restartCount > 0 or .state.waiting.reason == "CrashLoopBackOff") |
+                  "\($pod_name) \(.name) \(.restartCount) \(.state.waiting.reason // "-")"
+                ' >> "${POD_STATUS_DIR:?}/pod-status.log"
+                sleep 60
+            done
+        }
+        monitor_pods
 
   - run:
      name: Wait for smoke-tests job to complete
@@ -141,7 +168,20 @@ steps:
             | @tsv
           ' | column -t -s $'\t' >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/k8-events.log"
 
+  - run:
+      name: Summarize Pod Restarts and CrashLoopBacks
+      environment:
+        POD_STATUS_DIR: *pod_status_dir
+        LOG_DIR: *log_dir
+      command: |
+        echo "Summarizing pod restarts and CrashLoopBacks"
+        awk '{pod[$1]++} END {for (p in pod) print p, pod[p]}' "${POD_STATUS_DIR:?}/pod-status.log" > "${LOG_DIR:?}/pod-restarts-summary.log"
 
+  - store_artifacts:
+      name: Store pod status summary
+      path: "${LOG_DIR:?}/pod-restarts-summary.log"
+      destination: pod-status-summary/pod-restarts-summary.log
+             
   - store_artifacts:
       name: Store uncompressed logs
       path: *log_dir
