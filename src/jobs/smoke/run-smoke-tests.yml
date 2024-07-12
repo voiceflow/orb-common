@@ -70,7 +70,7 @@ steps:
         - apps/smoke-test-runner/cypress/results/*
   - run:
       name: "Check Test Results"
-      working_directory: ~/voiceflow/apps/smoke-test-runner/cypress/results
+      working_directory: ~/project/apps/smoke-test-runner/cypress/results
       command: |
         # list all report files
         failures=$(find ~+ -type f -name "*.xml" -print0 \
