@@ -63,11 +63,26 @@ steps:
       environment:
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
-      command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >>
+      command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >> || true
   - persist_to_workspace:
       root: "."
       paths:
         - apps/smoke-test-runner/cypress/results/*
+  - run:
+      name: "Check Test Results"
+      working_directory: ~/voiceflow/apps/smoke-test-runner/cypress/results
+      command: |
+        # list all report files
+        failures=$(find ~+ -type f -name "*.xml" -print0 \
+          # convert each XML file into JSON
+          | xargs -0 -I{} npx --package=fast-xml-parser -- fxparser "{}" \
+          # count the total number of failures
+          | jq -s '[.[].testsuites["@_failures"]] | add')
+
+        if [ $failures -gt 0 ]; then
+          echo "Smoke tests failed"
+          npx xunit-viewer -r . -c
+        fi
   - save_cache:
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
