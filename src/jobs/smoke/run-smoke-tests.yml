@@ -72,12 +72,15 @@ steps:
       name: "Check Test Results"
       working_directory: ~/project/apps/smoke-test-runner/cypress/results
       command: |
-        # list all report files
+        # install yq for xml parsing
+        sudo apt install yq
+
+        # 1. list all report files
+        # 2. query the number of failures from each report
+        # 3. sum the total number of failures
         failures=$(find ~+ -type f -name "*.xml" -print0 \
-          # convert each XML file into JSON
-          | xargs -0 -I{} npx --package=fast-xml-parser -- fxparser "{}" \
-          # count the total number of failures
-          | jq -s '[.[].testsuites["@_failures"]] | add')
+          | xargs -0 yq -o=json '.testsuites["+@failures"] | to_number'
+          | jq -s add)
 
         if [ $failures -gt 0 ]; then
           echo "Smoke tests failed"
