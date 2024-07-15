@@ -73,6 +73,7 @@ steps:
       working_directory: ~/project/apps/smoke-test-runner/cypress/results
       command: |
         # install yq for xml parsing
+        curl -sSL https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository | sudo bash
         sudo apt install yq
 
         # 1. list all report files
