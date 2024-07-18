@@ -12,6 +12,9 @@ parameters:
     type: string
     default: "test_failures"
     description: "the channel where test failures reports will be posted"
+  mention:
+    type: string
+    default: "@eng_quality"
 steps:
   - run:
       name: Report Test Failures
@@ -19,4 +22,5 @@ steps:
         npx --package=@voiceflow/test-cli -- \
           testcli report << parameters.e2e-env-name >> \
             --smokeRef << parameters.branch-or-commit >> \
-            --channel << parameters.channel >>
+            --channel << parameters.channel >> \
+            --mention << parameters.mention >>
