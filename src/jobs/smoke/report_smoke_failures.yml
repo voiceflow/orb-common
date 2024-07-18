@@ -20,7 +20,8 @@ steps:
       name: Report Test Failures
       command: |
         npx --package=@voiceflow/test-cli -- \
-          testcli report << parameters.e2e-env-name >> \
+          testcli report \
+            --environment << parameters.e2e-env-name >> \
             --smokeRef << parameters.branch-or-commit >> \
             --channel << parameters.channel >> \
             --mention << parameters.mention >>
