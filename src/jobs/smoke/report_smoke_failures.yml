@@ -1,4 +1,4 @@
-executor: vfcommon/node-executor-node-20
+executor: node-executor-node-20
 
 steps:
   - run:
