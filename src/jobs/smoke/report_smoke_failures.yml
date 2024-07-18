@@ -14,7 +14,7 @@ parameters:
     description: "the channel where test failures reports will be posted"
   mention:
     type: string
-    default: "@eng_quality"
+    default: "<!subteam^S07CKAVJPLG>"
 steps:
   - run:
       name: Report Test Failures
