@@ -24,4 +24,4 @@ steps:
             --environment << parameters.e2e-env-name >> \
             --smokeRef << parameters.branch-or-commit >> \
             --channel << parameters.channel >> \
-            --mention << parameters.mention >>
+            --mention '<< parameters.mention >>'
