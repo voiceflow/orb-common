@@ -16,6 +16,7 @@ parameters:
     type: string
     default: "<!subteam^S07CKAVJPLG>"
 steps:
+  - authenticate_npm
   - run:
       name: Report Test Failures
       command: |
