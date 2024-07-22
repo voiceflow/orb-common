@@ -6,8 +6,7 @@ parameters:
     description: Name of the environment to create
 steps:
   - run:
-      name: Release or Delete Env
-      when: << parameters.when >>
+      name: Reset Database and Free Environment
       command: |
         env_name="<< parameters.env-name >>"
         echo "Releasing the environment..... $env_name"
