@@ -16,6 +16,10 @@ parameters:
     type: string
     description: Path to the env_name file
     default: "/home/circleci/voiceflow/env_name.txt"
+  reset-db:
+    type: boolean
+    description: Whether to reset the database
+    default: false
 steps:
   - restore_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
@@ -36,6 +40,26 @@ steps:
           if [[ "$env_name" != "null" ]] && [[ -n "$env_name" ]]; then
             echo "Releasing the environment..... $env_name"
             vfcli pool release-env --env-name "$env_name"
+            if [[ << parameters.reset-db >> == true ]]; then
+              echo "Resetting the database for $env_name"
+              vfcli pool release-env --env-name "$env_name"
+              echo "Triggering pipeline with env-name parameter"
+              response=$(curl -s -o /dev/null -w "%{http_code}" \
+                --request POST \
+                --url "https://circleci.com/api/v2/project/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pipeline" \
+                --header "Circle-Token: ${CIRCLECI_API_TOKEN}" \
+                --header "content-type: application/json" \
+                --data "{\"parameters\":{\"env-name\":\"$env_name\"}}")
+              
+              if [[ $response == "201" ]]; then
+                echo "Pipeline triggered successfully. Exiting with success."
+                exit 0
+              else
+                echo "Failed to trigger pipeline. HTTP status code: $response"
+                exit 1
+              fi
+            fi
+            // If reset DB is not enabled, then the environment will be released within this pipeline
             vfcli env resume "$env_name" --interactive false
             vfcli track attach --branch master --components all --name "$env_name" --interactive false --no-circleci
             vfcli pool free-env --env-name "$env_name"
