@@ -50,7 +50,6 @@ steps:
                 --header "Circle-Token: ${CIRCLECI_API_TOKEN}" \
                 --header "content-type: application/json" \
                 --data "{\"parameters\":{\"env-name\":\"$env_name\"}}")
-              
               if [[ $response == "201" ]]; then
                 echo "Pipeline triggered successfully. Exiting with success."
                 exit 0
