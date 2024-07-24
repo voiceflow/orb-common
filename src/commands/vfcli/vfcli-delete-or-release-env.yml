@@ -58,7 +58,6 @@ steps:
                 exit 1
               fi
             fi
-            // If reset DB is not enabled, then the environment will be released within this pipeline
             vfcli env resume "$env_name" --interactive false
             vfcli track attach --branch master --components all --name "$env_name" --interactive false --no-circleci
             vfcli pool free-env --env-name "$env_name"
