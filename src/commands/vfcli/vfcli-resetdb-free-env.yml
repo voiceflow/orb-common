@@ -13,5 +13,4 @@ steps:
         vfcli env resume "$env_name" --interactive false
         vfcli track attach --branch master --components all --name "$env_name" --interactive false --no-circleci
         vfcli env database reset --name "$env_name"
-        vfcli component restart --name "$env_name" --wait
         vfcli pool free-env --env-name "$env_name"
