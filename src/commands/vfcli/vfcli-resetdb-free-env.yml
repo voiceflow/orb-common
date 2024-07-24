@@ -3,7 +3,7 @@ description: Uses vfcli to reset database and free an environment back into the 
 parameters:
   env-name:
     type: string
-    description: Name of the environment to create
+    description: Name of the environment to reset database and free back into the pool
 steps:
   - run:
       name: Reset Database and Free Environment
