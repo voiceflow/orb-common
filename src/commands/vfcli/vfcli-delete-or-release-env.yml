@@ -51,7 +51,7 @@ steps:
                 --header "content-type: application/json" \
                 --data "{\"parameters\":{\"e2e_env_name\":\"$env_name\"}}")
               if [[ $response == "201" ]]; then
-                echo "Pipeline triggered successfully. Exiting with success."
+                echo "Env Release Pipeline triggered successfully. Exiting with success."
                 exit 0
               else
                 echo "Failed to trigger pipeline. HTTP status code: $response"
