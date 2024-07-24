@@ -67,5 +67,3 @@ steps:
             vfcli env delete --name "<< parameters.env-name >>" --interactive false
           fi
         fi
-
-  
