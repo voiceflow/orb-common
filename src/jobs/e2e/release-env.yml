@@ -14,9 +14,14 @@ parameters:
     type: string
     description: When to run this command
     default: always
+  reset-db:
+    type: boolean
+    description: Whether to reset the database
+    default: false
 steps:
   - install-vfcli:
       init-cluster: << parameters.cluster >>
   - vfcli-delete-or-release-env:
       env-name: << parameters.env-name >>
+      reset-db: << parameters.reset-db >>
       when: << parameters.when >>
