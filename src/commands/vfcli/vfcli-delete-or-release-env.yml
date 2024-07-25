@@ -27,6 +27,7 @@ steps:
       name: Release or Delete Env
       when: << parameters.when >>
       command: |
+        force="<< parameters.force >>"
         if [[ $force == true ]]; then
           vfcli env delete --name "<< parameters.env-name >>" --interactive false --force
         else
