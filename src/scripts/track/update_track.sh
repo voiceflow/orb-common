@@ -116,7 +116,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
       CACHE_FROM_ARG+=(--cache-from "${IMAGE_REPO-}:cache-${BRANCH_NAME-}")
     fi
 
-    if [[ "${ENABLE_CACHE_TO-}" -eq 1  && "${BRANCH_NAME}" == "master" ]] ; then
+    if [[ "${ENABLE_CACHE_TO-}" -eq 1 ]] ; then
       CACHE_TO_ARG=(--cache-to "mode=max,image-manifest=true,oci-mediatypes=true,type=registry,ref=${IMAGE_REPO-}:cache-${BRANCH_NAME-}")
     fi
 
@@ -171,4 +171,3 @@ if (( UPDATE_TRACK_FILE )); then
 else
     echo "Skipping track update"
 fi
-
