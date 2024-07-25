@@ -4,6 +4,7 @@
 # Expected env vars
 echo "IMAGE_REPO: ${IMAGE_REPO?}"
 echo "IMAGE_TAG_OVERRIDE: ${IMAGE_TAG_OVERRIDE?}"
+echo "SEM_VER_OVERRIDE: ${SEM_VER_OVERRIDE?}"
 echo "KMS_KEY: ${KMS_KEY?}"
 echo "PACKAGE: ${PACKAGE?}"
 echo "BUILD_CONTEXT: ${BUILD_CONTEXT?}"
@@ -55,6 +56,8 @@ if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
     else
         SEM_VER=$(git describe --abbrev=0 --tags)
     fi
+elif [[ "$SEM_VER_OVERRIDE" != "" ]]; then
+    SEM_VER=$SEM_VER_OVERRIDE
 else
     SEM_VER="$CIRCLE_BRANCH-$CIRCLE_SHA1"
 fi

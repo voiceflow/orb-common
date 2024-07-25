@@ -67,6 +67,10 @@ parameters:
     description: The container image tag
     type: string
     default: ""
+  sem_ver_override:
+    description: Semantic release version of the package
+    type: string
+    default: ""
   kms_key:
     description: KMS Key to sign the containers
     type: string

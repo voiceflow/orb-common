@@ -112,6 +112,7 @@ steps:
       package: "<< parameters.package >>"
       package_folder: "<< parameters.package_folder >>"
       image_tag: '<< parameters.semantic_version >>'
+      sem_ver_override: "<< parameters.semantic_version >>"
       kms_key: "<< parameters.kms_key >>"
       inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
       local_registry_container_image: "<< parameters.local_registry_container_image >>"
