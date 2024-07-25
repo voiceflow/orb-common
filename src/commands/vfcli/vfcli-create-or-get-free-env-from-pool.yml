@@ -36,6 +36,8 @@ steps:
         if [[ -n "<< parameters.pool-type >>" ]]; then
           if [[ $force ]]; then
             echo "Force option is enabled... Proceeding with environment creation."
+            echo "null" > env_name.txt  # Write 'null' to indicate no environment was found
+            echo "create" > skip_create_env
           else
             result=$(vfcli pool get-free-env --pool-type "<< parameters.pool-type >>" --output json)
             if [[ -z $result ]] || [[ $(echo "$result" | jq 'keys | length') -eq 0 ]]; then
