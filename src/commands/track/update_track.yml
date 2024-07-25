@@ -95,6 +95,10 @@ parameters:
     description: Determines if the track file will be updated or not
     type: boolean
     default: true
+  enable_push:
+    description: push the image to the registry
+    type: boolean
+    default: true
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -148,4 +152,5 @@ steps:
         PLATFORM: "<< parameters.platform >>"
         BUILDER_NAME: "<< parameters.builder_name >>"
         UPDATE_TRACK_FILE: << parameters.update_track_file >>
+        ENABLE_PUSH: "<< parameters.enable_push >>"
       command: <<include(scripts/track/update_track.sh)>>

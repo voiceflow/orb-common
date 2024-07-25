@@ -91,6 +91,10 @@ parameters:
     description: enable docker layer cache
     type: boolean
     default: false
+  enable_push:
+    description: push the image to the registry
+    type: boolean
+    default: true
   builder_name:
     description: named builder for use with DLC
     type: string
@@ -125,3 +129,4 @@ steps:
       enable_load: "<< parameters.enable_load >>"
       builder_name: "<< parameters.builder_name >>"
       update_track_file: "<< parameters.update_track_file >>"
+      enable_push: "<< parameters.enable_push >>"
