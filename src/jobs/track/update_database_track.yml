@@ -9,8 +9,13 @@ parameters:
   semantic_version:
     type: string
     default: ""
+  platform:
+    description: Platform to build the image for
+    type: string
+    default: linux/amd64
 steps:
   - update_database_track:
       component: "<< parameters.component >>"
       image_repo: "<< parameters.image_repo >>"
       semantic_version: '<< parameters.semantic_version >>'
+      platform: "<< parameters.platform >>"

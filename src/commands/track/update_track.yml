@@ -63,6 +63,10 @@ parameters:
     description: The container image tag
     type: string
     default: ""
+  sem_ver_override:
+    description: Semantic release version of the package
+    type: string
+    default: ""
   kms_key:
     description: KMS Key to sign the containers
     type: string
@@ -93,6 +97,10 @@ parameters:
     default: ""
   update_track_file:
     description: Determines if the track file will be updated or not
+    type: boolean
+    default: true
+  enable_push:
+    description: push the image to the registry
     type: boolean
     default: true
 steps:
@@ -148,4 +156,6 @@ steps:
         PLATFORM: "<< parameters.platform >>"
         BUILDER_NAME: "<< parameters.builder_name >>"
         UPDATE_TRACK_FILE: << parameters.update_track_file >>
+        ENABLE_PUSH: "<< parameters.enable_push >>"
+        SEM_VER_OVERRIDE: "<< parameters.sem_ver_override >>"
       command: <<include(scripts/track/update_track.sh)>>

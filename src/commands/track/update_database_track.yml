@@ -10,6 +10,30 @@ parameters:
   image_repo:
     description: The container image repository
     type: string
+  dockerfile:
+    description: Name of the Dockerfile to build
+    type: string
+    default: Dockerfile
+  extra_build_args:
+    description: Arguments to pass while building the docker image
+    type: string
+    default: ''
+  enable_load:
+    description: Load image into local docker
+    type: boolean
+    default: false
+  enable_cache_to:
+    description: use --cache-to flag to push cache artifact to remote registry
+    type: boolean
+    default: false
+  build_context:
+    description: Path to the context for the docker build
+    type: string
+    default: '.'
+  force_execute:
+    description: force to update the build, if there is a change or not.
+    type: boolean
+    default: false
   bucket:
     description: The container image repository
     type: string
@@ -21,15 +45,84 @@ parameters:
     description: container image to run verdaccio
     type: string
     default: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
+  local_registry:
+    description: Use a local proxy registry to publish alpha version of all libraries in monorepo (must have a /config/verdaccio/config.yaml file)
+    type: boolean
+    default: false
+  platform:
+    description: Platform to build the image
+    type: string
+    default: linux/amd64
+  enable_dlc:
+    description: enable docker layer cache
+    type: boolean
+    default: false
+  builder_name:
+    description: named builder for use with DLC
+    type: string
+    default: ""
+  enable_push:
+    description: push the image to the registry
+    type: boolean
+    default: true
+  request_remote_docker:
+    description: Add the option to request a new remote docker, set to false when you concat docker jobs
+    type: boolean
+    default: true
+  remote_docker_version:
+    description: Linux/amd64 allows for specific versions to be set, while linux/arm64 only allows for either default and edge
+    # https://circleci.com/docs/building-docker-images/#docker-version
+    type: string
+    default: "default"
+  package:
+    description: Monorepo package.
+    type: string
+    default: ""
+  package_folder:
+    description: Package folder to check
+    type: string
+    default: "packages"
+  kms_key:
+    description: KMS Key to sign the containers
+    type: string
+    default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
+  inject_aws_credentials:
+    description: Inject AWS credentials into the build
+    type: boolean
+    default: false
+  check_track_exists:
+    description: checks if the track exists
+    type: boolean
+    default: true
 steps:
-  - when:
-      condition: << parameters.checkout >>
-      steps:
-        - checkout_clone # special step to check out source code to working directory
-  - check_track_exists:
-      component: << parameters.component >>
-  - attach_workspace:
-      at: ~/voiceflow
+  - update_track:
+      image_repo: "<< parameters.image_repo >>"
+      component: "<< parameters.component >>"
+      dockerfile: "<< parameters.dockerfile >>"
+      extra_build_args: << parameters.extra_build_args >>
+      enable_cache_to: "<< parameters.enable_cache_to >>"
+      build_context: "<< parameters.build_context >>"
+      checkout: "<< parameters.checkout >>"
+      request_remote_docker: "<< parameters.request_remote_docker >>"
+      remote_docker_version: "<< parameters.remote_docker_version >>"
+      bucket: "<< parameters.bucket >>"
+      check_track_exists: "<< parameters.check_track_exists >>"
+      local_registry: "<< parameters.local_registry >>"
+      force_execute: "<< parameters.force_execute >>"
+      package: "<< parameters.package >>"
+      package_folder: "<< parameters.package_folder >>"
+      image_tag: '<< parameters.semantic_version >>'
+      sem_ver_override: "<< parameters.semantic_version >>"
+      kms_key: "<< parameters.kms_key >>"
+      inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
+      local_registry_container_image: "<< parameters.local_registry_container_image >>"
+      platform: "<< parameters.platform >>"
+      enable_dlc: "<< parameters.enable_dlc >>"
+      enable_load: "<< parameters.enable_load >>"
+      builder_name: "<< parameters.builder_name >>"
+      update_track_file: false
+      enable_push: "<< parameters.enable_push >>"
+  # The format of the track file for the database is different from the other tracks
   - run:
       name: Update Track
       environment:
@@ -37,9 +130,3 @@ steps:
         BUCKET: '<< parameters.bucket >>'
         COMPONENT: '<< parameters.component >>'
       command: <<include(scripts/track/update_database_track.sh)>>
-  - build_push_image:
-      checkout: false
-      image_repo: << parameters.image_repo >>
-      image_tag: '<< parameters.semantic_version >>'
-      sem_ver_override: '<< parameters.semantic_version >>'
-      local_registry_container_image: << parameters.local_registry_container_image >>
