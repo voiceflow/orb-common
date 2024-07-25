@@ -21,6 +21,10 @@ parameters:
     type: string
     description: Pool where a free environment will be fetched
     default: ""
+  force:
+    type: boolean
+    description: Whether to force environment creation without checking for free environment
+    default: false
 steps:
   - install-vfcli:
       init-cluster: << parameters.cluster >>
@@ -32,6 +36,7 @@ steps:
       env-name: << parameters.env-name >>
       track-file: *track_file
       pool-type: << parameters.pool-type >>
+      force: << parameters.force >>
   - run:
       name: Get pod list
       command: kubectl get pods -n << parameters.env-name >>

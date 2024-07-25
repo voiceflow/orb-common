@@ -4,6 +4,7 @@
 # Expected env vars
 echo "IMAGE_REPO: ${IMAGE_REPO?}"
 echo "IMAGE_TAG_OVERRIDE: ${IMAGE_TAG_OVERRIDE?}"
+echo "SEM_VER_OVERRIDE: ${SEM_VER_OVERRIDE?}"
 echo "KMS_KEY: ${KMS_KEY?}"
 echo "PACKAGE: ${PACKAGE?}"
 echo "BUILD_CONTEXT: ${BUILD_CONTEXT?}"
@@ -17,6 +18,7 @@ echo "BUILDER_NAME: ${BUILDER_NAME-}"
 echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
 echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
 echo "ENABLE_LOAD: ${ENABLE_LOAD:=0}"
+echo "ENABLE_PUSH: ${ENABLE_PUSH:=0}"
 echo "UPDATE_TRACK_FILE: ${UPDATE_TRACK_FILE:=0}"
 
 
@@ -54,6 +56,8 @@ if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
     else
         SEM_VER=$(git describe --abbrev=0 --tags)
     fi
+elif [[ "$SEM_VER_OVERRIDE" != "" ]]; then
+    SEM_VER=$SEM_VER_OVERRIDE
 else
     SEM_VER="$CIRCLE_BRANCH-$CIRCLE_SHA1"
 fi
@@ -96,7 +100,11 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
       "${BUILDER_ARGS[@]}"
     docker buildx inspect --bootstrap
 
-    OUTPUT_ARGS=(--push)
+    OUTPUT_ARGS=()
+    if (( ENABLE_PUSH )); then
+      OUTPUT_ARGS+=(--push)
+    fi
+
     if (( ENABLE_LOAD )); then
       OUTPUT_ARGS+=(--load)
     fi

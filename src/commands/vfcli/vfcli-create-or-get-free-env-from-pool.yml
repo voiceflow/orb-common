@@ -29,6 +29,7 @@ steps:
   - run:
       name: Check for free environment or Create environment
       command: |
+        force="<< parameters.force >>"
         # fetches a free environment from the pool if pool-type is provided
         # otherwise creates a new environment with the provided name
         # and stores the env name in the cache
