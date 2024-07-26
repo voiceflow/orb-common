@@ -123,24 +123,29 @@ steps:
         # These doppler sync events are very verbose and are not relevant to the e2e tests
         # Kubernetes events have a ttl of 1 hr, return all relevant namespace events.Use jq to return actual timestamp of event so it can be corelated to service logs.
         # The entries are then manipulated to return only the required fields in readable format
-        kubectl get events -n "${DEV_ENV_NAME:?}" -o json | jq -r  '
+        kubectl get events -n "${DEV_ENV_NAME:?}" -o json | jq -r '
           ["LAST-SEEN", "NAME", "REASON", "SOURCE_COMPONENT", "TYPE", "MESSAGE"],
-            (.items[]
-               | select(.source.component != "external-secrets")
-               | select(.source.component != "secret-store")
-              | [
-                .lastTimestamp,
-                .metadata.name,
-                (.reason // "-"),
-                (.source.component // "-"),
-                (.type // "-"),
-                (.message // "-")
-              ]
-            )
-            | map(. | tostring | gsub("\n"; " "))
-            | @tsv
-          ' | column -t -s $'\t' >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/k8-events.log"
-
+          (.items[]
+            | select(.source.component != "external-secrets")
+            | select(.source.component != "secret-store")
+            | {
+                time: .lastTimestamp,
+                name: .metadata.name,
+                reason: (.reason // "-"),
+                sourceComponent: (.source.component // "-"),
+                type: (.type // "-"),
+                message: (.message // "-"),
+                service: (.metadata.name | split("-") | .[0:2] | join("-"))
+              }
+          )
+          | group_by(.service)
+          | .[]
+          | sort_by(.time)
+          | .[]
+          | [.time, .name, .reason, .sourceComponent, .type, .message]
+          | map(. | tostring | gsub("\n"; " "))
+          | @tsv
+        ' | column -t -s $'\t' >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/k8-events.log"
 
   - store_artifacts:
       name: Store uncompressed logs
