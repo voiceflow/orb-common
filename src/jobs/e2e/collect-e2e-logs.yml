@@ -137,14 +137,13 @@ steps:
                 reason: (.reason // "-"),
                 sourceComponent: (.source.component // "-"),
                 type: (.type // "-"),
-                message: (.message // "-"),
-                service: (.metadata.name | extract_service)
+                message: (.message // "-")
               }
           )
-          | group_by(.service)
+          | group_by(.name | extract_service)
           | .[]
           | sort_by(.time)
-          | ["", ("SERVICE: " + .[0].service), ""]
+          | ["", ("SERVICE: " + (.[0].name | extract_service)), ""]
             + (.[]
             | [.time, .name, .reason, .sourceComponent, .type, .message]
             | map(. | tostring | gsub("\n"; " ")))
