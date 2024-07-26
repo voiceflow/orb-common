@@ -141,9 +141,10 @@ steps:
           | group_by(.service)
           | .[]
           | sort_by(.time)
-          | .[]
-          | [.time, .name, .reason, .sourceComponent, .type, .message]
-          | map(. | tostring | gsub("\n"; " "))
+          | ["", ("SERVICE: " + .[0].service), ""]
+            + (.[]
+            | [.time, .name, .reason, .sourceComponent, .type, .message]
+            | map(. | tostring | gsub("\n"; " ")))
           | @tsv
         ' | column -t -s $'\t' >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/k8-events.log"
 
