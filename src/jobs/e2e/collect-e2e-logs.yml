@@ -124,6 +124,9 @@ steps:
         # Kubernetes events have a ttl of 1 hr, return all relevant namespace events.Use jq to return actual timestamp of event so it can be corelated to service logs.
         # The entries are then manipulated to return only the required fields in readable format
         kubectl get events -n "${DEV_ENV_NAME:?}" -o json | jq -r '
+          def extract_service:
+            split("-") | if length > 1 then .[0:2] | join("-") else .[0] end;
+
           ["LAST-SEEN", "NAME", "REASON", "SOURCE_COMPONENT", "TYPE", "MESSAGE"],
           (.items[]
             | select(.source.component != "external-secrets")
@@ -135,7 +138,7 @@ steps:
                 sourceComponent: (.source.component // "-"),
                 type: (.type // "-"),
                 message: (.message // "-"),
-                service: (.metadata.name | split("-") | .[0:2] | join("-"))
+                service: (.metadata.name | extract_service)
               }
           )
           | group_by(.service)
