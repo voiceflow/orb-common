@@ -40,6 +40,7 @@ steps:
       paths:
         - node_modules/.cache/turbo
   - persist_to_workspace:
+      root: "."
       paths:
         - apps/smoke-test-runner/cypress/results
   - store_test_results:
