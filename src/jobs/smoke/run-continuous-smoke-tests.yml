@@ -42,7 +42,7 @@ steps:
   - persist_to_workspace:
       root: "."
       paths:
-        - apps/smoke-test-runner/cypress/results
+        - apps/smoke-test-runner/qualitywatcher-results
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
