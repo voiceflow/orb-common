@@ -1,0 +1,59 @@
+executor: smoke-executor
+parallelism: << parameters.parallelism >>
+
+parameters:
+  parallelism:
+    type: integer
+    default: 8
+  branch-or-commit:
+    type: string
+    default: "master"
+    description: "the branch or commit of the automated-testing repo to checkout"
+  tags:
+    type: string
+    default: ""
+steps:
+  - clone_repo:
+      github_repo_name: automated-testing
+      github_commit: << parameters.branch-or-commit >>
+      path_to_clone: ~/project
+  - install_node_modules:
+      avoid_post_install_scripts: false
+      cache_prefix: smoke-test
+  - restore_cache:
+      key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+  - run:
+      name: "Reference commit SHA"
+      command: git rev-parse HEAD >> commit.txt
+  - restore_cache:
+      # use the commit of the smoke-test-runner repo as the cache key
+      key: smoke-test-build-cache-{{ checksum "commit.txt" }}
+  - run:
+      name: Run Smoke Tests
+      environment:
+        CYPRESS_INCLUDE_TAGS: << parameters.tags >>
+        QUALITYWATCHER_ENABLED: true
+        CREATOR_APP_URL: https://creator-smoke.br.development.voiceflow.com
+      command: yarn test:smoke || true
+  - save_cache:
+      key: smoke-test-build-cache-{{ checksum "commit.txt" }}
+      paths:
+        - node_modules/.cache/turbo
+  - persist_to_workspace:
+      paths:
+        - apps/smoke-test-runner/cypress/results
+  - store_test_results:
+      path: apps/smoke-test-runner/cypress/results
+  - store_artifacts:
+      path: apps/smoke-test-runner/cypress/downloads
+      destination: downloads
+  - store_artifacts:
+      path: apps/smoke-test-runner/cypress/videos
+      destination: videos
+  - store_artifacts:
+      path: apps/smoke-test-runner/cypress/screenshots
+      destination: screenshots
+  - store_artifacts:
+      path: apps/smoke-test-runner/cypress/logs
+      destination: logs
+
