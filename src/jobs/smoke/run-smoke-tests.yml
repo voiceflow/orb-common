@@ -63,7 +63,30 @@ steps:
       environment:
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
-      command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >>
+      command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >> || true
+  - persist_to_workspace:
+      root: "."
+      paths:
+        - apps/smoke-test-runner/cypress/results/*
+  - run:
+      name: "Check Test Results"
+      working_directory: ~/project/apps/smoke-test-runner/cypress/results
+      command: |
+        # install yq for xml parsing
+        curl -sSL https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository | sudo bash
+        sudo apt install yq
+
+        # 1. list all report files
+        # 2. query the number of failures from each report
+        # 3. sum the total number of failures
+        failures=$(find ~+ -type f -name "*.xml" -print0 \
+          | xargs -0 yq -o=json '.testsuites["+@failures"] | to_number' \
+          | jq -s add)
+
+        if [ $failures -gt 0 ]; then
+          echo "Smoke tests failed"
+          npx xunit-viewer -r . -c
+        fi
   - save_cache:
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
