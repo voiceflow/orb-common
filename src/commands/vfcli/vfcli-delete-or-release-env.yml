@@ -45,17 +45,34 @@ steps:
               echo "Resetting the database for $env_name"
               vfcli pool release-env --env-name "$env_name"
               echo "Triggering pipeline with env-name parameter"
-              response=$(curl -s -o /dev/null -w "%{http_code}" \
+              response=$(curl -s -w "\n%{http_code}" \
                 --request POST \
                 --url "https://circleci.com/api/v2/project/gh/voiceflow/env-release-system/pipeline" \
                 --header "Circle-Token: ${CIRCLECI_API_TOKEN}" \
                 --header "content-type: application/json" \
                 --data "{\"parameters\":{\"e2e_env_name\":\"$env_name\",\"trigger_pipeline\":true}}")
-              if [[ $response == "201" ]]; then
-                echo "Env Release Pipeline triggered successfully. Exiting with success."
-                exit 0
+              http_status=$(echo "$response" | tail -n1)
+              response_body=$(echo "$response" | sed '$d')
+              if [[ $http_status == "201" || $http_status == "200" ]]; then
+                if echo "$response_body" | jq empty 2>/dev/null; then
+                  pipeline_id=$(echo "$response_body" | jq -r '.id // empty')
+                  pipeline_number=$(echo "$response_body" | jq -r '.number // empty')
+                  if [[ -n $pipeline_number ]]; then
+                    pipeline_url="https://app.circleci.com/pipelines/github/voiceflow/env-release-system/$pipeline_number"
+                    echo "Env Release Pipeline triggered successfully."
+                    echo "Pipeline URL: $pipeline_url"
+                    echo "Pipeline ID: $pipeline_id"
+                    echo "Exiting with success."
+                    exit 0
+                  else
+                    echo "Failed to retrieve pipeline number. Response body: $response_body"
+                  fi
+                else
+                  echo "Response is not valid JSON. Response body: $response_body"
+                fi
               else
-                echo "Failed to trigger pipeline. HTTP status code: $response"
+                echo "Failed to trigger pipeline. HTTP status code: $http_status"
+                echo "Response body: $response_body"
               fi
             fi
             vfcli env resume "$env_name" --interactive false
