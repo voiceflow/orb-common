@@ -32,7 +32,7 @@ steps:
       name: Run Smoke Tests
       environment:
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
-        QUALITYWATCHER_ENABLED: true
+        QUALITYWATCHER_ENABLED: 1
         CREATOR_APP_URL: https://creator-smoke.br.development.voiceflow.com
       command: yarn test:smoke || true
   - save_cache:
