@@ -63,11 +63,19 @@ steps:
       environment:
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
-      command: yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >>
+      command: |
+        yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >> <<# parameters.qualitywatcher >>|| true<</ parameters.qualitywatcher >>
   - save_cache:
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
         - node_modules/.cache/turbo
+  - when:
+      condition: << parameters.qualitywatcher >>
+      steps:
+        - persist_to_workspace:
+            root: "."
+            paths:
+              - apps/smoke-test-runner/qualitywatcher-results
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
