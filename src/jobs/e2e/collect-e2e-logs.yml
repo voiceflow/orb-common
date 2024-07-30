@@ -145,7 +145,7 @@ steps:
         jq -r '
           def extract_service(name):
             if name then
-              (name | split("-") | if length > 2 then .[0:2] | join("-") else .[0] end)
+              (name | split("-") | if length > 2 then .[0:3] | join("-") else .[0] end)
             else
               "-"
             end;
@@ -184,14 +184,20 @@ steps:
         cat "${TEMP_EVENTS_PROCESSED_TSV}" # Debugging: print processed TSV content
         # Step 4: Process with awk and column
         {
+          # Print the header row with column names
           echo -e "LAST-SEEN\tNAME\tREASON\tSOURCE_COMPONENT\tTYPE\tMESSAGE\tSERVICE"
+          # Use awk to process the TSV file
           awk -F'\t' '
             BEGIN {OFS="\t"}
             $7!=prev {
+            # If its a different SERVICE and not the first line, print an empty line for separation
               if (NR>1) print "";
+              # Print the new SERVICE header
               print "SERVICE: " $7;
             }
+            # Print the event details for the current line
             {print $1, $2, $3, $4, $5, $6}
+            # Update the previous SERVICE variable with the current one
             {prev=$7}
           ' "${TEMP_EVENTS_PROCESSED_TSV}"
         } | column -t -s $'\t' > "${FINAL_LOG_FILE}" || handle_error "Failed to process TSV with awk and column"
