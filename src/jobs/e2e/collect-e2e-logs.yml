@@ -146,3 +146,9 @@ steps:
       name: Store raw events JSON
       path: /tmp/k8-events.json
       destination: raw-events/k8-events.json
+
+  - store_artifacts:
+      name: Store k8s events in structured format 
+      path: /tmp/k8-events.log
+      destination: structured-events/k8-events.log
+
