@@ -223,3 +223,8 @@ steps:
       name: Store compressed logs
       path: /tmp/logs.tar.gz
       destination: compressed-logs.tar.gz
+
+  - store_artifacts:
+      name: Store raw events JSON
+      path: /tmp/k8-events.json
+      destination: raw-events/k8-events.json
