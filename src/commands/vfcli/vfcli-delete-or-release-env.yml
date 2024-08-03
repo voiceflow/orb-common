@@ -43,7 +43,6 @@ steps:
             vfcli pool release-env --env-name "$env_name"
             if [[ << parameters.reset-db >> == true ]]; then
               echo "Resetting the database for $env_name"
-              vfcli pool release-env --env-name "$env_name"
               echo "Triggering pipeline with env-name parameter"
               response=$(curl -s -w "\n%{http_code}" \
                 --request POST \
