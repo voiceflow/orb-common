@@ -1,6 +1,6 @@
 
 description: Prepare an existing environment for e2e tests
-executor: default-executor
+executor: node-executor-node-20
 
 parameters:
   env-name:
