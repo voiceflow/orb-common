@@ -10,7 +10,9 @@ steps:
       command: |
         env_name="<< parameters.env-name >>"
         echo "Releasing the environment..... $env_name"
+        vfcli env database reset --name "$env_name"
+        sleep 10
         vfcli env resume "$env_name" --interactive false
         vfcli track attach --branch master --components all --name "$env_name" --interactive false --no-circleci
-        vfcli env database reset --name "$env_name"
+
         vfcli pool free-env --env-name "$env_name"
