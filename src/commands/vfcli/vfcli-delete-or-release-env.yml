@@ -79,6 +79,6 @@ steps:
             vfcli pool free-env --env-name "$env_name"
           else
             echo "Kick-starting the deletion of the environment."
-            vfcli env delete --name "<< parameters.env-name >>" --interactive false
+            vfcli env delete --name "<< parameters.env-name >>" --interactive false --force
           fi
         fi

@@ -18,6 +18,10 @@ parameters:
     type: boolean
     description: Whether to reset the database
     default: true
+  force:
+    type: boolean
+    description: Whether to reset the database
+    default: false
 steps:
   - install-vfcli:
       init-cluster: << parameters.cluster >>
@@ -25,3 +29,5 @@ steps:
       env-name: << parameters.env-name >>
       reset-db: << parameters.reset-db >>
       when: << parameters.when >>
+      force: << parameters.force >>
+
