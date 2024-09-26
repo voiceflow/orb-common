@@ -29,7 +29,7 @@ steps:
       command: |
         force="<< parameters.force >>"
         if [[ $force == true ]]; then
-          vfcli env delete --name "<< parameters.env-name >>" --interactive false --force
+          vfcli env delete --name "<< parameters.env-name >>" --interactive false
         else
           if [[ -f << parameters.env-name-path >> ]]; then
             env_name=$(cat << parameters.env-name-path >>)
@@ -79,6 +79,6 @@ steps:
             vfcli pool free-env --env-name "$env_name"
           else
             echo "Kick-starting the deletion of the environment."
-            vfcli env delete --name "<< parameters.env-name >>" --interactive false --force
+            vfcli env delete --name "<< parameters.env-name >>" --interactive false
           fi
         fi
