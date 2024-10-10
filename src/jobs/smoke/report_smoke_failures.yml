@@ -4,6 +4,10 @@ parameters:
   e2e-env-name:
     type: string
     default: ""
+  env-name-path:
+    type: string
+    description: Path to the env_name file
+    default: "/home/circleci/voiceflow/env_name.txt"
   branch-or-commit:
     type: string
     default: "master"
@@ -20,9 +24,16 @@ steps:
   - run:
       name: Report Test Failures
       command: |
+        if [[ -f << parameters.env-name-path >> ]]; then
+          echo "Using env_name from file << parameters.env-name-path >> in the suspend action"
+          env_name=$(cat << parameters.env-name-path >>)
+        else
+          env_name="<< parameters.e2e-env-name >>"
+        fi
+
         npx --package=@voiceflow/test-cli -- \
           testcli report \
-            --environment << parameters.e2e-env-name >> \
+            --environment "${env_name}" \
             --smokeRef << parameters.branch-or-commit >> \
             --channel << parameters.channel >> \
             --mention '<< parameters.mention >>'
