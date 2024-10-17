@@ -54,6 +54,10 @@ parameters:
     description: container image to run verdaccio
     type: string
     default: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1
+  use_tag_versioning:
+    description: Use tag versioning to tag the image
+    type: boolean
+    default: true
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -89,6 +93,7 @@ steps:
         DOCKERFILE: '<< parameters.dockerfile >>'
         MONOREPO_DIRECTORY: '<< parameters.monorepo_directory >>'
         INJECT_AWS_CREDENTIALS: "<< parameters.inject_aws_credentials >>"
+        USE_TAG_VERSIONING: "<< parameters.use_tag_versioning >>"
       command: <<include(scripts/docker/build.sh)>>
 
   - run:

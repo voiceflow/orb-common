@@ -9,6 +9,7 @@ echo "BUILD_CONTEXT: $BUILD_CONTEXT"
 echo "DOCKERFILE: $DOCKERFILE"
 echo "MONOREPO_DIRECTORY: $MONOREPO_DIRECTORY"
 echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
+echo "USE_TAG_VERSIONING: ${USE_TAG_VERSIONING:-true}"
 
 if [[ "$IMAGE_TAG_OVERRIDE" == "" ]]; then
     IMAGE_TAG="k8s-$CIRCLE_SHA1"
@@ -19,12 +20,15 @@ IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
 
 # Semantic release from the current tags
 if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
-    # Update the new tags
-    git fetch --tags
-    SEM_VER=$(git describe --abbrev=0 --tags)
-    if [[ -n "$PACKAGE" ]]; then
-        SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*")
-        SEM_VER="${SEM_VER##*@}"
+    if [[ "${USE_TAG_VERSIONING:-false}" == "true" ]]; then
+        git fetch --tags
+        SEM_VER=$(git describe --abbrev=0 --tags)
+        if [[ -n "$PACKAGE" ]]; then
+            SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*")
+            SEM_VER="${SEM_VER##*@}"
+        fi
+    else
+        SEM_VER="$CIRCLE_BRANCH-$CIRCLE_SHA1"
     fi
 elif [[ "$SEM_VER_OVERRIDE" != "" ]]; then
     SEM_VER=$SEM_VER_OVERRIDE
