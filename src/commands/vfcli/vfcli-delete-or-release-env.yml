@@ -79,17 +79,6 @@ steps:
             vfcli pool free-env --env-name "$env_name"
           else
             echo "Kick-starting the deletion of the environment."
-            if ! vfcli env delete --name "<< parameters.env-name >>" --interactive false; then
-              echo "Standard deletion failed. Attempting deep clean..."
-              if ! vfcli env delete --name "<< parameters.env-name >>" --deep-clean; then
-                echo "Deep clean deletion also failed. Exiting with error."
-                exit 1
-              else
-                echo "Deep clean deletion successful."
-              fi
-            else
-              echo "Standard deletion successful."
-            fi
+            vfcli env delete --name "<< parameters.env-name >>" --interactive false
           fi
         fi
-
