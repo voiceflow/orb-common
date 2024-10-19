@@ -11,8 +11,17 @@ parameters:
     description: Collect coverage information from sonar directories
     type: boolean
     default: false
+  request_remote_docker:
+    description: Request remote Docker
+    type: boolean
+    default: false
 executor: << parameters.executor >>
 steps:
+  - when:
+      condition: << parameters.request_remote_docker >>
+      steps:
+        - setup_remote_docker:  # Need this to run DinD
+            version: default
   - checkout_clone
   - attach_workspace:
       at: ~/voiceflow
