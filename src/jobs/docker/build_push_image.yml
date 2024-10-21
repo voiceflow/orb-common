@@ -43,6 +43,10 @@ parameters:
     description: Inject AWS credentials into the build
     type: boolean
     default: false
+  use_tag_versioning:
+    description: Use tag versioning to tag the image
+    type: boolean
+    default: true
   local_registry_container_image:
     description: container image to run verdaccio
     type: string
@@ -61,3 +65,4 @@ steps:
       sem_ver_override: "<< parameters.sem_ver_override >>"
       inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
       local_registry_container_image: "<< parameters.local_registry_container_image >>"
+      use_tag_versioning: "<< parameters.use_tag_versioning >>"
