@@ -7,7 +7,7 @@ echo "Running command: ${COMMAND:?}"
 for _ in $(seq 0 "${MAX_RETRIES:?}"); do
     if bash -c "${COMMAND?}"; then
         if (( ${SHOULD_REMOVE_LOCKFILE?} )); then
-            echo "Removing lock file ${LOCK_FILE?}" 
+            echo "Removing lock file ${LOCK_FILE?}"
             rm -rf "${LOCK_FILE}"
         fi
         exit 0
@@ -17,4 +17,5 @@ for _ in $(seq 0 "${MAX_RETRIES:?}"); do
 done
 
 echo "failed: ${COMMAND?}" >&2
+touch /tmp/failure
 exit 1
