@@ -55,7 +55,7 @@ steps:
       condition: << parameters.wait >>
       steps:
         - run:
-            name: Waiting util other processes are finished
+            name: Waiting until other processes are finished
             command: <<include(scripts/yarn/wait_for_lock.sh)>>
 
   - when:
