@@ -28,13 +28,15 @@ read -r -a EXTRA_BUILD_ARGS <<< "$EXTRA_BUILD_ARGS"
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
 source "/tmp/IMAGE_STATUS"
-# Load TRACK_EXISTS variable from file previously stored in the tmp folder
-# shellcheck disable=SC1091
-source "/tmp/TRACK_STATUS"
 
-if [[ "$TRACK_EXISTS" != "true" ]]; then
+IS_GTMQ=$(grep -qE "^gtmq_" - <<<"${CIRCLE_BRANCH}" && echo 1 || echo 0)
+
+if [[ "$TRACK_EXISTS" != "true"  ]]; then
+  if (( ! IS_GTMQ )); then
     echo "Track does not exist! avoiding update!"
     exit 0
+  fi
+  echo "Track will be created for merge queue branch"
 fi
 
 if [[ -z "$CIRCLE_BRANCH" && -n "$CIRCLE_TAG" ]]; then
@@ -159,7 +161,15 @@ IMAGE_SHA=$(crane digest "$IMAGE_NAME")
 # Remove the sha256: string
 IMAGE_SHA="${IMAGE_SHA//sha256:/}"
 
-if (( UPDATE_TRACK_FILE )); then
+if (( IS_GTMQ )); then
+    echo "Creating track for ${CIRCLE_BRANCH}"
+    aws s3 cp - "s3://$BUCKET/$TRACK" <<EOF
+${COMPONENT}:
+  image:
+    tag: ${IMAGE_TAG}
+    sha: ${IMAGE_SHA}
+EOF
+elif (( UPDATE_TRACK_FILE )); then
     # update the track
     TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
     echo "TRACK: $TRACK"
