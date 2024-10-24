@@ -30,4 +30,4 @@ steps:
           env_name="<< parameters.env-name >>"
         fi
 
-        vfcli env suspend "$env_name" --interactive false --track-file "<< parameters.track-file >>"
+        vfcli env suspend "$env_name" --interactive false --wait --track-file "<< parameters.track-file >>"
