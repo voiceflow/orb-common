@@ -14,7 +14,7 @@ jq -rc '.workspaces[]' package.json | while read -r i; do
         echo "Checking package $package"
         if [[
              $FILES_CHANGED == *"$package"*
-             || "${CIRCLE_BRANCH}" =~ ^(master|production|trying|gtmq_.*)$
+             || "${CIRCLE_BRANCH}" =~ ^(master|production|trying|staging|gtmq_.*)$
              || -n "$CIRCLE_TAG"
           ]] || (( FORCE_EXECUTION )); then
             # Work only on folders that are real packages
