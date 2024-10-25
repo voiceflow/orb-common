@@ -29,7 +29,18 @@ parameters:
     type: string
     description: Path to the env_name file
     default: "/home/circleci/voiceflow/env_name.txt"
+  force_run:
+    type: boolean
+    description: Bypass conditional run checks
+    default: false
 steps:
+  - run:
+      name: "Check whether to skip smoke tests"
+      command: |
+        if ! ( [[ "${CIRCLE_BRANCH}" =~ ^(gtmq_.*|trying)$ ]] || (( << parameters.force_run >> )) ); then
+          echo "Skipping since branch is not gtmq_ or trying and not forcing execution"
+          circleci-agent step halt
+        fi
   - clone_repo:
       github_repo_name: automated-testing
       github_commit: << parameters.branch-or-commit >>
@@ -90,4 +101,3 @@ steps:
   - store_artifacts:
       path: apps/smoke-test-runner/cypress/logs
       destination: logs
-
