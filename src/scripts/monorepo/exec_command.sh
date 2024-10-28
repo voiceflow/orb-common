@@ -12,7 +12,11 @@ jq -rc '.workspaces[]' package.json | while read -r i; do
         # The find command add the ./ We dont need it. This command removes it by removing the first 2 characters.
         package="${f:2}"
         echo "Checking package $package"
-        if [[ $FILES_CHANGED == *"$package"* || " master production staging trying " =~ .*\ $CIRCLE_BRANCH\ .* || -n "$CIRCLE_TAG" ]] || (( FORCE_EXECUTION )); then
+        if [[
+             $FILES_CHANGED == *"$package"*
+             || "${CIRCLE_BRANCH}" =~ ^(master|production|trying|staging|gtmq_.*)$
+             || -n "$CIRCLE_TAG"
+          ]] || (( FORCE_EXECUTION )); then
             # Work only on folders that are real packages
             if [[ -d $f ]]; then
             (
