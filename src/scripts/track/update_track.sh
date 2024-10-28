@@ -161,8 +161,10 @@ IMAGE_SHA=$(crane digest "$IMAGE_NAME")
 # Remove the sha256: string
 IMAGE_SHA="${IMAGE_SHA//sha256:/}"
 
+TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
 if (( IS_GTMQ )); then
     echo "Creating track for ${CIRCLE_BRANCH}"
+    echo "TRACK: $TRACK"
     aws s3 cp - "s3://$BUCKET/$TRACK" <<EOF
 ${COMPONENT}:
   image:
@@ -171,7 +173,6 @@ ${COMPONENT}:
 EOF
 elif (( UPDATE_TRACK_FILE )); then
     # update the track
-    TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
     echo "TRACK: $TRACK"
 
     # the file /tmp/$TRACK is downloaded in the check_track_exists step
