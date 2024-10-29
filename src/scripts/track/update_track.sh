@@ -28,6 +28,9 @@ read -r -a EXTRA_BUILD_ARGS <<< "$EXTRA_BUILD_ARGS"
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
 source "/tmp/IMAGE_STATUS"
+# Load TRACK_EXISTS variable from file previously stored in the tmp folder
+# shellcheck disable=SC1091
+source "/tmp/TRACK_STATUS"
 
 IS_GTMQ=$(grep -qE "^gtmq_" - <<<"${CIRCLE_BRANCH}" && echo 1 || echo 0)
 
