@@ -1,3 +1,8 @@
-resource_class: medium+
+parameters:
+  default_resource_class:
+    description: Default resource class for the executor
+    type: string
+    default: large
 docker:
   - image: cimg/go:1.23-node
+resource_class: << parameters.default_resource_class >>
