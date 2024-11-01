@@ -47,9 +47,9 @@ steps:
         if [ ! -z "<< parameters.target-url >>" ]; then
           echo 'export CREATOR_APP_URL=<< parameters.target-url >>' >> $BASH_ENV
         elif [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >>)" != "null" ]; then
-          echo 'export CREATOR_APP_URL=https://creator-$(cat << parameters.env-name-path >>).br.development.voiceflow.com' >> $BASH_ENV
+          echo 'export CREATOR_APP_URL=https://creator-$(cat << parameters.env-name-path >>).br-2.development.voiceflow.com' >> $BASH_ENV
         else
-          echo 'export CREATOR_APP_URL=https://creator-<< parameters.e2e-env-name >>.br.development.voiceflow.com' >> $BASH_ENV
+          echo 'export CREATOR_APP_URL=https://creator-<< parameters.e2e-env-name >>.br-2.development.voiceflow.com' >> $BASH_ENV
         fi
       shell: /bin/bash
   - run:
