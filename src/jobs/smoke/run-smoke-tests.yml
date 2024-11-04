@@ -58,13 +58,16 @@ steps:
   - restore_cache:
       # use the commit of the smoke-test-runner repo as the cache key
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
+  - attach_workspace:
+          at: /tmp/testmo
   - run:
       name: Run Smoke Tests
       environment:
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
         QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
       command: |
-        yarn test:smoke<<# parameters.stable-only >>:stable<</ parameters.stable-only >> <<# parameters.qualitywatcher >>|| true<</ parameters.qualitywatcher >>
+        export TESTMO_RUN_ID=$(cat /tmp/testmo/run-id.txt)
+        yarn test:smoke
   - save_cache:
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
