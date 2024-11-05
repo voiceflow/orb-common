@@ -1,0 +1,52 @@
+executor: smoke-executor
+
+parameters:
+  e2e-env-name:
+    type: string
+    default: ""
+  target-url:
+    type: string
+    default: ""
+    description: "use this to override the e2e-env-name and set the full creator-app URL"
+  branch-or-commit:
+    type: string
+    default: "master"
+    description: "the branch or commit of the automated-testing repo to checkout"
+  tags:
+    type: string
+    default: ""
+  env-name-path:
+    type: string
+    description: Path to the env_name file
+    default: "/home/circleci/voiceflow/env_name.txt"
+steps:
+  - clone_repo:
+      github_repo_name: automated-testing
+      github_commit: << parameters.branch-or-commit >>
+      path_to_clone: ~/project
+  - install_node_modules:
+      avoid_post_install_scripts: false
+      cache_prefix: smoke-test
+  - restore_cache:
+      key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+  - run:
+      name: "Set Environment Variables"
+      command: |
+        # env_name.txt is used to store the e2e env name and passed to the smoke tests
+        # uses e2e-env-name if env_name.txt is 'null'
+        if [ ! -z "<< parameters.target-url >>" ]; then
+          echo 'export CREATOR_APP_URL=<< parameters.target-url >>' >> $BASH_ENV
+        elif [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >>)" != "null" ]; then
+          echo 'export CREATOR_APP_URL=https://creator-$(cat << parameters.env-name-path >>).br-2.development.voiceflow.com' >> $BASH_ENV
+        else
+          echo 'export CREATOR_APP_URL=https://creator-<< parameters.e2e-env-name >>.br-2.development.voiceflow.com' >> $BASH_ENV
+        fi
+      shell: /bin/bash
+  - run:
+      name: "Reference commit SHA"
+      command: git rev-parse HEAD >> commit.txt
+  - run:
+      name: Run Smoke Tests
+      command: |
+        yarn test:smoke:playwright
+
