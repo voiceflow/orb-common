@@ -1,0 +1,3 @@
+docker: # run the steps with Docker.
+  - image: mcr.microsoft.com/playwright:v1.48.1-noble
+resource_class: xlarge

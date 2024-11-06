@@ -1,4 +1,4 @@
-executor: smoke-executor
+executor: playwright-executor
 
 parameters:
   e2e-env-name:
