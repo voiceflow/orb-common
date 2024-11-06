@@ -47,4 +47,6 @@ steps:
       name: Run Smoke Tests
       command: |
         yarn test:smoke:playwright
+  - store_test_results:
+      path: apps/poc-playwright/e2e.report.xml
 
