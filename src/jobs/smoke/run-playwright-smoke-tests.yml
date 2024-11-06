@@ -49,4 +49,6 @@ steps:
         yarn test:smoke:playwright
   - store_test_results:
       path: apps/poc-playwright/e2e.report.xml
+  - store_artifacts:
+      path: apps/poc-playwright/test-results
 
