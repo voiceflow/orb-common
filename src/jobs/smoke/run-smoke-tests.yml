@@ -19,12 +19,6 @@ parameters:
   tags:
     type: string
     default: ""
-  pre_steps:
-    type: steps
-    default: []
-  post_steps:
-    type: steps
-    default: []
   smoke-command:
     type: string
     default: "test:smoke:stable"
@@ -61,7 +55,6 @@ steps:
   - restore_cache:
       # use the commit of the smoke-test-runner repo as the cache key
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
-  - steps: << parameters.pre_steps >>
   - run:
       name: Run Smoke Tests
       environment:
@@ -71,7 +64,6 @@ steps:
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
         - node_modules/.cache/turbo
-  - steps: << parameters.post_steps >>
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
