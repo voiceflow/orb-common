@@ -1,9 +1,13 @@
 executor: playwright-executor
+parallelism: << parameters.parallelism >>
 
 parameters:
   e2e-env-name:
     type: string
     default: ""
+  parallelism:
+    type: integer
+    default: 1
   target-url:
     type: string
     default: ""
@@ -12,9 +16,6 @@ parameters:
     type: string
     default: "master"
     description: "the branch or commit of the automated-testing repo to checkout"
-  tags:
-    type: string
-    default: ""
   env-name-path:
     type: string
     description: Path to the env_name file
@@ -27,6 +28,8 @@ steps:
   - install_node_modules:
       avoid_post_install_scripts: false
       cache_prefix: smoke-test
+  - restore_cache:
+      key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
       name: "Set Environment Variables"
       command: |
@@ -43,10 +46,17 @@ steps:
   - run:
       name: "Reference commit SHA"
       command: git rev-parse HEAD >> commit.txt
+  - restore_cache:
+      # use the commit of the smoke-test-runner repo as the cache key
+      key: playwright-smoke-test-build-cache-{{ checksum "commit.txt" }}
   - run:
       name: Run Smoke Tests
       command: |
         yarn test:smoke:playwright
+  - save_cache:
+      key: playwright-smoke-test-build-cache-{{ checksum "commit.txt" }}
+      paths:
+        - node_modules/.cache/turbo
   - store_test_results:
       path: apps/poc-playwright/e2e.report.xml
   - store_artifacts:
