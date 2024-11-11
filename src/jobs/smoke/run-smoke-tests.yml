@@ -28,9 +28,6 @@ parameters:
   smoke-command:
     type: string
     default: "test:smoke:stable"
-  stable-only:
-    type: boolean
-    default: true
   env-name-path:
     type: string
     description: Path to the env_name file
