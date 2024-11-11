@@ -19,9 +19,15 @@ parameters:
   tags:
     type: string
     default: ""
-  qualitywatcher:
-    type: boolean
-    default: false
+  pre-steps:
+    type: steps
+    default: []
+  post-steps:
+    type: steps
+    default: []
+  smoke-command:
+    type: string
+    default: "test:smoke:stable"
   stable-only:
     type: boolean
     default: true
@@ -58,27 +64,17 @@ steps:
   - restore_cache:
       # use the commit of the smoke-test-runner repo as the cache key
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
-  - attach_workspace:
-          at: /tmp/testmo
+  - steps: << parameters.pre-steps >>
   - run:
       name: Run Smoke Tests
       environment:
         CYPRESS_INCLUDE_TAGS: << parameters.tags >>
-        QUALITYWATCHER_ENABLED: << parameters.qualitywatcher >>
-      command: |
-        export TESTMO_RUN_ID=$(cat /tmp/testmo/run-id.txt)
-        yarn test:smoke
+      command: yarn << parameters.smoke-command >>
   - save_cache:
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
         - node_modules/.cache/turbo
-  - when:
-      condition: << parameters.qualitywatcher >>
-      steps:
-        - persist_to_workspace:
-            root: "."
-            paths:
-              - apps/smoke-test-runner/qualitywatcher-results
+  - steps: << parameters.post-steps >>
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:
