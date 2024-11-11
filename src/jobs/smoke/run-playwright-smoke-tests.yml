@@ -58,7 +58,7 @@ steps:
       paths:
         - node_modules/.cache/turbo
   - store_test_results:
-      path: apps/poc-playwright/e2e.report.xml
+      path: tests/smoke-playwright/e2e.report.xml
   - store_artifacts:
-      path: apps/poc-playwright/test-results
+      path: tests/smoke-playwright/test-results
 
