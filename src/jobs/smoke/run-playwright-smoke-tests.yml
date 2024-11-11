@@ -16,6 +16,9 @@ parameters:
     type: string
     default: "master"
     description: "the branch or commit of the automated-testing repo to checkout"
+  smoke-command:
+    type: string
+    default: "test:smoke:playwright"
   env-name-path:
     type: string
     description: Path to the env_name file
@@ -51,8 +54,7 @@ steps:
       key: playwright-smoke-test-build-cache-{{ checksum "commit.txt" }}
   - run:
       name: Run Smoke Tests
-      command: |
-        yarn test:smoke:playwright
+      command: yarn << parameters.smoke-command >>
   - save_cache:
       key: playwright-smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
