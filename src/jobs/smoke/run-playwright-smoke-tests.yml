@@ -30,7 +30,7 @@ steps:
       path_to_clone: ~/project
   - authenticate_npm
   - vf_restore_cache:
-      cache_prefix: 'smoke-test'
+      cache_prefix: playwright-smoke-test
   - run:
       name: "Install Test Dependencies"
       command: |
