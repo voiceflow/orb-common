@@ -28,9 +28,12 @@ steps:
       github_repo_name: automated-testing
       github_commit: << parameters.branch-or-commit >>
       path_to_clone: ~/project
-  - install_node_modules:
-      avoid_post_install_scripts: false
-      cache_prefix: smoke-test
+  - vf_restore_cache:
+      cache_prefix: 'smoke-test'
+  - run:
+      name: "Install Test Dependencies"
+      command: |
+        yarn workspaces focus @voiceflow/smoke-playwright-test
   - restore_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
