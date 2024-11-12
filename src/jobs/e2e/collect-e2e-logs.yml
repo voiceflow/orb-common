@@ -13,9 +13,13 @@ parameters:
       description: Path to the env_name file
       default: "/home/circleci/voiceflow/env_name.txt"
     executor:
-     description: Executor to run the command on
-     type: executor
-     default: default-executor
+      description: Executor to run the command on
+      type: executor
+      default: default-executor
+    smoke-test-jobs:
+      description: Comma separated list of smoke test jobs
+      type: string
+      default: "vfcommon/run-smoke-tests"
 executor: << parameters.executor >>
 steps:
   - install-vfcli:
@@ -78,12 +82,14 @@ steps:
         capture_logs
 
   - run:
-     name: Wait for smoke-tests job to complete
-     command: |
-      # The waiter job keeps looping through to check if the smoke-tests job has been completed
-      while [[ $(curl --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CIRCLE_TOKEN"| jq -r '.items[]|select(.name == "vfcommon/run-smoke-tests")|.status' | grep -c "running") -gt 0 ]]
-        do
-          sleep 5
+      name: Wait for smoke test jobs to complete
+      command: |
+        # Loop through to check if each of the jobs have been completed
+        for job in $(echo "<< parameters.smoke-test-jobs >>" | tr "," "\n"); do
+          while [[ $(curl --location --request GET "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" --header "Circle-Token: $CIRCLE_TOKEN"| jq -r ".items[]|select(.name == \"$job\")|.status" | grep -c "running") -gt 0 ]]
+            do
+              sleep 5
+            done
         done
   - run: echo "All required jobs have now completed"
   - run:
