@@ -31,13 +31,9 @@ steps:
       github_repo_name: automated-testing
       github_commit: << parameters.branch-or-commit >>
       path_to_clone: ~/project
-  - authenticate_npm
-  - vf_restore_cache:
+  - install_node_modules:
+      avoid_post_install_scripts: false
       cache_prefix: cypress-smoke-test
-  - run:
-      name: "Install Test Dependencies"
-      command: |
-        yarn workspaces focus @voiceflow/smoke-test-runner
   - restore_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
