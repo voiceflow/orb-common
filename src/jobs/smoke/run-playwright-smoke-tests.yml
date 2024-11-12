@@ -1,7 +1,12 @@
-executor: playwright-executor
+executor:
+  name: playwright-executor
+  playwright-version: << parameters.playwright-version >>
 parallelism: << parameters.parallelism >>
 
 parameters:
+  playwright-version:
+    type: string
+    default: "1.48.2"
   e2e-env-name:
     type: string
     default: ""
