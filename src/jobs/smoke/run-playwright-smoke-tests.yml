@@ -28,6 +28,7 @@ steps:
       github_repo_name: automated-testing
       github_commit: << parameters.branch-or-commit >>
       path_to_clone: ~/project
+  - authenticate_npm
   - vf_restore_cache:
       cache_prefix: 'smoke-test'
   - run:
