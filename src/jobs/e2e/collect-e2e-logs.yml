@@ -128,7 +128,7 @@ steps:
         # Gather summary state of all pods in the namespace
         kubectl get pods -n $DEV_ENV_NAME >>"${LOG_DIR:?}/${KUBE_STATE_DIR:?}/pods-summary-state-after-run.log"
         # Gather detailed state of all pods in the namespace.
-        for component in $components; do
+        for component in "${components[@]}"; do
             echo "Capturing logs for component $component"
             kubectl describe pod $component -n $DEV_ENV_NAME >>"${LOG_DIR:?}/${KUBE_STATE_DIR:?}/${component}-k8-state.log" &
         done
