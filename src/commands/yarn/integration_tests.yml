@@ -27,6 +27,10 @@ parameters:
     description: Request remote Docker
     type: boolean
     default: false
+  container_image:
+    description: Container image to run the yarn command
+    type: string
+    default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
   container_folder_to_copy:
     description: Container folder to copy after the execution
     type: string
@@ -39,6 +43,7 @@ steps:
       request_remote_docker: << parameters.request_remote_docker >>
       container_folder_to_copy: << parameters.container_folder_to_copy >>
       run_in_container: << parameters.run_in_container >>
+      container_image: << parameters.container_image >>
       step_name: << parameters.step_name >>
       wait: << parameters.wait >>
       yarn_command: yarn test:integration << parameters.extra_args >>
