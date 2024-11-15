@@ -84,30 +84,22 @@ steps:
   - run:
       name: Wait for smoke test jobs to complete
       command: |
-        FILTER=$(cat \<<EOF
-        (\$jobstr | split(",")) as \$jobs |
-          .items
-          | sort_by(.status, .started_at, .name)[]
-          | select(
-              .name as \$name |
-              \$jobs | index(\$name)
+        JOBS=$(paste -sd '|' \<<<"<< parameters.smoke-test-jobs >>")
+        function running_jobs() {
+            DATE=$(date -u)
+            FILTERED_JOBS=$(
+              curl "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" \
+                --silent \
+                --location \
+                --request GET \
+                --header "Circle-Token: $CIRCLE_TOKEN" \
+              | jq -cr ".items[] | { status, started_at, name }" \
+              | grep -E "\"name\": \"($JOBS)\""
             )
-          | { status, started_at, name }
-        EOF
-        )
-
-        while [[ $(
-          date -u >job-status.log ; \
-          curl "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/job" \
-              --silent \
-              --location \
-              --request GET \
-              --header "Circle-Token: $CIRCLE_TOKEN" \
-            | jq -cr --arg jobstr "<< parameters.smoke-test-jobs >>" "$FILTER"  \
-            | tee -a job-status.log \
-            | jq -sr 'map(select(.status == "running")) | length'
-          ) -gt 0 ]]; do
-            cat job-status.log
+            echo "$DATE - \n${FILTERED_JOBS}"
+            return grep -qE '"status": "running"' \<<<"$FILTERED_JOBS"
+        }
+        while running_jobs ; do
             sleep 5
         done
 
