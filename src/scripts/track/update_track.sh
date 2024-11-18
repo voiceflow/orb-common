@@ -32,7 +32,7 @@ source "/tmp/IMAGE_STATUS"
 # shellcheck disable=SC1091
 source "/tmp/TRACK_STATUS"
 
-IS_GTMQ=$(grep -qE "^(gtmq_.*|trying)$" - <<<"${CIRCLE_BRANCH}" && echo 1 || echo 0)
+IS_GTMQ=$(grep -qE "^gtmq_" - <<<"${CIRCLE_BRANCH}" && echo 1 || echo 0)
 
 if [[ "$TRACK_EXISTS" != "true"  ]]; then
   if (( ! IS_GTMQ )); then
