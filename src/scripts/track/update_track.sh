@@ -170,12 +170,15 @@ TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
 if (( IS_GTMQ )); then
     echo "Creating track for ${CIRCLE_BRANCH}"
     echo "TRACK: $TRACK"
-    aws s3 cp - "s3://$BUCKET/$TRACK" <<EOF
+    mkdir -p "$(dirname "/tmp/$TRACK")"
+    cat - <<EOF >"/tmp/$TRACK"
 ${COMPONENT}:
   image:
     tag: ${IMAGE_TAG}
     sha: ${IMAGE_SHA}
 EOF
+
+    aws s3 cp "/tmp/$TRACK" "s3://$BUCKET/$TRACK"
 elif (( UPDATE_TRACK_FILE )); then
     # update the track
     echo "TRACK: $TRACK"
