@@ -1,0 +1,19 @@
+description: Create GH "Commit Status"
+docker:
+  - image: cimg/base:current-22.04
+parameters:
+  check-name:
+    type: string
+    description: Name of the job to skip
+  status:
+    description: Status of check
+    type: enum
+    enum: ["error", "failure", "pending", "success"]
+  description:
+    description: Text that shows in GH checks
+    type: string
+steps:
+  - create_commit_status:
+      check-name: << parameters.check-name >>
+      status: << parameters.status >>
+      description: << parameters.description >>
