@@ -24,6 +24,19 @@ executor: << parameters.executor >>
 steps:
   - install-vfcli:
       init-cluster: << parameters.cluster >>
+  - run:
+      name: "Install Asciinema Deps"
+      shell: /bin/bash
+      command: |
+        sudo apt update
+        sudo apt install -y k9s python3-pip
+        python3 -m pip install asciinema
+        wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/Hack.zip
+        mkdir -p ~/.local/share/fonts/
+        unzip -d ~/.local/share/fonts/Hack Hack.zip
+        rm Hack.zip
+        wget -O agg https://github.com/asciinema/agg/releases/download/v1.5.0/agg-x86_64-unknown-linux-gnu
+        sudo install -o 1001 -g 1002 -m 0755 agg /usr/local/bin/agg
   - restore_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
   - run:
@@ -51,6 +64,30 @@ steps:
         # Gather summary state of all pods in the namespace
         echo "Gathering Kubernetes state before run for env $DEV_ENV_NAME"
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/pods-summary-state-before-run.log"
+
+  - run:
+      name: "Asciinema - Record k9s"
+      background: true
+      command: |
+        export TERM=xterm-256color
+
+        if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
+            DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
+        else
+            DEV_ENV_NAME=<< parameters.e2e-env-name >>
+        fi
+
+        mkdir /tmp/asciinema && cd /tmp/asciinema
+
+        asciinema rec \
+          --cols 250 \
+          --rows 50 \
+          --idle-time-limit 300 \
+          -c "k9s --headless --command \"ns ${DEV_ENV_NAME}\"" \
+          k9s.tape &
+        echo $! >/tmp/asciinema.pid
+        wait
+
   - run:
       name: Gather Logs
       environment:
@@ -130,6 +167,32 @@ steps:
         mkdir -p "${LOG_DIR}/${KUBE_STATE_DIR}"
 
         vfcli env gather-events -n "${DEV_ENV_NAME}" -o /tmp
+
+  - run:
+      name: Render asciinema
+      command: |
+        cd /tmp/asciinema
+
+        pkill -SIGHUP k9s
+
+        # wait for asciinema to stop gracefully
+        while pgrep -qF /tmp/asciinema.pid ; do
+          sleep 1
+        done
+
+        mkdir -p artifacts
+        gzip -c9 k9s.tape >./artifacts/k9s.tape.gz
+
+        # render to gif
+        agg --renderer fontdue \
+          --font-dir ~/.local/share/font/Hack \
+          --font-family "Hack Nerd Font Mono" \
+          k9s.tape ./artifacts/k9s.gif
+
+  - store_artifacts:
+      name: Store asciinema
+      path: /tmp/asciinema/artifacts
+      destination: asciinema
 
   - store_artifacts:
       name: Store uncompressed logs
