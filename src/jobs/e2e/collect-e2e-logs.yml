@@ -1,25 +1,25 @@
 description: Prepare an existing environment for e2e tests
 
 parameters:
-    cluster:
-      type: string
-      description: Name of the cluster in which the environment exists
-      default: "cm4-vf-dev-br-2-0-p2"
-    e2e-env-name:
-      type: string
-      description: Name of the environment to collect logs from
-    env-name-path:
-      type: string
-      description: Path to the env_name file
-      default: "/home/circleci/voiceflow/env_name.txt"
-    executor:
-      description: Executor to run the command on
-      type: executor
-      default: default-executor
-    smoke-test-jobs:
-      description: Comma separated list of smoke test jobs
-      type: string
-      default: "vfcommon/run-smoke-tests"
+  cluster:
+    type: string
+    description: Name of the cluster in which the environment exists
+    default: "cm4-vf-dev-br-2-0-p2"
+  e2e-env-name:
+    type: string
+    description: Name of the environment to collect logs from
+  env-name-path:
+    type: string
+    description: Path to the env_name file
+    default: "/home/circleci/voiceflow/env_name.txt"
+  executor:
+    description: Executor to run the command on
+    type: executor
+    default: collector-executor
+  smoke-test-jobs:
+    description: Comma separated list of smoke test jobs
+    type: string
+    default: "vfcommon/run-smoke-tests"
 executor: << parameters.executor >>
 steps:
   - install-vfcli:
@@ -29,7 +29,7 @@ steps:
   - run:
       name: Create directories
       environment:
-        LOG_DIR: &log_dir  /tmp/logs-<< parameters.e2e-env-name >>
+        LOG_DIR: &log_dir /tmp/logs-<< parameters.e2e-env-name >>
         COMPONENT_LOG_DIR: &component_log_dir component-logs
         KUBE_STATE_DIR: &kube_state_dir kubernetes-state
       command: |
@@ -51,33 +51,56 @@ steps:
         # Gather summary state of all pods in the namespace
         echo "Gathering Kubernetes state before run for env $DEV_ENV_NAME"
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/pods-summary-state-before-run.log"
+
+  - run:
+      name: "Asciinema - Record k9s"
+      background: true
+      command: |
+        export TERM=xterm-256color
+
+        if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
+            DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
+        else
+            DEV_ENV_NAME=<< parameters.e2e-env-name >>
+        fi
+
+        mkdir /tmp/asciinema && cd /tmp/asciinema
+
+        asciinema rec \
+          --cols 250 \
+          --rows 50 \
+          --idle-time-limit 300 \
+          -c "k9s --headless --namespace \"${DEV_ENV_NAME}\" --command 'pods /!Completed'" \
+          k9s.tape &
+        echo $! >/tmp/asciinema.pid
+        wait
+
   - run:
       name: Gather Logs
       environment:
-        LOG_DIR:  *log_dir
+        LOG_DIR: *log_dir
         COMPONENT_LOG_DIR: *component_log_dir
       background: true
       command: |
         function capture_logs() {
-            if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
-                DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
-            else
-                DEV_ENV_NAME=<< parameters.e2e-env-name >>
-            fi
-            echo "Capturing logs for environment $DEV_ENV_NAME"
-            # Read components into an array directly from the command output
-            components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
-            # Iterate over the first n-1 components.Process log collection in parallel as background processes
-            for ((i = 0; i < ${#components[@]} - 1; i++)); do
-                component=${components[$i]}
-                echo "Capturing logs for component $component"
-                stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" >>"${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$component.log" --since 5m &
-            done
-            # Handle the last component separately to introduce blocking.If all components' log collection is done as non blocking tasks,
-            # the circleci step will terminate.So having last component as blocking ensures the collect logs step continues executing
-            last_component=${components[${#components[@]}-1]}
-            echo "Capturing logs for last component $last_component"
-            stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$last_component" >>"${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$last_component.log" --since 5m
+          if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >>)" != "null" ]; then
+            DEV_ENV_NAME=$(cat << parameters.env-name-path >>)
+          else
+            DEV_ENV_NAME=<< parameters.e2e-env-name >>
+          fi
+
+          echo "Capturing logs for environment $DEV_ENV_NAME"
+
+          # Read components into an array directly from the command output
+          components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
+
+          # Iterate over the components. Process log collection in parallel as background processes
+          for component in "${components[@]}"; do
+            echo "Capturing logs for component $component"
+            stern -n "${DEV_ENV_NAME:?}" -l "app.kubernetes.io/name=$component" "${LOG_DIR:?}/${COMPONENT_LOG_DIR:?}/$component.log" --since 5m &
+          done
+
+          wait
         }
         capture_logs
 
@@ -99,21 +122,23 @@ steps:
         KUBE_STATE_DIR: *kube_state_dir
       command: |
         if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
-              DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
-          else
-              DEV_ENV_NAME=<< parameters.e2e-env-name >>
-          fi
+          DEV_ENV_NAME=$(cat << parameters.env-name-path >> )
+        else
+          DEV_ENV_NAME=<< parameters.e2e-env-name >>
+        fi
         # Read components into an array directly from the command output
         components=($(vfcli component list -n "${DEV_ENV_NAME:?}" | awk 'NR>3 {print $1}'))
         # Gather summary state of all pods in the namespace
         kubectl get pods -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/pods-summary-state-after-run.log"
         # Gather detailed state of all pods in the namespace.
-        for ((i = 0; i < ${#components[@]}; i++)); do
-            component=${components[$i]}
-            echo "Capturing logs for component $component"
-            kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/${component}-k8-state.log" &
-         done
-         wait
+        for component in "${components[@]}"; do
+          echo "Capturing logs for component $component"
+          kubectl describe pod $component -n $DEV_ENV_NAME >> "${LOG_DIR:?}/${KUBE_STATE_DIR:?}/${component}-k8-state.log" &
+        done
+
+        # wait for kubectls to finish
+        wait
+
   - run:
       name: Gather Kubernetes events
       environment:
@@ -130,6 +155,32 @@ steps:
         mkdir -p "${LOG_DIR}/${KUBE_STATE_DIR}"
 
         vfcli env gather-events -n "${DEV_ENV_NAME}" -o /tmp
+
+  - run:
+      name: Render asciinema
+      command: |
+        cd /tmp/asciinema
+
+        pkill -SIGHUP k9s
+
+        # wait for asciinema to stop gracefully
+        while pgrep -qF /tmp/asciinema.pid ; do
+          sleep 1
+        done
+
+        mkdir -p artifacts
+        gzip -c9 k9s.tape >./artifacts/k9s.tape.gz
+
+        # render to gif
+        agg --renderer fontdue \
+          --font-dir ~/.local/share/font/Hack \
+          --font-family "Hack Nerd Font Mono" \
+          k9s.tape ./artifacts/k9s.gif
+
+  - store_artifacts:
+      name: Store asciinema
+      path: /tmp/asciinema/artifacts
+      destination: asciinema
 
   - store_artifacts:
       name: Store uncompressed logs
