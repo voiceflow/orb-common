@@ -83,7 +83,7 @@ steps:
           --cols 250 \
           --rows 50 \
           --idle-time-limit 300 \
-          -c "k9s --headless --command \"ns ${DEV_ENV_NAME}\"" \
+          -c "k9s --headless --namespace \"${DEV_ENV_NAME}\" --command 'pods /!Completed'" \
           k9s.tape &
         echo $! >/tmp/asciinema.pid
         wait
