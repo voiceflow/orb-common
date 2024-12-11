@@ -33,28 +33,29 @@ steps:
         # otherwise creates a new environment with the provided name
         # and stores the env name in the cache
         force="<< parameters.force >>"
-
         echo "<< parameters.env-name >>" >env_name.txt # default use the passed in env name
-        if [[ -n "<< parameters.pool-type >>" ]]; then
-          if [[ $force == true ]]; then
-            echo "Force option is enabled... Proceeding with environment creation."
-          else
-            result=$(vfcli pool get-free-env --pool-type "<< parameters.pool-type >>" --output json)
-            if [[ -z $result ]] || [[ $(echo "$result" | jq 'keys | length') -eq 0 ]]; then
-              echo "No free environment found. Proceeding with environment creation."
-            else
-              echo "Free environment found: $result"
-              env_name=$(echo "$result" | jq -r '.name')
-              echo ${env_name} > env_name.txt
-              cat env_name.txt
-              echo "export ENV_NAME=${env_name}" >> $BASH_ENV
-              vfcli pool use-env --env-name ${env_name}
-              exit 0
-            fi
-          fi
-        else
+
+        if [[ -z "<< parameters.pool-type >>" ]]; then
           echo "Pool type not provided."
+          exit 0
         fi
+
+        if [[ $force == true ]]; then
+          echo "Force option is enabled... Proceeding with environment creation."
+          exit 0
+        fi
+
+        result=$(vfcli pool get-free-env --pool-type "<< parameters.pool-type >>" --output json)
+        if [[ -z $result ]] || [[ $(echo "$result" | jq 'keys | length') -eq 0 ]]; then
+          echo "No free environment found. Proceeding with environment creation."
+          exit 0
+        fi
+
+        echo "Free environment found: $result"
+        env_name=$(echo "$result" | jq -r '.name')
+        echo ${env_name} >env_name.txt
+        cat env_name.txt
+        vfcli pool use-env --env-name ${env_name}
 
   - save_cache:
       key: env_name_cache-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
