@@ -30,55 +30,69 @@ steps:
         force="<< parameters.force >>"
         if [[ $force == true ]]; then
           vfcli env delete --name "<< parameters.env-name >>" --interactive false
-        else
-          if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
-            env_name=$(cat << parameters.env-name-path >>)
-            echo "Env: $env_name will be released"
-          else
-            env_name="null"
-            echo "Env name file was not found. Will proceed to deleting the environment."
-          fi
-          if [[ "$env_name" != "null" ]] && [[ -n "$env_name" ]]; then
-            echo "Releasing the environment..... $env_name"
-            vfcli pool release-env --env-name "$env_name"
-            if [[ << parameters.reset-db >> == true ]]; then
-              echo "Resetting the database for $env_name"
-              echo "Triggering pipeline with env-name parameter"
-              response=$(curl -s -w "\n%{http_code}" \
-                --request POST \
-                --url "https://circleci.com/api/v2/project/gh/voiceflow/env-release-system/pipeline" \
-                --header "Circle-Token: ${CIRCLECI_API_TOKEN}" \
-                --header "content-type: application/json" \
-                --data "{\"parameters\":{\"e2e_env_name\":\"$env_name\",\"trigger_pipeline\":true}}")
-              http_status=$(echo "$response" | tail -n1)
-              response_body=$(echo "$response" | sed '$d')
-              if [[ $http_status == "201" || $http_status == "200" ]]; then
-                if echo "$response_body" | jq empty 2>/dev/null; then
-                  pipeline_id=$(echo "$response_body" | jq -r '.id // empty')
-                  pipeline_number=$(echo "$response_body" | jq -r '.number // empty')
-                  if [[ -n $pipeline_number ]]; then
-                    pipeline_url="https://app.circleci.com/pipelines/github/voiceflow/env-release-system/$pipeline_number"
-                    echo "Env Release Pipeline triggered successfully."
-                    echo "Pipeline URL: $pipeline_url"
-                    echo "Pipeline ID: $pipeline_id"
-                    echo "Exiting with success."
-                    exit 0
-                  else
-                    echo "Failed to retrieve pipeline number. Response body: $response_body"
-                  fi
-                else
-                  echo "Response is not valid JSON. Response body: $response_body"
-                fi
-              else
-                echo "Failed to trigger pipeline. HTTP status code: $http_status"
-                echo "Response body: $response_body"
-              fi
-            fi
-            vfcli env resume "$env_name" --interactive false
-            vfcli track attach --branch master --components all --name "$env_name" --interactive false --no-circleci
-            vfcli pool free-env --env-name "$env_name"
-          else
-            echo "Kick-starting the deletion of the environment."
-            vfcli env delete --name "<< parameters.env-name >>" --interactive false
-          fi
+          exit 0
         fi
+
+        if [ ! -f << parameters.env-name-path >> ] ||
+          [ "$(cat << parameters.env-name-path >> )" == "null" ] ||
+          [ -z "$(cat << parameters.env-name-path >> )" ]; then
+
+          echo "Env name file was not found. Will proceed to deleting the environment."
+          echo "Kick-starting the deletion of the environment."
+          vfcli env delete --name "<< parameters.env-name >>" --interactive false
+          exit 0
+        fi
+
+        env_name=$(cat << parameters.env-name-path >>)
+        echo "Env: $env_name will be released"
+
+        echo "Releasing the environment..... $env_name"
+        vfcli pool release-env --env-name "$env_name"
+
+        parse_response() {
+          local http_status="${1-}"
+          local response_body="${2-}"
+
+          if [[ ! ($http_status == "201" || $http_status == "200") ]]; then
+            echo "Failed to trigger pipeline. HTTP status code: $http_status"
+            echo "Response body: $response_body"
+            return 1
+          fi
+
+          if ! (echo "$response_body" | jq empty 2>/dev/null); then
+            echo "Response is not valid JSON. Response body: $response_body"
+            return 1
+          fi
+
+          pipeline_id=$(echo "$response_body" | jq -r '.id // empty')
+          pipeline_number=$(echo "$response_body" | jq -r '.number // empty')
+          if [[ -z $pipeline_number ]]; then
+            echo "Failed to retrieve pipeline number. Response body: $response_body"
+            return 1
+          fi
+
+          pipeline_url="https://app.circleci.com/pipelines/github/voiceflow/env-release-system/$pipeline_number"
+          echo "Env Release Pipeline triggered successfully."
+          echo "Pipeline URL: $pipeline_url"
+          echo "Pipeline ID: $pipeline_id"
+          echo "Exiting with success."
+          exit 0
+        }
+
+        if [[ << parameters.reset-db >> == true ]]; then
+          echo "Resetting the database for $env_name"
+          echo "Triggering pipeline with env-name parameter"
+          response=$(curl -s -w "\n%{http_code}" \
+            --request POST \
+            --url "https://circleci.com/api/v2/project/gh/voiceflow/env-release-system/pipeline" \
+            --header "Circle-Token: ${CIRCLECI_API_TOKEN}" \
+            --header "content-type: application/json" \
+            --data "{\"parameters\":{\"e2e_env_name\":\"$env_name\",\"trigger_pipeline\":true}}")
+          http_status=$(echo "$response" | tail -n1)
+          response_body=$(echo "$response" | sed '$d')
+          parse_response "${http_status}" "${response_body}"
+        fi
+
+        vfcli env resume "$env_name" --interactive false
+        vfcli track attach --branch master --components all --name "$env_name" --interactive false --no-circleci
+        vfcli pool free-env --env-name "$env_name"
