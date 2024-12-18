@@ -3,4 +3,4 @@ parameters:
     type: string
 docker: # run the steps with Docker.
   - image: mcr.microsoft.com/playwright:v<< parameters.playwright-version >>-noble
-resource_class: 2xlarge
+resource_class: xlarge
