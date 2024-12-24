@@ -15,10 +15,14 @@ parameters:
     description: Force execution of the command on all packages
     type: boolean
     default: false
+  command:
+    description: Command to run
+    type: string
+    default: yarn test:integration
 steps:
   - monorepo_exec_command:
       step_name: << parameters.step_name >>
-      command: yarn test:integration
+      command: << parameters.command >>
       extra_args: << parameters.extra_args >>
       run_on_root: << parameters.run_on_root >>
       force_execution: << parameters.force_execution >>

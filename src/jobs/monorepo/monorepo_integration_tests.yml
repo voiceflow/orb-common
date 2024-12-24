@@ -7,6 +7,10 @@ parameters:
     description: Executor to run the command on
     type: executor
     default: node-executor
+  command:
+    description: Command to run
+    type: string
+    default: yarn test:integration
 executor: << parameters.executor >>
 steps:
   - checkout_clone
@@ -15,4 +19,5 @@ steps:
   - install_node_modules
   - monorepo_integration_tests:
       run_on_root: << parameters.run_on_root >>
+      command: << parameters.command >>
       force_execution: true
