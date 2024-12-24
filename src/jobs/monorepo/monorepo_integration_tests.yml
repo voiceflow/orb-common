@@ -11,9 +11,19 @@ parameters:
     description: Command to run
     type: string
     default: yarn test:integration
+  request_remote_docker:
+    description: Add the option to request a new remote docker, set to false when you concat docker jobs
+    type: boolean
+    default: false
 executor: << parameters.executor >>
 steps:
   - checkout_clone
+  - when:
+    condition: << parameters.request_remote_docker >>
+    steps:
+      - docker_login
+      - setup_remote_docker:
+          version: default
   - attach_workspace:
       at: ~/voiceflow
   - install_node_modules
