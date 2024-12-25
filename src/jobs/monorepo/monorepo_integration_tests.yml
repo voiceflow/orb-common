@@ -24,6 +24,11 @@ steps:
         - setup_remote_docker:
             version: default
         - docker_login
+        - staged_buildx:
+            image_repo: local-gen-run # only exists for single job, not pushed anywhere
+            image_tag: testing
+            target: testing
+            platforms: linux/amd64
   - attach_workspace:
       at: ~/voiceflow
   - install_node_modules
