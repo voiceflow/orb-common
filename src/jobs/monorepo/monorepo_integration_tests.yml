@@ -21,9 +21,9 @@ steps:
   - when:
       condition: << parameters.request_remote_docker >>
       steps:
-        - docker_login
         - setup_remote_docker:
             version: default
+        - docker_login
   - attach_workspace:
       at: ~/voiceflow
   - install_node_modules
