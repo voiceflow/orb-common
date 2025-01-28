@@ -79,11 +79,11 @@ steps:
             command: |-
               PRERELEASE="<< parameters.prerelease >>"
               if [ "$PRERELEASE" = "true" ]; then
-                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@8.0.0 publish prerelease \
+                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish prerelease \
                   --message "<< parameters.commit_message >>" --yes \
                   --conventional-commits --no-verify-access << parameters.publish_args >>
               else
-                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@8.0.0 publish \
+                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish \
                   --message "<< parameters.commit_message >>" --yes \
                   --conventional-commits --no-verify-access << parameters.publish_args >>
               fi
@@ -95,14 +95,12 @@ steps:
             name: Release Monorepo
             command: |-
               PRERELEASE="<< parameters.prerelease >>"
-              npm install @lerna-lite/publish@3.0.0 -g
-              npm install @lerna-lite/version@3.0.0 -g
               if [ "$PRERELEASE" = "true" ]; then
-                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@3.0.0 lerna publish prerelease \
+                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish prerelease \
                   --message "<< parameters.commit_message >>" --yes \
                   --conventional-commits --no-verify-access << parameters.publish_args >>
               else
-                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@3.0.0 lerna publish \
+                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish \
                   --message "<< parameters.commit_message >>" --yes \
                   --conventional-commits --no-verify-access << parameters.publish_args >>
               fi
