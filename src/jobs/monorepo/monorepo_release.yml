@@ -47,6 +47,10 @@ parameters:
     description: The executor used to run this job
     type: executor
     default: node-executor
+  prerelease:
+    description: Creates a prerelease
+    type: boolean
+    default: false
 steps:
   - add_ssh_keys:
       fingerprints:
@@ -73,9 +77,17 @@ steps:
         - run:
             name: Release Monorepo
             command: |-
-              SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish \
-                --message "<< parameters.commit_message >>" --yes \
-                --conventional-commits --no-verify-access << parameters.publish_args >>
+              PRERELEASE="<< parameters.prerelease >>"
+              if [ "$PRERELEASE" = "true" ]; then
+                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish prerelease \
+                  --message "<< parameters.commit_message >>" --yes \
+                  --no-push --no-git-tag-version --canary \
+                  --conventional-commits --no-verify-access << parameters.publish_args >>
+              else
+                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish \
+                  --message "<< parameters.commit_message >>" --yes \
+                  --conventional-commits --no-verify-access << parameters.publish_args >>
+              fi
   - when:
       condition:
         equal: ["lite", << parameters.release_engine >>]
@@ -83,10 +95,17 @@ steps:
         - run:
             name: Release Monorepo
             command: |-
-
-              SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish \
-                --message "<< parameters.commit_message >>" --yes \
-                --conventional-commits --no-verify-access << parameters.publish_args >>
+              PRERELEASE="<< parameters.prerelease >>"
+              if [ "$PRERELEASE" = "true" ]; then
+                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish prerelease \
+                  --message "<< parameters.commit_message >>" --yes \
+                  --no-push --no-git-tag-version --canary \
+                  --conventional-commits --no-verify-access << parameters.publish_args >>
+              else
+                SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish \
+                  --message "<< parameters.commit_message >>" --yes  \
+                  --conventional-commits --no-verify-access << parameters.publish_args >>
+              fi
 
   - when:
       condition:

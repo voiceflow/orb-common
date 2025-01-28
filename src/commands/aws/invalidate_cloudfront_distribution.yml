@@ -1,0 +1,18 @@
+parameters:
+  step_name:
+    description: Name of the step
+    type: string
+    default: Invalidate Cloudfront Distribution
+  cloudfron_distribution_id:
+    description: AWS Cloudfront Distribution ID
+    type: string
+  paths:
+    description: Paths to invalidate
+    type: string
+steps:
+  - run:
+      name: << parameters.step_name >>
+      environment:
+        DISTRIBUTION: << parameters.cloudfron_distribution_id >>
+        PATHS: << parameters.paths >>
+      command: <<include(scripts/aws/invalidate_cloudfront_distribution.sh)>>
