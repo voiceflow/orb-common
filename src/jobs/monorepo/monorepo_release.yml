@@ -95,6 +95,8 @@ steps:
             name: Release Monorepo
             command: |-
               PRERELEASE="<< parameters.prerelease >>"
+              npm install @lerna-lite/publish@3.0.0 -g
+              npm install @lerna-lite/version@3.0.0 -g
               if [ "$PRERELEASE" = "true" ]; then
                 SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@3.0.0 lerna publish prerelease \
                   --message "<< parameters.commit_message >>" --yes \
