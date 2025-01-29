@@ -78,10 +78,12 @@ steps:
             name: Release Monorepo
             command: |-
               PRERELEASE="<< parameters.prerelease >>"
+              BRANCH=$(git rev-parse --abbrev-ref HEAD)
+              BRANCH_FORMATTED=$(echo $BRANCH | sed 's/[^a-zA-Z0-9.-]/-/g')
               if [ "$PRERELEASE" = "true" ]; then
                 SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish prerelease \
                   --message "<< parameters.commit_message >>" --yes \
-                  --no-push --no-git-tag-version --canary \
+                  --no-push --no-git-tag-version --canary --preid $BRANCH_FORMATTED \
                   --conventional-commits --no-verify-access << parameters.publish_args >>
               else
                 SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish \
@@ -96,10 +98,12 @@ steps:
             name: Release Monorepo
             command: |-
               PRERELEASE="<< parameters.prerelease >>"
+              BRANCH=$(git rev-parse --abbrev-ref HEAD)
+              BRANCH_FORMATTED=$(echo $BRANCH | sed 's/[^a-zA-Z0-9.-]/-/g')
               if [ "$PRERELEASE" = "true" ]; then
                 SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish prerelease \
                   --message "<< parameters.commit_message >>" --yes \
-                  --no-push --no-git-tag-version --canary \
+                  --no-push --no-git-tag-version --canary --preid $BRANCH_FORMATTED \
                   --conventional-commits --no-verify-access << parameters.publish_args >>
               else
                 SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish \
