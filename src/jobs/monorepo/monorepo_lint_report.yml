@@ -6,7 +6,7 @@ parameters:
   executor:
     description: Executor to run the command on
     type: executor
-    default: node-executor
+    default: code-test-executor-node-20
 executor: << parameters.executor >>
 steps:
   - checkout_clone
