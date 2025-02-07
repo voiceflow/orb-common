@@ -1,7 +1,7 @@
 parameters:
   integration-command:
     type: string
-    default: "integration"
+    default: "test:integration"
   executor:
     description: Executor to run the command on
     type: executor
