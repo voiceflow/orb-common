@@ -131,6 +131,8 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     BUILD_ARGS+=( "${CACHE_TO_ARG[@]}" )
     BUILD_ARGS+=( --builder "${BUILDER_NAME-}")
 
+    DD_TAGS_ARG+=(--build-arg DD_GIT_REPOSITORY_URL="${CIRCLE_REPOSITORY_URL}")
+
     TAGS=(-t "$IMAGE_NAME")
 
     if [[ -z "$IMAGE_TAG_OVERRIDE" ]]; then
@@ -145,6 +147,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
         --build-arg build_BUILD_URL="${CIRCLE_BUILD_URL}" \
         --build-arg build_GIT_SHA="${CIRCLE_SHA1}" \
         --build-arg build_SEM_VER="${SEM_VER}" \
+        "${DD_TAGS_ARG[@]}" \
         "${REGISTRY_ARG[@]}" \
         "${PACKAGE_ARG[@]}" \
         "${AWS_CREDENTIALS_ARG[@]}" \
