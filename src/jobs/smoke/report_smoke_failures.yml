@@ -34,7 +34,7 @@ steps:
         fi
 
         npx --package=@voiceflow/test-cli -- \
-          testcli report \
+          testcli report pull-request \
             --environment "${env_name}" \
             --smokeRef << parameters.branch-or-commit >> \
             --channel << parameters.channel >> \
