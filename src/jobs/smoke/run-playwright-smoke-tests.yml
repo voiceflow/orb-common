@@ -23,7 +23,7 @@ parameters:
     description: "the branch or commit of the automated-testing repo to checkout"
   smoke-command:
     type: string
-    default: "test:smoke:playwright"
+    default: "test:ci:pull-request"
   env-name-path:
     type: string
     description: Path to the env_name file
