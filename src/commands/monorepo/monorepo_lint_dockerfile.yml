@@ -16,6 +16,7 @@ parameters:
     type: boolean
     default: false
 steps:
+  - install_latest_hadolint
   - monorepo_exec_command:
       step_name: << parameters.step_name >>
       command: yarn lint:dockerfiles
