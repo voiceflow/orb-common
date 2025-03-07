@@ -139,13 +139,24 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     TAGS+=(-t "$IMAGE_REPO:k8s-$BRANCH_NAME-$CIRCLE_SHA1")
   fi
 
+  LEGACY_BUILD_ARGS=(
+    --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}"
+    --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}"
+    --build-arg build_BUILD_URL="${CIRCLE_BUILD_URL}"
+    --build-arg build_GIT_SHA="${CIRCLE_SHA1}"
+    --build-arg build_SEM_VER="${SEM_VER}"
+  )
+
+  DATADOG_LABELS=(
+    --label "com.datadoghq.tags.service=${COMPONENT}"
+    --label "com.datadoghq.tags.version=${build_GIT_SHA}"
+    --label "com.datadoghq.tags.git.commit.sha=${build_GIT_SHA}"
+    --label "com.datadoghq.tags.git.repository_url=${CIRCLE_REPOSITORY_URL}"
+  )
+
   echo "BUILD_ARGS: ${BUILD_ARGS[*]} $PLATFORM"
   docker buildx build \
-    --build-arg build_BUILD_NUM="${CIRCLE_BUILD_NUM}" \
-    --build-arg build_GITHUB_TOKEN="${GITHUB_TOKEN}" \
-    --build-arg build_BUILD_URL="${CIRCLE_BUILD_URL}" \
-    --build-arg build_GIT_SHA="${CIRCLE_SHA1}" \
-    --build-arg build_SEM_VER="${SEM_VER}" \
+    "${LEGACY_BUILD_ARGS[@]}" \
     "${DD_TAGS_ARG[@]}" \
     "${REGISTRY_ARG[@]}" \
     "${PACKAGE_ARG[@]}" \
@@ -153,6 +164,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     "${NPM_TOKEN_SECRET[@]}" \
     "${BUILD_ARGS[@]}" \
     "${OUTPUT_ARGS[@]}" \
+    "${DATADOG_LABELS[@]}" \
     --platform "$PLATFORM" \
     -f "$BUILD_CONTEXT/$DOCKERFILE" \
     "${TAGS[@]}" \
