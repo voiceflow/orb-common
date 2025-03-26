@@ -148,7 +148,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
   )
 
   DATADOG_LABELS=(
-    --label "com.datadoghq.tags.service=${COMPONENT}"
+    --label "com.datadoghq.tags.service=${PACKAGE}"
     --label "com.datadoghq.tags.version=${CIRCLE_SHA1}"
     --label "com.datadoghq.tags.git.commit.sha=${CIRCLE_SHA1}"
     --label "com.datadoghq.tags.git.repository_url=${CIRCLE_REPOSITORY_URL}"
