@@ -1,0 +1,32 @@
+executor: build-executor
+parameters:
+  chart_directory:
+    description: Directory containing charts
+    type: string
+    default: .
+  charts:
+    description: List of charts to publish
+    type: string
+    default: ""
+  prepublish_steps:
+    description: Steps to run on repo before publishing charts
+    type: steps
+    default: []
+steps:
+  - checkout_clone
+  - steps: << parameters.prepublish_steps >>
+  - helm-add-repos
+  - run: &package-publish-charts-s3
+      name: Package and publish charts to S3
+      working_directory: << parameters.chart_directory >>
+      command: <<include(scripts/helm/package-publish-charts.sh)>>
+      environment:
+        CHARTS: << parameters.charts >>
+  # Keep the HACK to fix S3 bucket issues
+  - run: *package-publish-charts-s3
+  - run:
+      name: Package and publish charts to ECR
+      working_directory: << parameters.chart_directory >>
+      command: <<include(scripts/helm/package-publish-charts-ecr.sh)>>
+      environment:
+        CHARTS: << parameters.charts >>
