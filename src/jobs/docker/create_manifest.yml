@@ -1,0 +1,28 @@
+executor:
+  name: build-executor
+  tag: 25.0.5-dind-alpha-multi
+parameters:
+  image_repo:
+    description: repo
+    type: string
+  image_tag:
+    description: tag
+    type: string
+    default: ""
+  component:
+    description: The component type for development environment deployment
+    type: string
+  kms_key:
+    description: KMS Key to sign the containers
+    type: string
+    default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
+steps:
+  - docker_login
+  - run:
+      name: "Pull each architecture by suffix tag and create a single manifest for it"
+      environment:
+        IMAGE_REPO: "<< parameters.image_repo >>"
+        IMAGE_TAG_OVERRIDE: "<< parameters.image_tag >>"
+        KMS_KEY: "<< parameters.kms_key >>"
+        COMPONENT: "<< parameters.component >>"
+      command: <<include(scripts/docker/create_manifest.sh)>>
