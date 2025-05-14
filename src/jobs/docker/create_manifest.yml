@@ -16,7 +16,21 @@ parameters:
     description: KMS Key to sign the containers
     type: string
     default: "awskms:///2e64fa98-d1b0-491a-acf6-1f5fc6f94ecf"
+  bucket:
+    description: The container image repository
+    type: string
+    default: "com.voiceflow.ci.assets"
+  check_track_exists:
+    description: checks if the track exists
+    type: boolean
+    default: true
 steps:
+  - when:
+      condition: << parameters.check_track_exists >>
+      steps:
+        - check_track_exists:
+            component: << parameters.component >>
+            bucket: << parameters.bucket >>
   - docker_login
   - run:
       name: "Pull each architecture by suffix tag and create a single manifest for it"
