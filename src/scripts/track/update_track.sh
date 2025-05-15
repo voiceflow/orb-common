@@ -181,7 +181,7 @@ IMAGE_SHA=$(crane digest "$IMAGE_NAME")
 IMAGE_SHA="${IMAGE_SHA//sha256:/}"
 
 TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
-if ((IS_GTMQ)); then
+if ((IS_GTMQ)) && ((UPDATE_TRACK_FILE)); then
   echo "Creating track for ${CIRCLE_BRANCH}"
   echo "TRACK: $TRACK"
   mkdir -p "$(dirname "/tmp/$TRACK")"
