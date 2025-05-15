@@ -17,8 +17,7 @@ check_track_exist() {
   # Load TRACK_EXISTS variable from file previously stored in the tmp folder
   # shellcheck disable=SC1091
   source "/tmp/TRACK_STATUS"
-
-  if [[ "$TRACK_EXISTS" != "true" && "$CIRCLE_BRANCH" =~ "^gtmq_" ]]; then
+  if [[ "$TRACK_EXISTS" != "true" && ! "$CIRCLE_BRANCH" =~ ^gtmq_ ]]; then
     echo "Track does not exist! avoiding update!"
     exit 0
   fi
@@ -85,11 +84,6 @@ update_track() {
   BUCKET="com.voiceflow.ci.assets"
   TRACK="tracks/${COMPONENT}/${CIRCLE_BRANCH}"
   echo "TRACK: $TRACK"
-
-  if ! aws s3 cp "s3://$BUCKET/$TRACK" "/tmp/$TRACK"; then
-    echo "Track does not exist"
-    exit 0
-  fi
 
   aws s3 cp - "s3://$BUCKET/$TRACK" <<EOF
 ${COMPONENT}:
