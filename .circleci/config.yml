@@ -33,7 +33,7 @@ update_common_orb_context: &update_common_orb_context
 
         echo "Updating ORB_RELEASE_VERSION: ${ORB_RELEASE_VERSION}"
         # value set through stdin
-        echo "$ORB_RELEASE_VERSION" | circleci context store-secret --org-id "$ORG_ID" dev-test COMMON_ORB_VERSION
+        echo "$ORB_RELEASE_VERSION" | circleci context store-secret --token "$CIRCLE_TOKEN" --org-id "$ORG_ID" dev-test COMMON_ORB_VERSION
 
 workflows:
   publish-dev-orb:
