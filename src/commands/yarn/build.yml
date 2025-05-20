@@ -55,4 +55,4 @@ steps:
       monorepo_package_folder: << parameters.package_folder >>
       step_name: << parameters.step_name >>
       wait: << parameters.wait >>
-      yarn_command: yarn build<<# parameters.package >>:<</ parameters.package >><< parameters.package >> << parameters.extra_args >>
+      yarn_command: NODE_OPTIONS=--max_old_space_size=4096 yarn build<<# parameters.package >>:<</ parameters.package >><< parameters.package >> << parameters.extra_args >>
