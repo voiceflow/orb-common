@@ -6,12 +6,13 @@ source "/tmp/TRACK_STATUS"
 
 echo "New version published: ${SEM_VER}"
 
-if [[ $TRACK_EXISTS == "true"  && -n "$SEM_VER" ]]; then
-    # update the track
-    TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
-    echo "$TRACK"
-    echo "$SEM_VER" > "/tmp/$TRACK"
-    aws s3 cp "/tmp/$TRACK" "s3://$BUCKET/$TRACK"
+if [[ $TRACK_EXISTS == "true" && -n "$SEM_VER" ]]; then
+  # update the track
+  TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
+  echo "$TRACK"
+  echo "$SEM_VER" >"/tmp/$TRACK"
+  aws s3 cp "/tmp/$TRACK" "s3://$BUCKET/$TRACK"
 else
-    echo "Track does not exist! avoiding update!"
+  echo "Track does not exist! avoiding update!"
 fi
+
