@@ -10,6 +10,7 @@ if [[ $TRACK_EXISTS == "true" && -n "$SEM_VER" ]]; then
   # update the track
   TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
   echo "$TRACK"
+  mkdir -p "$(dirname "/tmp/$TRACK")"
   echo "$SEM_VER" >"/tmp/$TRACK"
   aws s3 cp "/tmp/$TRACK" "s3://$BUCKET/$TRACK"
 else
