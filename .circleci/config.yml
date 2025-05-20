@@ -3,11 +3,10 @@ orbs:
   orb-tools: circleci/orb-tools@11.2.0
   shellcheck: circleci/shellcheck@3.1.2
 
-
 # Filter required due to CircleCI behaviour described here: https://discuss.circleci.com/t/cant-trigger-workflow-on-git-tag-push-using-when-condition/43252/5
 tags_filter: &tags_filter
   tags:
-    only: ['/.*/']
+    only: ["/.*/"]
 
 # Copies configs from their respective subdirectories into
 # the appropriate root directories before packing
@@ -22,12 +21,11 @@ extract_sections_from_subdirectories: &extract_sections_from_subdirectories
           find src/$DIR -type f -exec mv {} src/$DIR \; || :
         done;
 
-
 workflows:
   publish-dev-orb:
     when:
       not:
-        equal: [ master, << pipeline.git.branch >> ]
+        equal: [master, << pipeline.git.branch >>]
     jobs:
       - orb-tools/lint
       - shellcheck/check:
@@ -40,7 +38,6 @@ workflows:
           vcs-type: << pipeline.project.type >>
           orb-name: voiceflow/common
           pub-type: dev
-
 
   publish-orb:
     when: << pipeline.git.tag >>
