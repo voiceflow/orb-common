@@ -122,11 +122,3 @@ steps:
       builder_name: "<< parameters.builder_name >>"
       update_track_file: false
       enable_push: "<< parameters.enable_push >>"
-  # The format of the track file for the database is different from the other tracks
-  - run:
-      name: Update Track
-      environment:
-        SEM_VER: '<< parameters.semantic_version >>'
-        BUCKET: '<< parameters.bucket >>'
-        COMPONENT: '<< parameters.component >>'
-      command: <<include(scripts/track/update_database_track.sh)>>

@@ -180,27 +180,31 @@ IMAGE_SHA=$(crane digest "$IMAGE_NAME")
 # Remove the sha256: string
 IMAGE_SHA="${IMAGE_SHA//sha256:/}"
 
-TRACK="tracks/$COMPONENT/$CIRCLE_BRANCH"
-if ((IS_GTMQ)) && ((UPDATE_TRACK_FILE)); then
-  echo "Creating track for ${CIRCLE_BRANCH}"
+update_track() {
+  ### update the track
+  BUCKET="com.voiceflow.ci.assets"
+  TRACK="tracks/${COMPONENT}/${CIRCLE_BRANCH}"
   echo "TRACK: $TRACK"
+
   mkdir -p "$(dirname "/tmp/$TRACK")"
-  cat - <<EOF >"/tmp/$TRACK"
+
+  if [[ "$COMPONENT" = "database-cli" ]]; then
+    echo "New version published: ${SEM_VER?}"
+    echo "${SEM_VER}" >"/tmp/${TRACK}"
+  else
+    cat <<EOF >"/tmp/${TRACK}"
 ${COMPONENT}:
   image:
     tag: ${IMAGE_TAG}
-    sha: ${IMAGE_SHA}
+    sha: ${IMAGE_DIGEST#sha256:}
 EOF
+  fi
+  aws s3 cp "/tmp/${TRACK}" "s3://$BUCKET/$TRACK"
+}
 
-  aws s3 cp "/tmp/$TRACK" "s3://$BUCKET/$TRACK"
-elif ((UPDATE_TRACK_FILE)); then
-  # update the track
-  echo "TRACK: $TRACK"
-
-  # the file /tmp/$TRACK is downloaded in the check_track_exists step
-  yq -y -i --arg tag "${IMAGE_TAG}" ".\"$COMPONENT\".image.tag=\$tag" "/tmp/$TRACK"
-  yq -y -i --arg sha "${IMAGE_SHA}" ".\"$COMPONENT\".image.sha=\$sha" "/tmp/$TRACK"
-  aws s3 cp "/tmp/$TRACK" "s3://$BUCKET/$TRACK"
+if ((UPDATE_TRACK_FILE)); then
+  echo "Creating track for ${CIRCLE_BRANCH}"
+  update_track
 else
   echo "Skipping track update"
 fi

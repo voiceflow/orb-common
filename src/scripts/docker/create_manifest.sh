@@ -85,12 +85,20 @@ update_track() {
   TRACK="tracks/${COMPONENT}/${CIRCLE_BRANCH}"
   echo "TRACK: $TRACK"
 
-  aws s3 cp - "s3://$BUCKET/$TRACK" <<EOF
+  mkdir -p "$(dirname "/tmp/$TRACK")"
+
+  if [[ "$COMPONENT" = "database-cli" ]]; then
+    echo "New version published: ${IMAGE_TAG_OVERRIDE?}"
+    echo "${IMAGE_TAG_OVERRIDE}" >"/tmp/${TRACK}"
+  else
+    cat <<EOF >"/tmp/${TRACK}"
 ${COMPONENT}:
   image:
     tag: ${IMAGE_TAG}
     sha: ${IMAGE_DIGEST#sha256:}
 EOF
+  fi
+  aws s3 cp "/tmp/${TRACK}" "s3://$BUCKET/$TRACK"
 }
 
 ## Start

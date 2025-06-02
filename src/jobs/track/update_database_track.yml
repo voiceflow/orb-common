@@ -1,5 +1,9 @@
-executor: build-executor
+executor: << parameters.executor >>
 parameters:
+  executor:
+    description: Executor to use
+    type: executor
+    default: build-executor
   component:
     description: The component type for development environment deployment
     type: string
