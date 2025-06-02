@@ -17,7 +17,7 @@ parameters:
   extra_build_args:
     description: Arguments to pass while building the docker image
     type: string
-    default: ''
+    default: ""
   enable_load:
     description: Load image into local docker
     type: boolean
@@ -29,7 +29,7 @@ parameters:
   build_context:
     description: Path to the context for the docker build
     type: string
-    default: '.'
+    default: "."
   force_execute:
     description: force to update the build, if there is a change or not.
     type: boolean
@@ -111,7 +111,7 @@ steps:
       force_execute: "<< parameters.force_execute >>"
       package: "<< parameters.package >>"
       package_folder: "<< parameters.package_folder >>"
-      image_tag: '<< parameters.semantic_version >>'
+      image_tag: "<< parameters.semantic_version >>"
       sem_ver_override: "<< parameters.semantic_version >>"
       kms_key: "<< parameters.kms_key >>"
       inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
