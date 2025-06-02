@@ -40,8 +40,10 @@ EOF
 }
 
 create_and_sign() {
+  set +e
   ARM64_DIGEST_REF=$(getDigestRef arm64)
   AMD64_DIGEST_REF=$(getDigestRef amd64)
+  set -e
 
   DIGESTS=()
 
@@ -57,6 +59,9 @@ create_and_sign() {
     echo "ERROR: no digests found"
     exit 1
   fi
+
+  echo "Creating ${IMAGE_NAME} using: "
+  printf -- "- %s\n" "${DIGESTS[@]}"
 
   docker manifest create "${IMAGE_NAME}" "${DIGESTS[@]}" --amend
   IMAGE_DIGEST=$(docker manifest push "${IMAGE_NAME}")
