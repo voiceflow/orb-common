@@ -52,21 +52,29 @@ fi
 IMAGE_TAG="${IMAGE_TAG_OVERRIDE:-"k8s-$CIRCLE_SHA1"}"
 
 IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
-# Get the tag that is running right now
-if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
-  # Update the tags
-  git fetch --tags
-  if [[ -n "$PACKAGE" ]]; then
-    SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*")
-    SEM_VER="${SEM_VER##*@}"
+
+get_sem_ver() {
+  local SEM_VER
+  # Get the tag that is running right now
+  if [[ "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANCH" == "production" ]]; then
+    # Update the tags
+    git fetch --tags --quiet
+    if [[ -n "$PACKAGE" ]]; then
+      SEM_VER=$(git describe --abbrev=0 --tags --match "@voiceflow/$PACKAGE@*")
+      SEM_VER="${SEM_VER##*@}"
+    else
+      SEM_VER=$(git describe --abbrev=0 --tags)
+    fi
+  # Only used by database-cli
+  elif [[ "$SEM_VER_OVERRIDE" != "" ]]; then
+    SEM_VER="${SEM_VER_OVERRIDE}"
   else
-    SEM_VER=$(git describe --abbrev=0 --tags)
+    SEM_VER="${CIRCLE_BRANCH}-${CIRCLE_SHA1}"
   fi
-elif [[ "$SEM_VER_OVERRIDE" != "" ]]; then
-  SEM_VER=$SEM_VER_OVERRIDE
-else
-  SEM_VER="$CIRCLE_BRANCH-$CIRCLE_SHA1"
-fi
+  echo "${SEM_VER}"
+}
+
+SEM_VER=$(get_sem_ver)
 
 # In a monorepo we need to copy the yarn lock file from root
 if [[ ! -f "$BUILD_CONTEXT/yarn.lock" && -f "yarn.lock" ]]; then
