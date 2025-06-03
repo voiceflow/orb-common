@@ -10,6 +10,10 @@ parameters:
   image_repo:
     description: The container image repository
     type: string
+  image_tag:
+    description: The container image tag
+    type: string
+    default: ""
   semantic_version:
     type: string
     default: ""
@@ -23,3 +27,4 @@ steps:
       image_repo: "<< parameters.image_repo >>"
       semantic_version: "<< parameters.semantic_version >>"
       platform: "<< parameters.platform >>"
+      image_tag: "<< parameters.image_tag >>"

@@ -10,6 +10,10 @@ parameters:
   image_repo:
     description: The container image repository
     type: string
+  image_tag:
+    description: The container image tag
+    type: string
+    default: ""
   dockerfile:
     description: Name of the Dockerfile to build
     type: string
@@ -111,7 +115,7 @@ steps:
       force_execute: "<< parameters.force_execute >>"
       package: "<< parameters.package >>"
       package_folder: "<< parameters.package_folder >>"
-      image_tag: "<< parameters.semantic_version >>"
+      image_tag: "<< parameters.image_tag >>"
       sem_ver_override: "<< parameters.semantic_version >>"
       kms_key: "<< parameters.kms_key >>"
       inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
