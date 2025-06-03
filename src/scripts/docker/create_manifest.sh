@@ -40,8 +40,10 @@ EOF
 }
 
 create_and_sign() {
+  set +e
   ARM64_DIGEST_REF=$(getDigestRef arm64)
   AMD64_DIGEST_REF=$(getDigestRef amd64)
+  set -e
 
   DIGESTS=()
 
@@ -57,6 +59,9 @@ create_and_sign() {
     echo "ERROR: no digests found"
     exit 1
   fi
+
+  echo "Creating ${IMAGE_NAME} using: "
+  printf -- "- %s\n" "${DIGESTS[@]}"
 
   docker manifest create "${IMAGE_NAME}" "${DIGESTS[@]}" --amend
   IMAGE_DIGEST=$(docker manifest push "${IMAGE_NAME}")
@@ -85,12 +90,20 @@ update_track() {
   TRACK="tracks/${COMPONENT}/${CIRCLE_BRANCH}"
   echo "TRACK: $TRACK"
 
-  aws s3 cp - "s3://$BUCKET/$TRACK" <<EOF
+  mkdir -p "$(dirname "/tmp/$TRACK")"
+
+  if [[ "$COMPONENT" = "database-cli" ]]; then
+    echo "New version published: ${IMAGE_TAG_OVERRIDE?}"
+    echo "${IMAGE_TAG_OVERRIDE}" >"/tmp/${TRACK}"
+  else
+    cat <<EOF >"/tmp/${TRACK}"
 ${COMPONENT}:
   image:
     tag: ${IMAGE_TAG}
     sha: ${IMAGE_DIGEST#sha256:}
 EOF
+  fi
+  aws s3 cp "/tmp/${TRACK}" "s3://$BUCKET/$TRACK"
 }
 
 ## Start

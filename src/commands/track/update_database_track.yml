@@ -10,6 +10,10 @@ parameters:
   image_repo:
     description: The container image repository
     type: string
+  image_tag:
+    description: The container image tag
+    type: string
+    default: ""
   dockerfile:
     description: Name of the Dockerfile to build
     type: string
@@ -17,7 +21,7 @@ parameters:
   extra_build_args:
     description: Arguments to pass while building the docker image
     type: string
-    default: ''
+    default: ""
   enable_load:
     description: Load image into local docker
     type: boolean
@@ -29,7 +33,7 @@ parameters:
   build_context:
     description: Path to the context for the docker build
     type: string
-    default: '.'
+    default: "."
   force_execute:
     description: force to update the build, if there is a change or not.
     type: boolean
@@ -111,7 +115,7 @@ steps:
       force_execute: "<< parameters.force_execute >>"
       package: "<< parameters.package >>"
       package_folder: "<< parameters.package_folder >>"
-      image_tag: '<< parameters.semantic_version >>'
+      image_tag: "<< parameters.image_tag >>"
       sem_ver_override: "<< parameters.semantic_version >>"
       kms_key: "<< parameters.kms_key >>"
       inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
@@ -122,11 +126,3 @@ steps:
       builder_name: "<< parameters.builder_name >>"
       update_track_file: false
       enable_push: "<< parameters.enable_push >>"
-  # The format of the track file for the database is different from the other tracks
-  - run:
-      name: Update Track
-      environment:
-        SEM_VER: '<< parameters.semantic_version >>'
-        BUCKET: '<< parameters.bucket >>'
-        COMPONENT: '<< parameters.component >>'
-      command: <<include(scripts/track/update_database_track.sh)>>
