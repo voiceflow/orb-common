@@ -5,7 +5,7 @@ parameters:
     default: medium
   tag:
     type: string
-    default: 25.0.5-dind-vf-2
+    default: 25.0.5-dind-vf-4
 working_directory: ~/voiceflow
 docker:
   - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-image:<< parameters.tag >>

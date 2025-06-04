@@ -1,6 +1,5 @@
 executor:
   name: build-executor
-  tag: 25.0.5-dind-alpha-multi
 parameters:
   image_repo:
     description: repo
