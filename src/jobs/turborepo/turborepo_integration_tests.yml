@@ -1,0 +1,28 @@
+parameters:
+  executor:
+    description: Executor to run the command on
+    type: executor
+    default: node-executor-node-20
+  command:
+    description: Script to execute tests
+    type: string
+    default: yarn test:integration
+executor: << parameters.executor >>
+steps:
+  - checkout_clone
+  - attach_workspace:
+      at: ~/voiceflow
+  - turborepo_install
+  - turborepo_restore_cache:
+      build_prefix: build-cache
+      prefix: integration-test-cache
+  # needed because integration tests use testcontainers which starts docker containers
+  - setup_remote_docker:
+      version: default
+  - run:
+      command: << parameters.command >>
+  - turborepo_save_cache:
+      prefix: integration-test-cache
+  - turborepo_store_test_results:
+      report_name: integration.report.xml
+  - turborepo_persist_coverage

@@ -1,0 +1,17 @@
+parameters:
+  executor:
+    description: Executor to run the command on
+    type: executor
+    default: node-executor-node-20
+  command:
+    description: Script to lint dockerfiles
+    type: string
+    default: yarn lint:dockerfiles
+executor: << parameters.executor >>
+steps:
+  - checkout_clone
+  - attach_workspace:
+      at: ~/voiceflow
+  - turborepo_install
+  - run:
+      command: << parameters.command >>

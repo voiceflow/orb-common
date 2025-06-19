@@ -1,0 +1,25 @@
+parameters:
+  prefix:
+    description: Cache prefix
+    type: string
+  build_prefix:
+    description: Build cache prefix to pull from as a fallback
+    type: string
+    default: ''
+steps:
+  - when:
+      condition: << parameters.build_prefix >>
+      steps:
+        - restore_cache:
+            keys:
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-master
+  - unless:
+      condition: << parameters.build_prefix >>
+      steps:
+        - restore_cache:
+            keys:
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
+              - << parameters.build_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-master
+              - << parameters.build_prefix >>-{{ .Environment.CACHE_VERSION }}-master

@@ -1,0 +1,5 @@
+steps:
+  - persist_to_workspace:
+      root: "."
+      paths:
+        - "./sonar"

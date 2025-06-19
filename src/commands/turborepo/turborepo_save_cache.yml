@@ -1,0 +1,13 @@
+parameters:
+  prefix:
+    description: Cache prefix
+    type: string
+  path:
+    description: Cached path
+    type: string
+    default: ./.turbo
+steps:
+  - save_cache:
+      key: << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
+      paths:
+        - << parameters.path >>
