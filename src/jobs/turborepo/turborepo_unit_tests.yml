@@ -14,12 +14,11 @@ steps:
       at: ~/voiceflow
   - turborepo_install
   - turborepo_restore_cache:
-      build_prefix: build-cache
-      prefix: unit-test-cache
+      prefix: build-cache
   - run:
-      command: << parameters.command >>
-  - turborepo_save_cache:
-      prefix: unit-test-cache
+      command: |
+        yarn build
+        << parameters.command >>
   - turborepo_store_test_results:
       report_name: ./unit.report.xml
   - turborepo_persist_coverage:

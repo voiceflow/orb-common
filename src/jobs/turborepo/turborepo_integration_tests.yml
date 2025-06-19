@@ -14,16 +14,15 @@ steps:
       at: ~/voiceflow
   - turborepo_install
   - turborepo_restore_cache:
-      build_prefix: build-cache
-      prefix: integration-test-cache
+      prefix: build-cache
   # needed because integration tests use testcontainers which starts docker containers
   - setup_remote_docker:
       version: default
   - run:
-      command: << parameters.command >>
-  - turborepo_save_cache:
-      prefix: integration-test-cache
+      command: |
+        yarn build
+        << parameters.command >>
   - turborepo_store_test_results:
       report_name: ./integration.report.xml
   - turborepo_persist_coverage:
-      coverage_dir: ./sonar/unit-coverage
+      coverage_dir: ./sonar/integration-coverage
