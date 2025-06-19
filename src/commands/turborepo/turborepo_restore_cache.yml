@@ -13,13 +13,13 @@ steps:
         - restore_cache:
             keys:
               - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
+              - << parameters.build_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
               - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-master
+              - << parameters.build_prefix >>-{{ .Environment.CACHE_VERSION }}-master
   - unless:
       condition: << parameters.build_prefix >>
       steps:
         - restore_cache:
             keys:
               - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
-              - << parameters.build_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
               - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-master
-              - << parameters.build_prefix >>-{{ .Environment.CACHE_VERSION }}-master
