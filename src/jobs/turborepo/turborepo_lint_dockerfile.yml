@@ -13,5 +13,6 @@ steps:
   - attach_workspace:
       at: ~/voiceflow
   - turborepo_install
+  - install_latest_hadolint
   - run:
       command: << parameters.command >>
