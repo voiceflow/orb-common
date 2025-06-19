@@ -4,6 +4,6 @@ parameters:
     type: string
 steps:
   - store_test_results:
-      path: ./<< parameters.report_name >>
+      path: << parameters.report_name >>
   - store_artifacts:
-      path: ./<< parameters.report_name >>
+      path: << parameters.report_name >>

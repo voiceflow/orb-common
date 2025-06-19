@@ -1,5 +1,13 @@
+parameters:
+  coverage_dir:
+    description: Directory containing coverage information
+    type: string
+  command:
+    description: Script to install dependencies
+    type: executor
+    default: yarn install --immutable
 steps:
   - persist_to_workspace:
       root: "."
       paths:
-        - "./sonar"
+        - << parameters.coverage_dir >>

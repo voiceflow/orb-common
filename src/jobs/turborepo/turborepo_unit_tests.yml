@@ -21,5 +21,6 @@ steps:
   - turborepo_save_cache:
       prefix: unit-test-cache
   - turborepo_store_test_results:
-      report_name: unit.report.xml
-  - turborepo_persist_coverage
+      report_name: ./unit.report.xml
+  - turborepo_persist_coverage:
+      coverage_dir: ./sonar/unit-coverage
