@@ -14,7 +14,6 @@ steps:
       at: ~/voiceflow
   - turborepo_install
   - turborepo_restore_cache:
-      build_prefix: build-cache
       prefix: dependencies-test-cache
   - run:
       command: << parameters.command >>

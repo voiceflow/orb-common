@@ -5,7 +5,7 @@ parameters:
     default: ''
   command:
     description: Script to install dependencies
-    type: executor
+    type: string
     default: yarn install --immutable
 steps:
   - authenticate_npm
