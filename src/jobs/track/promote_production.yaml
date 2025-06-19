@@ -1,0 +1,18 @@
+executor: << parameters.executor >>
+parameters:
+  executor:
+    description: Executor to use
+    type: executor
+    default: build-executor
+  modifiedComponentNames:
+    description: Space-delimited string of modified service names
+    type: string
+  image_registry:
+    description: The container image repository
+    type: string
+
+steps:
+  - docker_login
+  - promote_production:
+      image_registry: "<< parameters.image_registry >>"
+      modifiedComponentNames: "<< parameters.modifiedComponentNames >>"

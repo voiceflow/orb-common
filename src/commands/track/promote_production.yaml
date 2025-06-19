@@ -1,0 +1,16 @@
+description: Promote master to production
+parameters:
+  modifiedComponentNames:
+    description: Space-delimited string of modified service names
+    type: string
+  image_registry:
+    description: The container image repository
+    type: string
+
+steps:
+  - run:
+      name: Tag Images
+      environment:
+        IMAGE_REGISTRY: "<< parameters.image_registry>>"
+        COMPONENT_NAMES: "<< parameters.modifiedComponentNames >>"
+      command: <<include(scripts/track/promote_production.sh)>>
