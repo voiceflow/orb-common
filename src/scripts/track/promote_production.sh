@@ -69,6 +69,8 @@ update_track() {
   local COMPONENT
   local IMAGE_DIGEST
   local TRACK
+  local BUCKET
+  BUCKET="com.voiceflow.ci.assets"
 
   COMPONENT="${1?}"
   IMAGE_DIGEST="${2?}"
