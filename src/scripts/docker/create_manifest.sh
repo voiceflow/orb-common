@@ -83,8 +83,9 @@ add_additional_tags() {
     crane tag "${IMAGE_NAME}" "k8s-${BRANCH_NAME}-${CIRCLE_SHA1}"
   fi
 
-  if [[ "$COMPONENT" = "database-cli" && -n "$CIRCLE_TAG" ]]; then
-    crane tag "${IMAGE_NAME}" "latest"
+  if [[ "$COMPONENT" = "database-cli" && "$BRANCH_NAME" = "master" ]]; then
+    crane tag "${IMAGE_NAME}" "latest-${BRANCH_NAME}"
+    crane tag "${IMAGE_NAME}" "k8s-${BRANCH_NAME}-${CIRCLE_SHA1}"
   fi
 }
 

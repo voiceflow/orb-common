@@ -63,6 +63,10 @@ add_production_tags() {
 
   crane tag "${IMAGE_NAME}" "latest-production"
   crane tag "${IMAGE_NAME}" "k8s-production-${CIRCLE_SHA1}"
+
+  if [[ "$COMPONENT" = "database-cli" ]]; then
+    crane tag "${IMAGE_NAME}" "latest"
+  fi
 }
 
 update_track() {
