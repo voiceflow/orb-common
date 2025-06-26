@@ -72,31 +72,38 @@ add_production_tags() {
 update_track() {
   local COMPONENT
   local IMAGE_DIGEST
-  local TRACK
+  local TRACK_PATH
   local BUCKET
+  local TRACK
   BUCKET="com.voiceflow.ci.assets"
 
   COMPONENT="${1?}"
   IMAGE_DIGEST="${2?}"
-  TRACK="tracks/${COMPONENT}/${CIRCLE_BRANCH}"
+  TRACK="${CIRCLE_BRANCH}"
+
+  if [[ -z "${CIRCLE_BRANCH}" && -n "${CIRCLE_TAG}" ]]; then
+    TRACK="production"
+  fi
+
+  TRACK_PATH="tracks/${COMPONENT}/${TRACK}"
 
   ### update the track
-  echo "TRACK: $TRACK"
+  echo "TRACK_PATH: ${TRACK_PATH}"
 
-  mkdir -p "$(dirname "/tmp/$TRACK")"
+  mkdir -p "$(dirname "/tmp/${TRACK_PATH}")"
 
   if [[ "$COMPONENT" = "database-cli" ]]; then
     echo "New version published: ${IMAGE_TAG}"
-    echo "${IMAGE_TAG}" >"/tmp/${TRACK}"
+    echo "${IMAGE_TAG}" >"/tmp/${TRACK_PATH}"
   else
-    cat <<EOF >"/tmp/${TRACK}"
+    cat <<EOF >"/tmp/${TRACK_PATH}"
     ${COMPONENT}:
     image:
     tag: ${IMAGE_TAG}
     sha: ${IMAGE_DIGEST#sha256:}
 EOF
   fi
-  aws s3 cp "/tmp/${TRACK}" "s3://$BUCKET/$TRACK"
+  aws s3 cp "/tmp/${TRACK_PATH}" "s3://${BUCKET}/${TRACK_PATH}"
 }
 
 check_exists
