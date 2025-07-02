@@ -97,8 +97,8 @@ update_track() {
     echo "${IMAGE_TAG}" >"/tmp/${TRACK_PATH}"
   else
     cat <<EOF >"/tmp/${TRACK_PATH}"
-    ${COMPONENT}:
-    image:
+${COMPONENT}:
+  image:
     tag: ${IMAGE_TAG}
     sha: ${IMAGE_DIGEST#sha256:}
 EOF
