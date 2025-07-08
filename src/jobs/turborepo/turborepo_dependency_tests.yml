@@ -6,7 +6,7 @@ parameters:
   command:
     description: Script to check dependencies
     type: string
-    default: yarn test:dependencies
+    default: yarn test:dependencies --summarize true
 executor: << parameters.executor >>
 steps:
   - checkout_clone
@@ -17,5 +17,7 @@ steps:
       prefix: dependencies-test-cache
   - run:
       command: << parameters.command >>
+  - store_artifacts:
+      path: .turbo/runs
   - turborepo_save_cache:
       prefix: dependencies-test-cache

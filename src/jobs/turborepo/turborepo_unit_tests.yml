@@ -17,9 +17,10 @@ steps:
       prefix: build-cache
   - run:
       command: |
-        yarn build --dry-run
-        yarn build
+        yarn build --summarize true
         << parameters.command >>
+  - store_artifacts:
+      path: .turbo/runs
   - turborepo_store_test_results:
       report_name: ./unit.report.xml
   - turborepo_persist_coverage:

@@ -6,7 +6,7 @@ parameters:
   command:
     description: Script to check types
     type: string
-    default: yarn test:types
+    default: yarn test:types --summarize true
 executor: << parameters.executor >>
 steps:
   - checkout_clone
@@ -17,8 +17,8 @@ steps:
       build_prefix: build-cache
       prefix: types-test-cache
   - run:
-      command: |
-        yarn build --dry-run
-        << parameters.command >>
+      command: << parameters.command >>
+  - store_artifacts:
+      path: .turbo/runs
   - turborepo_save_cache:
       prefix: types-test-cache

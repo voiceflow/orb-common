@@ -6,7 +6,7 @@ parameters:
   command:
     description: Script to execute build
     type: string
-    default: yarn build
+    default: yarn build --summarize true
 executor: << parameters.executor >>
 steps:
   - checkout_clone
@@ -17,5 +17,7 @@ steps:
       prefix: build-cache
   - run:
       command: << parameters.command >>
+  - store_artifacts:
+      path: .turbo/runs
   - turborepo_save_cache:
       prefix: build-cache
