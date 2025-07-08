@@ -17,6 +17,8 @@ steps:
       build_prefix: build-cache
       prefix: types-test-cache
   - run:
-      command: << parameters.command >>
+      command: |
+        yarn build --dry-run
+        << parameters.command >>
   - turborepo_save_cache:
       prefix: types-test-cache

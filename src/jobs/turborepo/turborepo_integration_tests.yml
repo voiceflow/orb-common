@@ -20,6 +20,7 @@ steps:
       version: default
   - run:
       command: |
+        yarn build --dry-run
         yarn build
         << parameters.command >>
   - turborepo_store_test_results:

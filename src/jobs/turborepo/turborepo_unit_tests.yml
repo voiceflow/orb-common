@@ -17,6 +17,7 @@ steps:
       prefix: build-cache
   - run:
       command: |
+        yarn build --dry-run
         yarn build
         << parameters.command >>
   - turborepo_store_test_results:
