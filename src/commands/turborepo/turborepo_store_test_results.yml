@@ -4,6 +4,8 @@ parameters:
     type: string
 steps:
   - store_test_results:
+      name: Storing '<< parameters.report_name >>' results
       path: << parameters.report_name >>
   - store_artifacts:
+      name: Storing '<< parameters.report_name >>' as artifact
       path: << parameters.report_name >>

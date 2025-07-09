@@ -7,7 +7,7 @@ parameters:
     type: string
 steps:
   - run:
-      name: Write hashes to /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
+      name: Writing '<< parameters.command >>' hashes to '/tmp/hashfiles/<< parameters.prefix >>.hashfile.json'
       command: |
         report=$(<< parameters.command >> --dry-run json)
 
@@ -20,4 +20,5 @@ steps:
         mkdir -p /tmp/hashfiles
         echo "$hashfile" > /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
   - store_artifacts:
+      name: Storing '/tmp/hashfiles/<< parameters.prefix >>.hashfile.json' as artifact
       path: /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
