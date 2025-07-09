@@ -1,3 +1,21 @@
+default:
+  - &branch_key_with_hashfile
+    << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
+  - &branch_key_with_revision
+    << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-{{ .Revision }}
+  - &global_key_with_hashfile
+    << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-global-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
+  - &global_key_with_revision
+    << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-global-{{ .Revision }}
+  - &branch_key
+    << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-
+  - &master_branch_key
+    << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-master-
+  - &fallback_branch_key
+    << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-
+  - &fallback_master_branch_key
+    << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-branch-master-
+
 parameters:
   prefix:
     description: Cache prefix
@@ -6,28 +24,61 @@ parameters:
     description: Build cache prefix to pull from as a fallback
     type: string
     default: ''
+  affix_hashfile:
+    description: If true affixes the checksum of the relevant hashfile to the cache key
+    default: true
 steps:
   - when:
       condition: << parameters.fallback_prefix >>
       steps:
-        - restore_cache:
-            name: Restoring turborepo '<< parameters.prefix >>' cache, falling back to '<< parameters.fallback_prefix >>' cache
-            keys:
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-global-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
-              - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-{{ checksum "/tmp/hashfiles/<< parameters.fallback_prefix >>.hashfile.json" }}
-              - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-global-{{ checksum "/tmp/hashfiles/<< parameters.fallback_prefix >>.hashfile.json" }}
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-
-              - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-master-
-              - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-branch-master-
+        - when:
+            condition: << parameters.affix_hashfile >>
+            steps:
+              - restore_cache:
+                  name: Restoring turborepo '<< parameters.prefix >>' cache, falling back to '<< parameters.fallback_prefix >>' cache
+                  keys:
+                    - *branch_key_with_hashfile
+                    - *global_key_with_hashfile
+                    - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-{{ checksum "/tmp/hashfiles/<< parameters.fallback_prefix >>.hashfile.json" }}
+                    - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-global-{{ checksum "/tmp/hashfiles/<< parameters.fallback_prefix >>.hashfile.json" }}
+                    - *branch_key
+                    - *fallback_branch_key
+                    - *master_branch_key
+                    - *fallback_master_branch_key
+        - unless:
+            condition: << parameters.affix_hashfile >>
+            steps:
+              - restore_cache:
+                  name: Restoring turborepo '<< parameters.prefix >>' cache, falling back to '<< parameters.fallback_prefix >>' cache
+                  keys:
+                    - *branch_key_with_revision
+                    - *global_key_with_revision
+                    - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-{{ .Revision }}
+                    - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-global-{{ .Revision }}
+                    - *branch_key
+                    - *fallback_branch_key
+                    - *master_branch_key
+                    - *fallback_master_branch_key
   - unless:
       condition: << parameters.fallback_prefix >>
       steps:
-        - restore_cache:
-            name: Restoring turborepo '<< parameters.prefix >>' cache
-            keys:
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-global-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-master-
+        - when:
+            condition: << parameters.affix_hashfile >>
+            steps:
+              - restore_cache:
+                  name: Restoring turborepo '<< parameters.prefix >>' cache
+                  keys:
+                    - *branch_key_with_hashfile
+                    - *global_key_with_hashfile
+                    - *branch_key
+                    - *master_branch_key
+        - unless:
+            condition: << parameters.affix_hashfile >>
+            steps:
+              - restore_cache:
+                  name: Restoring turborepo '<< parameters.prefix >>' cache
+                  keys:
+                    - *branch_key_with_revision
+                    - *global_key_with_revision
+                    - *branch_key
+                    - *master_branch_key

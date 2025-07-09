@@ -15,11 +15,13 @@ steps:
   - turborepo_install
   - turborepo_restore_cache:
       prefix: eslint-cache
+      affix_hashfile: false
   - run:
       command: << parameters.command >>
   - turborepo_save_cache:
       prefix: eslint-cache
       path: ./.eslintcache
+      affix_hashfile: false
   - store_test_results:
       path: ./reports/lint.report.xml
   - store_artifacts:

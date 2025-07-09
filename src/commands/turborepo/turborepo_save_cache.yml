@@ -6,14 +6,33 @@ parameters:
     description: Cached path
     type: string
     default: ./.turbo
+  affix_hashfile:
+    description: If true affixes the checksum of the relevant hashfile to the cache key
+    default: true
 steps:
-  - save_cache:
-      name: Saving turborepo '<< parameters.prefix >>' global cache
-      key: << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-global-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
-      paths:
-        - << parameters.path >>
-  - save_cache:
-      name: Saving turborepo '<< parameters.prefix >>' branch cache
-      key: << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
-      paths:
-        - << parameters.path >>
+  - when:
+      condition: << parameters.affix_hashfile >>
+      steps:
+        - save_cache:
+            name: Saving turborepo '<< parameters.prefix >>' global cache
+            key: << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-global-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
+            paths:
+              - << parameters.path >>
+        - save_cache:
+            name: Saving turborepo '<< parameters.prefix >>' branch cache
+            key: << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
+            paths:
+              - << parameters.path >>
+  - unless:
+      condition: << parameters.affix_hashfile >>
+      steps:
+        - save_cache:
+            name: Saving turborepo '<< parameters.prefix >>' global cache
+            key: << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-global-{{ .Revision }}
+            paths:
+              - << parameters.path >>
+        - save_cache:
+            name: Saving turborepo '<< parameters.prefix >>' branch cache
+            key: << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-branch-{{ .Branch }}-{{ .Revision }}
+            paths:
+              - << parameters.path >>
