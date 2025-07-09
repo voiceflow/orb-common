@@ -7,7 +7,7 @@ parameters:
     type: string
 steps:
   - run:
-      name: Write build hashes to /tmp/hashfiles/<< parameter.prefix >>.hashfile.json
+      name: Write build hashes to /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
       command: |
         << parameters.command >> --dry-run json \
           | jq -c '. | \
@@ -15,8 +15,8 @@ steps:
             globalHash: .globalCacheInputs.hashOfExternalDependencies, \
             tasks: .tasks | map({ taskId, hash, externalHash: .hashOfExternalDependencies }) | sort_by(.taskId) \
           }' \
-          > /tmp/hashfiles/<< parameter.prefix >>.hashfile.json
+          > /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
   - store_artifacts:
       working_dir: /tmp/hashfiles
-      path: << parameter.prefix >>.hashfile.json
+      path: << parameters.prefix >>.hashfile.json
       destination: hashfiles
