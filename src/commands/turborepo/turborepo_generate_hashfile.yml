@@ -9,13 +9,16 @@ steps:
   - run:
       name: Write build hashes to /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
       command: |
-        << parameters.command >> --dry-run json \
-          | jq -c '. | \
-          { \
-            globalHash: .globalCacheInputs.hashOfExternalDependencies, \
-            tasks: .tasks | map({ taskId, hash, externalHash: .hashOfExternalDependencies }) | sort_by(.taskId) \
-          }' \
-          > /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
+        report=$(<< parameters.command >> --dry-run json)
+
+        echo "$report"
+
+        hashfile=$(echo "$report" | | jq -c '. | { globalHash: .globalCacheInputs.hashOfExternalDependencies, tasks: .tasks | map({ taskId, hash, externalHash: .hashOfExternalDependencies }) | sort_by(.taskId) }')
+
+        echo "$hashfile"
+
+        mkdir -p /tmp/hashfiles
+        echo "$hashfile" > /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
   - store_artifacts:
       working_dir: /tmp/hashfiles
       path: << parameters.prefix >>.hashfile.json
