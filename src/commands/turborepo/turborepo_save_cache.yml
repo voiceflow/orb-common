@@ -8,7 +8,7 @@ parameters:
     default: ./.turbo
 steps:
   - save_cache:
-      name: Saving turborepo << parameters.prefix >> build cache
+      name: Saving turborepo '<< parameters.prefix >>' cache
       key: << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}--{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
       paths:
         - << parameters.path >>

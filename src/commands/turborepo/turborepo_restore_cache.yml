@@ -11,7 +11,7 @@ steps:
       condition: << parameters.fallback_prefix >>
       steps:
         - restore_cache:
-            name: Restoring turborepo << parameters.prefix >> or << parameters.fallback_prefix >> cache
+            name: Restoring turborepo '<< parameters.prefix >>' or '<< parameters.fallback_prefix >>' cache
             keys:
               - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
               - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}-{{ checksum "/tmp/hashfiles/<< parameters.fallback_prefix >>.hashfile.json" }}
@@ -25,7 +25,7 @@ steps:
       condition: << parameters.fallback_prefix >>
       steps:
         - restore_cache:
-            name: Restoring turborepo << parameters.prefix >> cache
+            name: Restoring turborepo '<< parameters.prefix >>' cache
             keys:
               - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
               - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}-
