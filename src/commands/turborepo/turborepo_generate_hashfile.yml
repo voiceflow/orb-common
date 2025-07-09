@@ -13,7 +13,7 @@ steps:
 
         echo "$report"
 
-        hashfile=$(echo "$report" | | jq -c '. | { globalHash: .globalCacheInputs.hashOfExternalDependencies, tasks: .tasks | map({ taskId, hash, externalHash: .hashOfExternalDependencies }) | sort_by(.taskId) }')
+        hashfile=$(echo "$report" | jq -c '. | { globalHash: .globalCacheInputs.hashOfExternalDependencies, tasks: .tasks | map({ taskId, hash, externalHash: .hashOfExternalDependencies }) | sort_by(.taskId) }')
 
         echo "$hashfile"
 
