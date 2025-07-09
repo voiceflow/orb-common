@@ -26,6 +26,7 @@ parameters:
     default: ''
   affix_hashfile:
     description: If true affixes the checksum of the relevant hashfile to the cache key
+    type: boolean
     default: true
 steps:
   - when:
