@@ -14,9 +14,13 @@ steps:
       at: ~/voiceflow
   - turborepo_install
   - turborepo_generate_hashfile:
+      prefix: build-cache
+      command: yarn build
+  - turborepo_generate_hashfile:
       prefix: dependencies-test-cache
       command: << parameters.command >>
   - turborepo_restore_cache:
+      fallback_prefix: build-cache
       prefix: dependencies-test-cache
   - run:
       command: << parameters.command >>
