@@ -6,7 +6,7 @@ parameters:
   command:
     description: Script to execute tests
     type: string
-    default: yarn test:unit
+    default: yarn build --summarize true && yarn test:unit
 executor: << parameters.executor >>
 steps:
   - checkout_clone
@@ -19,11 +19,8 @@ steps:
   - turborepo_restore_cache:
       prefix: build-cache
   - run:
-      command: |
-        yarn build --summarize true
-        << parameters.command >>
-  - store_artifacts:
-      path: .turbo/runs
+      command: << parameters.command >>
+  - turborepo_store_summaries
   - turborepo_store_test_results:
       report_name: ./unit.report.xml
   - turborepo_persist_coverage:

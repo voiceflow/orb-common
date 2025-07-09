@@ -6,7 +6,7 @@ parameters:
   command:
     description: Script to execute tests
     type: string
-    default: yarn test:integration
+    default: yarn build --summarize true && yarn test:integration
 executor: << parameters.executor >>
 steps:
   - checkout_clone
@@ -22,11 +22,8 @@ steps:
   - setup_remote_docker:
       version: default
   - run:
-      command: |
-        yarn build --summarize true
-        << parameters.command >>
-  - store_artifacts:
-      path: .turbo/runs
+      command: << parameters.command >>
+  - turborepo_store_summaries
   - turborepo_store_test_results:
       report_name: ./integration.report.xml
   - turborepo_persist_coverage:

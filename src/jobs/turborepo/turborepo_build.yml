@@ -20,7 +20,6 @@ steps:
       prefix: build-cache
   - run:
       command: << parameters.command >>
-  - store_artifacts:
-      path: .turbo/runs
+  - turborepo_store_summaries
   - turborepo_save_cache:
       prefix: build-cache

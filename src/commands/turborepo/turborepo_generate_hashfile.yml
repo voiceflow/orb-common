@@ -15,7 +15,11 @@ steps:
 
         mkdir -p /tmp/hashfiles
         echo "$report" \
-          | jq -c '. | { globalHash: .globalCacheInputs.hashOfExternalDependencies, tasks: .tasks | map({ taskId, hash, externalHash: .hashOfExternalDependencies }) | sort_by(.taskId) }' \
+          | jq -c '. | \
+            { \
+              globalHash: .globalCacheInputs.hashOfExternalDependencies, \
+              tasks: .tasks | map({ taskId, hash, externalHash: .hashOfExternalDependencies }) | sort_by(.taskId) \
+            }' \
           > /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
   - store_artifacts:
       name: Storing '/tmp/hashfiles/<< parameters.prefix >>.hashfile.json' as artifact
