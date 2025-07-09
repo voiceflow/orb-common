@@ -13,6 +13,7 @@ steps:
 
         echo "$report"
 
+        mkdir -p /tmp/hashfiles
         echo "$report" \
           | jq -c '. | { globalHash: .globalCacheInputs.hashOfExternalDependencies, tasks: .tasks | map({ taskId, hash, externalHash: .hashOfExternalDependencies }) | sort_by(.taskId) }' \
           > /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
