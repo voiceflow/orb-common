@@ -13,6 +13,9 @@ steps:
   - attach_workspace:
       at: ~/voiceflow
   - turborepo_install
+  - turborepo_generate_hashfile:
+      prefix: build-cache
+      command: yarn build
   - turborepo_restore_cache:
       prefix: build-cache
   # needed because integration tests use testcontainers which starts docker containers

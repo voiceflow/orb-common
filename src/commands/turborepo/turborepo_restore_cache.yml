@@ -2,24 +2,32 @@ parameters:
   prefix:
     description: Cache prefix
     type: string
-  build_prefix:
+  fallback_prefix:
     description: Build cache prefix to pull from as a fallback
     type: string
     default: ''
 steps:
   - when:
-      condition: << parameters.build_prefix >>
+      condition: << parameters.fallback_prefix >>
       steps:
         - restore_cache:
+            name: Restoring turborepo << parameters.prefix >> or << parameters.fallback_prefix >> cache
             keys:
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
-              - << parameters.build_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-master
-              - << parameters.build_prefix >>-{{ .Environment.CACHE_VERSION }}-master
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
+              - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}-{{ checksum "/tmp/hashfiles/<< parameters.fallback_prefix >>.hashfile.json" }}
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}-
+              - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}-
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-
+              - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-master-
+              - << parameters.fallback_prefix >>-{{ .Environment.CACHE_VERSION }}-master-
   - unless:
-      condition: << parameters.build_prefix >>
+      condition: << parameters.fallback_prefix >>
       steps:
         - restore_cache:
+            name: Restoring turborepo << parameters.prefix >> cache
             keys:
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}
-              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-master
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}-{{ checksum "/tmp/hashfiles/<< parameters.prefix >>.hashfile.json" }}
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ .Revision }}-
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-
+              - << parameters.prefix >>-{{ .Environment.CACHE_VERSION }}-master-
