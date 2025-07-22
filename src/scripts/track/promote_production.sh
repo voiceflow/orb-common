@@ -93,8 +93,8 @@ update_track() {
   mkdir -p "$(dirname "/tmp/${TRACK_PATH}")"
 
   if [[ "$COMPONENT" = "database-cli" ]]; then
-    echo "New version published: ${IMAGE_TAG}"
-    echo "${IMAGE_TAG}" >"/tmp/${TRACK_PATH}"
+    echo "New version published: ${CIRCLE_TAG?}"
+    echo "${CIRCLE_TAG?}" >"/tmp/${TRACK_PATH}"
   else
     cat <<EOF >"/tmp/${TRACK_PATH}"
 ${COMPONENT}:
