@@ -2,7 +2,7 @@
 
 echo "COMPONENT_NAMES: ${COMPONENT_NAMES[*]}"
 
-IMAGE_TAG="k8s-master-${CIRCLE_SHA1}"
+IMAGE_TAG="latest-master"
 < <(echo "$COMPONENT_NAMES") read -r -a COMPONENT_NAMES
 
 RESULT=0
