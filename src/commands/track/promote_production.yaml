@@ -9,6 +9,10 @@ parameters:
 
 steps:
   - run:
+      name: Check and wait for master build
+      command: <<include(scripts/utils/check_wait_master.sh)>>
+
+  - run:
       name: Tag Images
       environment:
         IMAGE_REGISTRY: "<< parameters.image_registry>>"
