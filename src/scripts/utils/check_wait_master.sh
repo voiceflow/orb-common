@@ -22,11 +22,16 @@ get_pipeline() {
   ##
   # find master pipeline by long commit hash
   ##
+  local LENGTH
   local PIPELINES
   local PAGE_TOKEN
+  local MAX_PAGES
+  local COUNT
 
-  LENGTH="0"
-  while [[ "$LENGTH" == 0 ]]; do
+  LENGTH=0
+  COUNT=0
+
+  while [[ "$LENGTH" == 0 && "$((COUNT++))" -lt "$MAX_PAGES" ]]; do
     PIPELINES=$(list_pipelines "${PAGE_TOKEN}")
     PAGE_TOKEN=$(<<<"$PIPELINES" jq -r '.next_page_token // empty' || echo "")
 
@@ -51,13 +56,15 @@ MASTER_PIPELINE_ID=$(get_pipeline)
 
 WORKFLOW=$(get_workflow "$MASTER_PIPELINE_ID")
 
-# TODO: limit all loops with some max
-while true; do
+COUNT=0
+MAX_RETRY=10
+INTERVAL=60
+while [[ "$((COUNT++))" -lt "$MAX_RETRY" ]]; do
   case $(<<<"$WORKFLOW" jq -r '.status') in
     "running")
       echo "waiting for master workflow to finish"
-      echo "sleep 30s..."
-      sleep 30
+      echo "sleep ${INTERVAL}s..."
+      sleep "$INTERVAL"
       WORKFLOW=$(get_workflow "$MASTER_PIPELINE_ID")
       ;;
 
