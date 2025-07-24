@@ -13,7 +13,8 @@ list_pipelines() {
   # get paginated list of master pipelines for specified repo
   ##
   local PAGE_TOKEN
-  PAGE_TOKEN="${1+&page-token=${1}}"
+  PAGE_TOKEN="$1"
+  PAGE_TOKEN="${PAGE_TOKEN:+&page-token=${PAGE_TOKEN}}"
   curl --fail --silent --request GET \
     --url "https://circleci.com/api/v2/project/${ORG}/${PROJECT}/pipeline?branch=${BRANCH}${PAGE_TOKEN}" \
     --header "Circle-Token: ${CIRCLECI_API_TOKEN}"
