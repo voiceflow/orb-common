@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 # Static
 ORG="gh/voiceflow"
 BRANCH="master"
