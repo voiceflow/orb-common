@@ -1,121 +1,95 @@
 #!/bin/bash
+set -eE
 
+BUCKET="com.voiceflow.ci.assets"
+
+echo "IMAGE_REGISTRY=${IMAGE_REGISTRY}"
+echo "BUCKET=${BUCKET}"
+
+< <(echo "$COMPONENT_NAMES") read -r -a COMPONENT_NAMES
 echo "COMPONENT_NAMES: ${COMPONENT_NAMES[*]}"
 
-IMAGE_TAG="latest-master"
-< <(echo "$COMPONENT_NAMES") read -r -a COMPONENT_NAMES
+TMP_DIR="$(mktemp -d)"
 
-RESULT=0
-DIGESTS=()
-DEBUG_LOG_FILE="/tmp/promote-production.err"
+get_master_tracks() {
+  local DIR
+  local TRACK_PATH
 
-get_digest() {
-  local SERVICE
-  local IMAGE_NAME
-  local DIGEST
+  DIR="${1?}"
+  shift 1
 
-  SERVICE="${1?}"
-  IMAGE_NAME="${IMAGE_REGISTRY}/${SERVICE}:${IMAGE_TAG}"
-  printf "Check existence of %s..." "${IMAGE_NAME}" >&2
-  DIGEST=$(crane digest "${IMAGE_NAME}" 2>&3)
-  RESULT="$?"
-  if ((RESULT)); then
-    printf "fail\n" >&2
-    return 1
-  else
-    printf "success\n" >&2
-    echo "$DIGEST"
-  fi
+  echo "Fetching tracks to ${DIR}..."
+
+  for COMPONENT in "$@"; do
+    TRACK_PATH="tracks/${COMPONENT}/master"
+
+    echo "  $COMPONENT..."
+
+    mkdir -p "$(dirname "${DIR}/${TRACK_PATH}")"
+
+    aws s3 cp --no-progress "s3://${BUCKET}/${TRACK_PATH}" "${DIR}/${TRACK_PATH}"
+  done
 }
 
-check_exists() {
-  local NAME
-  local DIGEST
+parse_tag() {
+  local DIR
+  local COMPONENT
+  local TRACK_PATH_ABSOLUTE
 
-  DIGESTS=()
+  DIR="${1?}"
+  COMPONENT="${2?}"
 
-  exec 3<>"${DEBUG_LOG_FILE?}"
+  TRACK_PATH_ABSOLUTE="${DIR}/tracks/${COMPONENT}/master"
 
-  set +e
-  for i in "${!COMPONENT_NAMES[@]}"; do
-    NAME="${COMPONENT_NAMES[$i]}"
-    DIGEST=$(get_digest "${NAME}")
-    RESULT=$((RESULT + $?))
-    DIGESTS+=("$DIGEST")
-  done
-  set -e
-
-  exec 3>&-
-
-  if ((RESULT)); then
-    echo "ERROR: Failed to find all image tags" >&2
-    cat "${DEBUG_LOG_FILE?}"
-    exit 1
+  if [[ "${COMPONENT}" == "database-cli" ]]; then
+    # The full contents of database-cli track is the image tag
+    cat "${TRACK_PATH_ABSOLUTE}"
+  else
+    yq ".[\"$COMPONENT\"].image.tag" "${TRACK_PATH_ABSOLUTE}"
   fi
 }
 
 add_production_tags() {
   local SERVICE
+  local IMAGE_TAG
   local IMAGE_NAME
 
   SERVICE="${1?}"
+  IMAGE_TAG="${2?}"
+
   IMAGE_NAME="${IMAGE_REGISTRY}/${SERVICE}:${IMAGE_TAG}"
 
   crane tag "${IMAGE_NAME}" "latest-production"
-  crane tag "${IMAGE_NAME}" "k8s-production-${CIRCLE_SHA1}"
 
   if [[ "$SERVICE" = "database-cli" ]]; then
     crane tag "${IMAGE_NAME}" "latest"
   fi
 }
 
-update_track() {
+copy_track() {
+  local DIR
   local COMPONENT
-  local IMAGE_DIGEST
-  local TRACK_PATH
-  local BUCKET
-  local TRACK
-  BUCKET="com.voiceflow.ci.assets"
+  local MASTER_TRACK
+  local PRODUCTION_TRACK
 
-  COMPONENT="${1?}"
-  IMAGE_DIGEST="${2?}"
-  TRACK="${CIRCLE_BRANCH}"
-
-  if [[ -z "${CIRCLE_BRANCH}" && -n "${CIRCLE_TAG}" ]]; then
-    TRACK="production"
-  fi
-
-  TRACK_PATH="tracks/${COMPONENT}/${TRACK}"
+  DIR="${1?}"
+  COMPONENT="${2?}"
 
   ### update the track
-  echo "TRACK_PATH: ${TRACK_PATH}"
-
-  mkdir -p "$(dirname "/tmp/${TRACK_PATH}")"
-
-  if [[ "$COMPONENT" = "database-cli" ]]; then
-    echo "New version published: ${IMAGE_TAG}"
-    echo "${IMAGE_TAG}" >"/tmp/${TRACK_PATH}"
-  else
-    cat <<EOF >"/tmp/${TRACK_PATH}"
-${COMPONENT}:
-  image:
-    tag: ${IMAGE_TAG}
-    sha: ${IMAGE_DIGEST#sha256:}
-EOF
-  fi
-  aws s3 cp "/tmp/${TRACK_PATH}" "s3://${BUCKET}/${TRACK_PATH}"
+  MASTER_TRACK="${DIR}/tracks/${COMPONENT}/master"
+  PRODUCTION_TRACK="tracks/${COMPONENT}/production"
+  echo "Copying ${COMPONENT} master track from ${DIR} to production..."
+  aws s3 cp --no-progress "${MASTER_TRACK}" "s3://${BUCKET}/${PRODUCTION_TRACK}"
 }
 
-check_exists
+get_master_tracks "${TMP_DIR}" "${COMPONENT_NAMES[@]}"
 
-echo "All tags exist"
 echo "Adding production tag and updating tracks for..."
 
 for INDEX in "${!COMPONENT_NAMES[@]}"; do
   NAME="${COMPONENT_NAMES[$INDEX]}"
-  DIGEST="${DIGESTS[$INDEX]}"
+  TAG="$(parse_tag "$TMP_DIR" "${NAME}")"
 
-  echo "${NAME}:${DIGEST}"
-  add_production_tags "${NAME}"
-  update_track "${NAME}" "${DIGEST}"
+  add_production_tags "${NAME}" "${TAG}"
+  copy_track "${TMP_DIR}" "${NAME}"
 done
