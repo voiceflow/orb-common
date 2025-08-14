@@ -33,12 +33,16 @@ if ((DEBUG)); then
     printf "[debug]   creating track..." >&3
     TRACK_PATH="tracks/${COMPONENT}/master"
 
-    awscli s3 cp - "s3://${BUCKET}/${TRACK_PATH}" <<EOF
+    if [[ "${COMPONENT}" == "database-cli" ]]; then
+      echo "k8s-test5" | awscli s3 cp --no-progress - "s3://${BUCKET}/${TRACK_PATH}"
+    else
+      awscli s3 cp --no-progress - "s3://${BUCKET}/${TRACK_PATH}" <<EOF
 $COMPONENT:
   image:
-    tag: k8s-test
+    tag: k8s-test5
     sha: asdf23423
 EOF
+    fi
     echo "[debug]   done" >&3
 
     printf "[debug]   creating oci repo and image..." >&3
@@ -46,10 +50,10 @@ EOF
     docker buildx build \
       --builder buildy \
       --platform linux/arm64 \
-      --output "type=image,push=true,registry.insecure=true,name=host.docker.internal:5000/$COMPONENT:k8s-test" \
-      -f - . <<EOF
+      --output "type=image,push=true,registry.insecure=true,name=host.docker.internal:5000/$COMPONENT:k8s-test5" \
+      -f - . <<EOF 2>/dev/null
 FROM alpine:3
-RUN echo "$COMPONENT" >/tmp/whoami
+RUN echo "$COMPONENT" 5 >/tmp/whoami
 EOF
     echo "[debug]   done" >&3
   done
@@ -76,23 +80,22 @@ TMP_DIR="$(mktemp -d)"
 
 get_master_tracks() {
   local DIR
+  local TRACK_PATH
 
   DIR="${1?}"
   shift 1
 
-  printf "Fetching tracks to %s...\n" "${DIR}"
+  echo "Fetching tracks to ${DIR}..."
 
   for COMPONENT in "$@"; do
     TRACK_PATH="tracks/${COMPONENT}/master"
 
-    printf "  %s..." "$COMPONENT"
+    echo "  $COMPONENT..."
 
     mkdir -p "$(dirname "${DIR}/${TRACK_PATH}")"
 
-    awscli s3 cp "s3://${BUCKET}/${TRACK_PATH}" "${DIR}/${TRACK_PATH}" >&3
-    printf "done\n"
+    awscli s3 cp --no-progress "s3://${BUCKET}/${TRACK_PATH}" "${DIR}/${TRACK_PATH}"
   done
-  echo "complete"
 }
 
 parse_tag() {
@@ -101,15 +104,15 @@ parse_tag() {
   local TRACK_PATH_ABSOLUTE
 
   DIR="${1?}"
-  shift 1
-  COMPONENT="${1?}"
+  COMPONENT="${2?}"
 
   TRACK_PATH_ABSOLUTE="${DIR}/tracks/${COMPONENT}/master"
 
   if [[ "${COMPONENT}" == "database-cli" ]]; then
+    # The full contents of database-cli track is the image tag
     cat "${TRACK_PATH_ABSOLUTE}"
   else
-    yq ".[\"$NAME\"].image.tag" "${TRACK_PATH_ABSOLUTE}"
+    yq ".[\"$COMPONENT\"].image.tag" "${TRACK_PATH_ABSOLUTE}"
   fi
 }
 
@@ -142,13 +145,11 @@ copy_track() {
   ### update the track
   MASTER_TRACK="${DIR}/tracks/${COMPONENT}/master"
   PRODUCTION_TRACK="tracks/${COMPONENT}/production"
-  echo "testcontainers for aws/s3"
-  printf "Copying %s master track from %s to production..." "${COMPONENT}" "${DIR}"
-  awscli s3 cp "${MASTER_TRACK}" "s3://${BUCKET}/${PRODUCTION_TRACK}"
-  echo "done"
+  printf "Copying %s master track from %s to production...\n" "${COMPONENT}" "${DIR}"
+  awscli s3 cp --no-progress "${MASTER_TRACK}" "s3://${BUCKET}/${PRODUCTION_TRACK}"
 }
 
-get_master_tracks "${TMP_DIR}" "${COMPONENT_NAMES[@]}" >&2
+get_master_tracks "${TMP_DIR}" "${COMPONENT_NAMES[@]}"
 
 echo "Adding production tag and updating tracks for..."
 
@@ -156,7 +157,6 @@ for INDEX in "${!COMPONENT_NAMES[@]}"; do
   NAME="${COMPONENT_NAMES[$INDEX]}"
   TAG="$(parse_tag "$TMP_DIR" "${NAME}")"
 
-  echo "  ${NAME}:${TAG}"
   add_production_tags "${NAME}" "${TAG}" >&2
   copy_track "${TMP_DIR}" "${NAME}" >&2
 done
