@@ -45,7 +45,7 @@ parse_tag() {
     # The full contents of database-cli track is the image tag
     cat "${TRACK_PATH_ABSOLUTE}"
   else
-    yq ".[\"$COMPONENT\"].image.tag" "${TRACK_PATH_ABSOLUTE}"
+    yq -r ".[\"$COMPONENT\"].image.tag" "${TRACK_PATH_ABSOLUTE}"
   fi
 }
 
