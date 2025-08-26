@@ -60,7 +60,7 @@ MASTER_PIPELINE_ID=$(get_pipeline)
 WORKFLOW=$(get_workflow "$MASTER_PIPELINE_ID")
 
 COUNT=0
-MAX_RETRY=10
+MAX_RETRY=25
 INTERVAL=60
 while [[ "$((COUNT++))" -lt "$MAX_RETRY" ]]; do
   case $(<<<"$WORKFLOW" jq -r '.status') in
