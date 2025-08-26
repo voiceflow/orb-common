@@ -73,7 +73,7 @@ while [[ "$((COUNT++))" -lt "$MAX_RETRY" ]]; do
 
     "success")
       echo "Found master workflow successfully completed"
-      break
+      exit 0
       ;;
 
     *)
@@ -83,4 +83,5 @@ while [[ "$((COUNT++))" -lt "$MAX_RETRY" ]]; do
   esac
 done
 
-echo "continuing"
+echo "Timing out"
+exit 1
