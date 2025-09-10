@@ -21,9 +21,13 @@ parameters:
     description: Platform to build the image for
     type: string
     default: linux/amd64
+  node_version:
+    description: Node version
+    type: string
 steps:
   - update_database_track:
       component: "<< parameters.component >>"
       image_repo: "<< parameters.image_repo >>"
       semantic_version: "<< parameters.semantic_version >>"
       image_tag: "<< parameters.image_tag >>"
+      node_version: "<< parameters.node_version >>"
