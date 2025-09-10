@@ -26,5 +26,4 @@ steps:
       component: "<< parameters.component >>"
       image_repo: "<< parameters.image_repo >>"
       semantic_version: "<< parameters.semantic_version >>"
-      platform: "<< parameters.platform >>"
       image_tag: "<< parameters.image_tag >>"
