@@ -36,6 +36,10 @@ parameters:
     description: The SSH key with write permissions to the repository
     type: string
     default: ""
+  pre_release_steps:
+    description: Steps to run before executing the release command
+    type: steps
+    default: []
 steps:
   - add_ssh_keys:
       fingerprints:
@@ -48,6 +52,7 @@ steps:
       yarn_lock_restore_cache_directory: << parameters.working_directory >>
   - attach_workspace:
       at: << parameters.working_directory >>
+  - steps: << parameters.pre_release_steps >>
   - when:
       condition: << parameters.prerelease_version >>
       steps:
