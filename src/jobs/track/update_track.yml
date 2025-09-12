@@ -87,10 +87,6 @@ parameters:
     description: Load image into local docker
     type: boolean
     default: false
-  platform:
-    description: Platform to build the image for
-    type: string
-    default: linux/amd64
   enable_dlc:
     description: enable docker layer cache
     type: boolean
@@ -128,7 +124,6 @@ steps:
       kms_key: "<< parameters.kms_key >>"
       inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
       local_registry_container_image: "<< parameters.local_registry_container_image >>"
-      platform: "<< parameters.platform >>"
       enable_dlc: "<< parameters.enable_dlc >>"
       enable_load: "<< parameters.enable_load >>"
       builder_name: "<< parameters.builder_name >>"
