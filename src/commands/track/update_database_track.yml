@@ -18,10 +18,6 @@ parameters:
     description: Name of the Dockerfile to build
     type: string
     default: Dockerfile
-  extra_build_args:
-    description: Arguments to pass while building the docker image
-    type: string
-    default: ""
   enable_load:
     description: Load image into local docker
     type: boolean
@@ -98,12 +94,15 @@ parameters:
     description: checks if the track exists
     type: boolean
     default: true
+  node_version:
+    description: Node version
+    type: string
 steps:
   - update_track:
       image_repo: "<< parameters.image_repo >>"
       component: "<< parameters.component >>"
       dockerfile: "<< parameters.dockerfile >>"
-      extra_build_args: << parameters.extra_build_args >>
+      extra_build_args: "NODE_VERSION=<< parameters.node_version >>"
       enable_cache_to: "<< parameters.enable_cache_to >>"
       build_context: "<< parameters.build_context >>"
       checkout: "<< parameters.checkout >>"
@@ -120,7 +119,6 @@ steps:
       kms_key: "<< parameters.kms_key >>"
       inject_aws_credentials: "<< parameters.inject_aws_credentials >>"
       local_registry_container_image: "<< parameters.local_registry_container_image >>"
-      platform: "<< parameters.platform >>"
       enable_dlc: "<< parameters.enable_dlc >>"
       enable_load: "<< parameters.enable_load >>"
       builder_name: "<< parameters.builder_name >>"

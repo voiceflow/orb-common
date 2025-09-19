@@ -13,7 +13,6 @@ echo "BUCKET: ${BUCKET?}"
 echo "LOCAL_REGISTRY: ${LOCAL_REGISTRY?}"
 echo "DOCKERFILE: ${DOCKERFILE?}"
 echo "INJECT_AWS_CREDENTIALS: ${INJECT_AWS_CREDENTIALS?}"
-echo "PLATFORM: ${PLATFORM?}"
 echo "BUILDER_NAME: ${BUILDER_NAME-}"
 echo "EXTRA_BUILD_ARGS: ${EXTRA_BUILD_ARGS[*]}"
 echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
@@ -110,9 +109,8 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
   echo "BUILDER_NAME: ${BUILDER_NAME:=buildy-${BRANCH_NAME-}}"
 
   BUILDER_ARGS=(--name "${BUILDER_NAME-}")
-  docker buildx create --use --platform="$PLATFORM" \
+  docker buildx create --use --bootstrap \
     "${BUILDER_ARGS[@]}"
-  docker buildx inspect --bootstrap
 
   OUTPUT_ARGS=()
   if ((ENABLE_PUSH)); then
@@ -162,7 +160,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     --label "com.datadoghq.tags.git.repository_url=${CIRCLE_REPOSITORY_URL}"
   )
 
-  echo "BUILD_ARGS: ${BUILD_ARGS[*]} $PLATFORM"
+  echo "BUILD_ARGS: ${BUILD_ARGS[*]}"
   docker buildx build \
     "${LEGACY_BUILD_ARGS[@]}" \
     "${DD_TAGS_ARG[@]}" \
@@ -173,7 +171,6 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     "${BUILD_ARGS[@]}" \
     "${OUTPUT_ARGS[@]}" \
     "${DATADOG_LABELS[@]}" \
-    --platform "$PLATFORM" \
     -f "$BUILD_CONTEXT/$DOCKERFILE" \
     "${TAGS[@]}" \
     "$BUILD_CONTEXT"
