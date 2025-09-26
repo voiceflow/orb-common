@@ -160,6 +160,10 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     --label "com.datadoghq.tags.git.repository_url=${CIRCLE_REPOSITORY_URL}"
   )
 
+  BUILD_SECRETS=(
+    --secret "type=env,id=GITHUB_TOKEN"
+  )
+
   echo "BUILD_ARGS: ${BUILD_ARGS[*]}"
   docker buildx build \
     "${LEGACY_BUILD_ARGS[@]}" \
@@ -169,6 +173,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     "${AWS_CREDENTIALS_ARG[@]}" \
     "${NPM_TOKEN_SECRET[@]}" \
     "${BUILD_ARGS[@]}" \
+    "${BUILD_SECRETS[@]}" \
     "${OUTPUT_ARGS[@]}" \
     "${DATADOG_LABELS[@]}" \
     -f "$BUILD_CONTEXT/$DOCKERFILE" \
