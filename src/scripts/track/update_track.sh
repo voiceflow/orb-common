@@ -52,6 +52,22 @@ IMAGE_TAG="${IMAGE_TAG_OVERRIDE:-"k8s-$CIRCLE_SHA1"}"
 
 IMAGE_NAME="$IMAGE_REPO:$IMAGE_TAG"
 
+set_platform_from_host() {
+  # Determine architecture based on resource class
+  local ARCH
+  ARCH="$(uname -m)"
+
+  case "$ARCH" in
+    aarch64 | arm64)
+      ARCH="arm64"
+      ;;
+    *)
+      ARCH="amd64"
+      ;;
+  esac
+  PLATFORM="linux/${ARCH}"
+}
+
 get_sem_ver() {
   local SEM_VER
   # Get the tag that is running right now
@@ -164,6 +180,10 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     --secret "type=env,id=GITHUB_TOKEN"
   )
 
+  set_platform_from_host
+
+  PLATFORM_ARG=(--platform "${PLATFORM}")
+
   echo "BUILD_ARGS: ${BUILD_ARGS[*]}"
   docker buildx build \
     "${LEGACY_BUILD_ARGS[@]}" \
@@ -172,6 +192,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     "${PACKAGE_ARG[@]}" \
     "${AWS_CREDENTIALS_ARG[@]}" \
     "${NPM_TOKEN_SECRET[@]}" \
+    "${PLATFORM_ARG[@]}" \
     "${BUILD_ARGS[@]}" \
     "${BUILD_SECRETS[@]}" \
     "${OUTPUT_ARGS[@]}" \
