@@ -1,7 +1,15 @@
 #!/bin/bash
 
 if (( CLEAN_DESTINATION )); then
-    aws s3 sync "$FROM" "$TO" --delete
+    if [ -n "$CACHE_CONTROL" ]; then
+        aws s3 sync "$FROM" "$TO" --delete --cache-control "$CACHE_CONTROL"
+    else
+        aws s3 sync "$FROM" "$TO" --delete
+    fi
 else
-    aws s3 sync "$FROM" "$TO"
+    if [ -n "$CACHE_CONTROL" ]; then
+        aws s3 sync "$FROM" "$TO" --cache-control "$CACHE_CONTROL"
+    else
+        aws s3 sync "$FROM" "$TO"
+    fi
 fi

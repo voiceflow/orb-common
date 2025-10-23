@@ -13,6 +13,10 @@ parameters:
     description: Clean destination
     type: boolean
     default: false
+  cache_control:
+    description: Cache control header value
+    type: string
+    default: 'max-age=31536000, public' # 1 year
 steps:
   - run:
       name: << parameters.step_name >>
@@ -20,4 +24,5 @@ steps:
         FROM: << parameters.from >>
         TO: << parameters.to >>
         CLEAN_DESTINATION: << parameters.clean_destination >>
+        CACHE_CONTROL: << parameters.cache_control >>
       command: <<include(scripts/aws/clone_s3_assets.sh)>>
