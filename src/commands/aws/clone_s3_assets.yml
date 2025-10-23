@@ -16,7 +16,7 @@ parameters:
   cache_control:
     description: Cache control header value
     type: string
-    default: 'max-age=31536000, public' # 1 year
+    default: ''
 steps:
   - run:
       name: << parameters.step_name >>
