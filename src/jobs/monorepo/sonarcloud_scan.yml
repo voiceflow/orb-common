@@ -9,7 +9,7 @@ parameters:
     default: false
 executor: << parameters.executor >>
 steps:
-  - checkout_clone
+  - checkout
   - attach_workspace:
       at: ~/voiceflow
   - when:
