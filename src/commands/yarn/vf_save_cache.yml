@@ -2,14 +2,14 @@ parameters:
   working_directory:
     description: Directory containing package.json
     type: string
-    default: './'
+    default: "./"
   cache_prefix:
     description: Cache prefix
     type: string
-    default: ''
+    default: ""
 steps:
   - save_cache: # special step to save the dependency cache
-      key: node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
+      key: node-module-cache-<< parameters.cache_prefix >>-{{ .Branch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
       paths:
         - << parameters.working_directory >>/.yarn/cache
         - << parameters.working_directory >>/.yarn/install-state.gz
