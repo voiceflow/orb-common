@@ -115,7 +115,6 @@ steps:
       language: "<< parameters.language >>"
       container_image: "<< parameters.container_image_to_build >>"
       run_in_container: "<< parameters.run_install_node_modules_in_container >>"
-      cache_prefix: "<< parameters.cache_branch >>"
 
   - monorepo_restore_cache:
       package: << parameters.package >>

@@ -10,4 +10,4 @@ parameters:
 steps:
   - restore_cache:
       keys:
-        - node-module-cache-<< parameters.cache_prefix >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
+        - node-module-cache-<< parameters.cache_prefix >>-{{ .Branch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
