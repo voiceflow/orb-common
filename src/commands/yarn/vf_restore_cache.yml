@@ -2,11 +2,11 @@ parameters:
   yarn_lock_restore_cache_directory:
     description: Cache directory for yarn.lock file
     type: string
-    default: './'
+    default: "./"
   cache_prefix:
     description: Cache prefix
     type: string
-    default: ''
+    default: ""
 steps:
   - restore_cache:
       keys:
