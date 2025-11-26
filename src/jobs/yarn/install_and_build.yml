@@ -53,7 +53,7 @@ parameters:
     type: string
     default: "168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-build-image:v1"
   force_execute:
-    description: '[DEPRECATED] no effect, kept for backward compatibility'
+    description: "[DEPRECATED] no effect, kept for backward compatibility"
     type: boolean
     default: false
   attach_workspace:
@@ -115,6 +115,7 @@ steps:
       language: "<< parameters.language >>"
       container_image: "<< parameters.container_image_to_build >>"
       run_in_container: "<< parameters.run_install_node_modules_in_container >>"
+      cache_prefix: "<< parameters.cache_branch >>"
 
   - monorepo_restore_cache:
       package: << parameters.package >>
