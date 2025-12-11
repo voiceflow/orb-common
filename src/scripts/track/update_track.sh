@@ -198,6 +198,7 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
     "${OUTPUT_ARGS[@]}" \
     "${DATADOG_LABELS[@]}" \
     -f "$BUILD_CONTEXT/$DOCKERFILE" \
+    --progress=plain \
     "${TAGS[@]}" \
     "$BUILD_CONTEXT"
 
