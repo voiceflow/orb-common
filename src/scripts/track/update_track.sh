@@ -26,6 +26,8 @@ read -r -a EXTRA_BUILD_ARGS <<<"$EXTRA_BUILD_ARGS"
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
 source "/tmp/IMAGE_STATUS"
+# shellcheck disable=SC1091
+source "/tmp/TRACK_STATUS"
 
 if [[ "$TRACK_EXISTS" != "true" ]]; then
   echo "Track does not exist! avoiding update!"
