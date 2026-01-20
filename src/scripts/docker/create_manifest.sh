@@ -92,7 +92,6 @@ add_additional_tags() {
 update_track() {
   ### update the track
   BUCKET="com.voiceflow.ci.assets"
-  TRACK="tracks/${COMPONENT}/${CIRCLE_BRANCH}"
   echo "TRACK: $TRACK"
 
   mkdir -p "$(dirname "/tmp/$TRACK")"

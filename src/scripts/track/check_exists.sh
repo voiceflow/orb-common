@@ -19,7 +19,12 @@ set -e
 
 # Store the result on a file in tmp folder to use in future steps
 if [[ $SEARCH_TRACK_RESULT -eq 0 ]]; then
-  echo 'export TRACK_EXISTS="true"' >/tmp/TRACK_STATUS # Track exists, skip following steps
+  # Track exists, skip following steps
+  cat <<-EOF >/tmp/TRACK_STATUS
+export TRACK_EXISTS="true"
+export TRACK="${TRACK}"
+EOF
+
 else
   echo 'export TRACK_EXISTS="false"' >/tmp/TRACK_STATUS # Track exists, skip following steps
   if ((STOP)); then
