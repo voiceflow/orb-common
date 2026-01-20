@@ -17,7 +17,8 @@ check_track_exist() {
   # Load TRACK_EXISTS variable from file previously stored in the tmp folder
   # shellcheck disable=SC1091
   source "/tmp/TRACK_STATUS"
-  if [[ "$TRACK_EXISTS" != "true" && ! "$CIRCLE_BRANCH" =~ ^gtmq_ ]]; then
+
+  if [[ "$TRACK_EXISTS" != "true" ]]; then
     echo "Track does not exist! avoiding update!"
     exit 0
   fi
@@ -92,7 +93,6 @@ add_additional_tags() {
 update_track() {
   ### update the track
   BUCKET="com.voiceflow.ci.assets"
-  TRACK="tracks/${COMPONENT}/${CIRCLE_BRANCH}"
   echo "TRACK: $TRACK"
 
   mkdir -p "$(dirname "/tmp/$TRACK")"
