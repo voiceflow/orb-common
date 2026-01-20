@@ -18,7 +18,7 @@ SEARCH_TRACK_RESULT=$?
 set -e
 
 # Store the result on a file in tmp folder to use in future steps
-if [[ $SEARCH_TRACK_RESULT -eq 0 ]]; then
+if [[ $SEARCH_TRACK_RESULT -eq 0 || "$CIRCLE_BRANCH" =~ ^gtmq_ ]]; then
   # Track exists, skip following steps
   cat <<-EOF >/tmp/TRACK_STATUS
 export TRACK_EXISTS="true"
@@ -26,7 +26,7 @@ export TRACK="${TRACK}"
 EOF
 
 else
-  echo 'export TRACK_EXISTS="false"' >/tmp/TRACK_STATUS # Track exists, skip following steps
+  echo 'export TRACK_EXISTS="false"' >/tmp/TRACK_STATUS # Track does not exist
   if ((STOP)); then
     curl --request POST \
       --url "https://circleci.com/api/v2/workflow/$CIRCLE_WORKFLOW_ID/cancel" \

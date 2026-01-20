@@ -26,20 +26,10 @@ read -r -a EXTRA_BUILD_ARGS <<<"$EXTRA_BUILD_ARGS"
 # Load IMAGE_EXISTS variable from file previously stored in the tmp folder
 # shellcheck disable=SC1091
 source "/tmp/IMAGE_STATUS"
-# Load TRACK_EXISTS variable from file previously stored in the tmp folder
-# shellcheck disable=SC1091
-source "/tmp/TRACK_STATUS"
-
-IS_GTMQ=$(grep -qE "^gtmq_" - <<<"${CIRCLE_BRANCH}" && echo 1 || echo 0)
 
 if [[ "$TRACK_EXISTS" != "true" ]]; then
-  if ((!IS_GTMQ)); then
-    echo "Track does not exist! avoiding update!"
-    exit 0
-  fi
-
-  echo "Track will be created for merge queue branch"
-  echo 'export TRACK_EXISTS="true"' >/tmp/TRACK_STATUS # Track exists, skip following steps
+  echo "Track does not exist! avoiding update!"
+  exit 0
 fi
 
 if [[ -z "$CIRCLE_BRANCH" && -n "$CIRCLE_TAG" ]]; then
@@ -215,7 +205,6 @@ IMAGE_SHA="${IMAGE_SHA//sha256:/}"
 update_track() {
   ### update the track
   BUCKET="com.voiceflow.ci.assets"
-  TRACK="tracks/${COMPONENT}/${CIRCLE_BRANCH}"
   echo "TRACK: $TRACK"
 
   mkdir -p "$(dirname "/tmp/$TRACK")"
