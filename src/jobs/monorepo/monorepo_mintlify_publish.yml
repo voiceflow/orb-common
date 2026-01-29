@@ -32,9 +32,11 @@ steps:
       command: |
         yarn schema:extract:public
 
+        # copy schemas to docs repo
         cd apps
         cp -v --parents */openapi.public.json ~/docs/specs
 
+        # within the docs repo
         cd ~/docs
         git config --global user.email "serviceaccount@voiceflow.com"
         git config --global user.name "Voiceflow"
