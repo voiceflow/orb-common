@@ -103,6 +103,10 @@ parameters:
     description: push the image to the registry
     type: boolean
     default: true
+  disable_provenance:
+    description: disable provenance for image. necessary for lambda images
+    type: boolean
+    default: false
 steps:
   - when:
       condition: << parameters.checkout >>
@@ -157,4 +161,5 @@ steps:
         UPDATE_TRACK_FILE: << parameters.update_track_file >>
         ENABLE_PUSH: "<< parameters.enable_push >>"
         SEM_VER_OVERRIDE: "<< parameters.sem_ver_override >>"
+        DISABLE_PROVENANCE: "<< parameters.disable_provenance >>"
       command: <<include(scripts/track/update_track.sh)>>

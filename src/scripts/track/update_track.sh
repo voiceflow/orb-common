@@ -19,6 +19,7 @@ echo "ENABLE_CACHE_TO: ${ENABLE_CACHE_TO:=0}"
 echo "ENABLE_LOAD: ${ENABLE_LOAD:=0}"
 echo "ENABLE_PUSH: ${ENABLE_PUSH:=0}"
 echo "UPDATE_TRACK_FILE: ${UPDATE_TRACK_FILE:=0}"
+echo "DISABLE_PROVENANCE: ${DISABLE_PROVENANCE:=0}"
 
 # force string to array
 read -r -a EXTRA_BUILD_ARGS <<<"$EXTRA_BUILD_ARGS"
@@ -127,6 +128,10 @@ if [[ $IMAGE_EXISTS == "false" || "$CIRCLE_BRANCH" == "master" || "$CIRCLE_BRANC
 
   if ((ENABLE_LOAD)); then
     OUTPUT_ARGS+=(--load)
+  fi
+
+  if ((DISABLE_PROVENANCE)); then
+    OUTPUT_ARGS+=(--provenance=false)
   fi
 
   NPM_TOKEN_SECRET=(--secret id=NPM_TOKEN)
