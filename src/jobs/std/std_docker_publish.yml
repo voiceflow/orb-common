@@ -1,10 +1,12 @@
 parameters:
   executor:
     type: executor
+  ecr_url:
+    type: string
 executor: << parameters.executor >>
 working_directory: /home/circleci/code
 environment:
-  ECR_URL: << pipeline.parameters.ecr-url >>
+  ECR_URL: << parameters.ecr_url >>
 steps:
   - setup_remote_docker
   - std_checkout

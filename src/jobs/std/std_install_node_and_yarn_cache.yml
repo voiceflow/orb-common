@@ -25,11 +25,9 @@ steps:
   - std_authenticate_yarn
   - std_restore_cache:
       cache_name: yarn
-      cache_version: << parameters.cache_version >>
       use_lockfile: true
   - std_restore_cache:
       cache_name: node
-      cache_version: << parameters.cache_version >>
       use_lockfile: true
   - run:
       name: Install Dependencies
@@ -38,12 +36,10 @@ steps:
         yarn install --immutable
   - std_save_cache:
       cache_name: yarn
-      cache_version: << parameters.cache_version >>
       path: /home/circleci/code/.yarn/cache
       path_2: /home/circleci/code/.yarn/install-state.gz
       use_lockfile: true
   - std_save_cache:
       cache_name: node
-      cache_version: << parameters.cache_version >>
       path: /home/circleci/code/node_modules
       use_lockfile: true
