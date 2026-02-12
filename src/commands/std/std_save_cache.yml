@@ -29,7 +29,7 @@ steps:
             paths:
               - << parameters.path >
               - << parameters.path_2 >
-  - with:
+  - when:
       condition: << parameters.use_lockfile >>
       steps:
         - unless:
@@ -40,7 +40,7 @@ steps:
                   key: << parameters.cache_name >-cache-{{ .Environment.CACHE_VERSION }}--lockfile--{{ checksum "/home/circleci/code/yarn.lock" }}
                   paths:
                     - << parameters.path >
-        - with:
+        - when:
             condition: << parameters.path_2 >>
             steps:
               - save_cache:
