@@ -8,22 +8,22 @@ parameters:
     type: boolean
     default: false
 steps:
-  when:
-    condition: << parameters.use_lockfile >>
-    steps:
-      - restore_cache:
-          name: Restore << parameters.cache_name >> Cache
-          keys:
-            - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--lockfile--{{ checksum "/home/circleci/code/yarn.lock" }}
-            - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--{{ .Revision }}
-            - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--
-            - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--<< parameters.default_branch >>--
-  unless:
-    condition: << parameters.use_lockfile >>
-    steps:
-      - restore_cache:
-          name: Restore << parameters.cache_name >> Cache
-          keys:
-            - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--{{ .Revision }}
-            - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--
-            - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--<< parameters.default_branch >>--
+  - when:
+      condition: << parameters.use_lockfile >>
+      steps:
+        - restore_cache:
+            name: Restore << parameters.cache_name >> Cache
+            keys:
+              - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--lockfile--{{ checksum "/home/circleci/code/yarn.lock" }}
+              - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--{{ .Revision }}
+              - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--
+              - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--<< parameters.default_branch >>--
+  - unless:
+      condition: << parameters.use_lockfile >>
+      steps:
+        - restore_cache:
+            name: Restore << parameters.cache_name >> Cache
+            keys:
+              - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--{{ .Revision }}
+              - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--
+              - << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--<< parameters.default_branch >>--
