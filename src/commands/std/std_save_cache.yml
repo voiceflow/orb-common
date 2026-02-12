@@ -1,8 +1,6 @@
 parameters:
   cache_name:
     type: string
-  cache_version:
-    type: string
   path:
     type: string
   use_lockfile:
@@ -19,7 +17,7 @@ steps:
             name: Save << parameters.cache_name >> Cache
             key: << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--{{ .Revision }}
             paths:
-              - << parameters.path >
+              - << parameters.path >>
   - when:
       condition: << parameters.path_2 >>
       steps:
@@ -27,8 +25,8 @@ steps:
             name: Save << parameters.cache_name >> Cache
             key: << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--{{ .Revision }}
             paths:
-              - << parameters.path >
-              - << parameters.path_2 >
+              - << parameters.path >>
+              - << parameters.path_2 >>
   - when:
       condition: << parameters.use_lockfile >>
       steps:
@@ -39,7 +37,7 @@ steps:
                   name: Save << parameters.cache_name >> Cache
                   key: << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--lockfile--{{ checksum "/home/circleci/code/yarn.lock" }}
                   paths:
-                    - << parameters.path >
+                    - << parameters.path >>
         - when:
             condition: << parameters.path_2 >>
             steps:
@@ -47,5 +45,5 @@ steps:
                   name: Save << parameters.cache_name >> Cache
                   key: << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--lockfile--{{ checksum "/home/circleci/code/yarn.lock" }}
                   paths:
-                    - << parameters.path >
-                    - << parameters.path_2 >
+                    - << parameters.path >>
+                    - << parameters.path_2 >>
