@@ -17,7 +17,7 @@ steps:
       steps:
         - save_cache:
             name: Save << parameters.cache_name >> Cache
-            key: << parameters.cache_name >-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--{{ .Revision }}
+            key: << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--{{ .Revision }}
             paths:
               - << parameters.path >
   - when:
@@ -25,7 +25,7 @@ steps:
       steps:
         - save_cache:
             name: Save << parameters.cache_name >> Cache
-            key: << parameters.cache_name >-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--{{ .Revision }}
+            key: << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--branch--{{ .Branch }}--{{ .Revision }}
             paths:
               - << parameters.path >
               - << parameters.path_2 >
@@ -37,7 +37,7 @@ steps:
             steps:
               - save_cache:
                   name: Save << parameters.cache_name >> Cache
-                  key: << parameters.cache_name >-cache-{{ .Environment.CACHE_VERSION }}--lockfile--{{ checksum "/home/circleci/code/yarn.lock" }}
+                  key: << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--lockfile--{{ checksum "/home/circleci/code/yarn.lock" }}
                   paths:
                     - << parameters.path >
         - when:
@@ -45,7 +45,7 @@ steps:
             steps:
               - save_cache:
                   name: Save << parameters.cache_name >> Cache
-                  key: << parameters.cache_name >-cache-{{ .Environment.CACHE_VERSION }}--lockfile--{{ checksum "/home/circleci/code/yarn.lock" }}
+                  key: << parameters.cache_name >>-cache-{{ .Environment.CACHE_VERSION }}--lockfile--{{ checksum "/home/circleci/code/yarn.lock" }}
                   paths:
                     - << parameters.path >
                     - << parameters.path_2 >
