@@ -23,4 +23,4 @@ steps:
   - run:
       name: Test OpenAPI Schema
       command: |
-        yarn schema:validate
+        yarn ci:schema:validate

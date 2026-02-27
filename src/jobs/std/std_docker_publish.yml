@@ -19,4 +19,4 @@ steps:
       name: Docker Publish
       command: |
         docker buildx create --use --bootstrap --name buildy-trying
-        yarn docker:publish
+        yarn ci:docker:publish

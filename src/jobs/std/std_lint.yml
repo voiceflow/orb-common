@@ -13,7 +13,7 @@ steps:
   - run:
       name: Run Linting
       command: |
-        yarn lint:report
+        yarn ci:lint
   - store_artifacts:
       path: reports/lint.report.xml
       destination: lint.report.xml
