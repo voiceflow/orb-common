@@ -4,6 +4,7 @@ parameters:
 executor: << parameters.executor >>
 working_directory: /home/circleci/code
 steps:
+  - setup_remote_docker
   - std_checkout
   - std_restore_cache:
       cache_name: node
