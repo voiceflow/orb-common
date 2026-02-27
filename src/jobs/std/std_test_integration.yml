@@ -11,21 +11,21 @@ steps:
   - std_restore_cache:
       cache_name: build
   - std_restore_cache:
-      cache_name: vitest-unit
+      cache_name: vitest-integration
   - run:
-      name: Run Unit Tests
+      name: Run Integration Tests
       command: |
-        yarn ci:test:unit
+        yarn ci:test:integration
   - store_artifacts:
-      path: unit.report.xml
+      path: integration.report.xml
   - store_artifacts:
       path: sonar
   - store_test_results:
-      path: unit.report.xml
+      path: integration.report.xml
   - persist_to_workspace:
       root: /home/circleci/code
       paths:
-        - sonar/unit-coverage
+        - sonar/integration-coverage
   - std_save_cache:
-      cache_name: vitest-unit
+      cache_name: vitest-integration
       path: /home/circleci/code/node_modules/.experimental-vitest-cache
