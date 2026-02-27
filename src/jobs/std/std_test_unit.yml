@@ -15,8 +15,8 @@ steps:
   - run:
       name: Run Unit Tests
       command: |
-        yarn build
-        yarn test:unit --experimental.fsModuleCache
+        yarn ci:build
+        yarn ci:test:unit --experimental.fsModuleCache
   - store_artifacts:
       path: unit.report.xml
   - store_artifacts:

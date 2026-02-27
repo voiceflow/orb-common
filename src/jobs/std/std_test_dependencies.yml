@@ -15,7 +15,7 @@ steps:
   - run:
       name: Run Dependency Tests
       command: |
-        yarn test:dependencies
+        yarn ci:test:dependencies
   - std_save_cache:
       cache_name: test-dependencies
       path: /home/circleci/code/.turbo/cache

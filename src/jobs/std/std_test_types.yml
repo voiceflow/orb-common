@@ -15,7 +15,7 @@ steps:
   - run:
       name: Check Types
       command: |
-        yarn test:types
+        yarn ci:test:types
   - std_save_cache:
       cache_name: test-types
       path: /home/circleci/code/.turbo/cache

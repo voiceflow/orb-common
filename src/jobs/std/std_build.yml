@@ -13,7 +13,7 @@ steps:
   - run:
       name: Build
       command: |
-        yarn build
+        yarn ci:build
   - run:
       name: Collect OpenAPI Schemas
       working_directory: /home/circleci/code/apps
