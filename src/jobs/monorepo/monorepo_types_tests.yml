@@ -12,7 +12,13 @@ steps:
   - checkout_clone
   - attach_workspace:
       at: ~/voiceflow
+  - run:
+      command: cp -R ~/voiceflow/node_modules/.cache/turbo /tmp/turbo-cache
   - install_node_modules
+  - run:
+      command: |
+        rm -rf ~/voiceflow/node_modules/.cache/turbo
+        cp -R  /tmp/turbo-cache ~/voiceflow/node_modules/.cache/turbo
   - monorepo_types_tests:
       run_on_root: << parameters.run_on_root >>
       force_execution: true
