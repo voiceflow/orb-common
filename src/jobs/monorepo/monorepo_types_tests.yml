@@ -13,12 +13,17 @@ steps:
   - attach_workspace:
       at: ~/voiceflow
   - run:
-      command: test -d ~/voiceflow/node_modules/.cache/turbo && cp -R ~/voiceflow/node_modules/.cache/turbo /tmp/turbo-cache
+      command: |
+        if [[ -d ~/voiceflow/node_modules/.cache/turbo ]]; then
+          cp -R ~/voiceflow/node_modules/.cache/turbo /tmp/turbo-cache
+        fi
   - install_node_modules
   - run:
       command: |
-        rm -rf ~/voiceflow/node_modules/.cache/turbo
-        test -d /tmp/turbo-cache && cp -R /tmp/turbo-cache ~/voiceflow/node_modules/.cache/turbo
+        if [[ -d /tmp/turbo-cache ]]; then
+          rm -rf ~/voiceflow/node_modules/.cache/turbo
+          cp -R /tmp/turbo-cache ~/voiceflow/node_modules/.cache/turbo
+        fi
   - monorepo_types_tests:
       run_on_root: << parameters.run_on_root >>
       force_execution: true
