@@ -5,10 +5,8 @@ executor: << parameters.executor >>
 working_directory: /home/circleci/code
 steps:
   - std_checkout
-  - std_restore_cache:
-      cache_name: node
-      use_lockfile: true
+  # is this needed here?
   - attach_workspace:
-      at: /home/circleci/code
+      at: .
   - sonarcloud/scan:
       cache_version: 1

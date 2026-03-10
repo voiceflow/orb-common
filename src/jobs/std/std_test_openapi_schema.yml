@@ -6,15 +6,12 @@ working_directory: /home/circleci/code
 steps:
   - setup_remote_docker
   - std_checkout
+  - attach_workspace:
+      at: .
   - std_clone_repo:
       repo_name: openapi-schemas
       directory: schemas
       branch: master
-  - std_restore_cache:
-      cache_name: node
-      use_lockfile: true
-  - std_restore_cache:
-      cache_name: build
   - run:
       name: Restore OpenAPI Schemas
       working_directory: /home/circleci/schemas

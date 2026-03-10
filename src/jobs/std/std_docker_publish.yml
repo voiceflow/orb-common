@@ -10,11 +10,8 @@ environment:
 steps:
   - setup_remote_docker
   - std_checkout
-  - std_restore_cache:
-      cache_name: node
-      use_lockfile: true
-  - std_restore_cache:
-      cache_name: build
+  - attach_workspace:
+      at: .
   - run:
       name: Docker Publish
       command: |

@@ -5,11 +5,10 @@ executor: << parameters.executor >>
 working_directory: /home/circleci/code
 steps:
   - std_checkout
-  - std_restore_cache:
-      cache_name: node
-      use_lockfile: true
-  - std_restore_cache:
-      cache_name: build
+  - attach_workspace:
+      at: .
+  # TODO: should check if this gets layered with above or obliterates
+  # may just want to utilize remote turbocaching
   - std_restore_cache:
       cache_name: test-dependencies
   - run:

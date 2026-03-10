@@ -43,3 +43,8 @@ steps:
       cache_name: node
       path: /home/circleci/code/node_modules
       use_lockfile: true
+  - persist_to_workspace:
+      root: .
+      paths:
+        - .yarn/cache
+        - node_modules

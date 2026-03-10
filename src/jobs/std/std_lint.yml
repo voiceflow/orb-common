@@ -5,11 +5,8 @@ executor: << parameters.executor >>
 working_directory: /home/circleci/code
 steps:
   - std_checkout
-  - std_restore_cache:
-      cache_name: node
-      use_lockfile: true
-  - std_restore_cache:
-      cache_name: lint
+  - attach_workspace:
+      at: .
   - run:
       name: Run Linting
       command: |
@@ -19,7 +16,3 @@ steps:
       destination: lint.report.xml
   - store_test_results:
       path: reports/lint.report.xml
-  - std_save_cache:
-      cache_name: lint
-      path: /home/circleci/code/.eslintcache
-      path_2: /home/circleci/code/node_modules/.cache/prettier

@@ -6,11 +6,8 @@ working_directory: /home/circleci/code
 steps:
   - setup_remote_docker
   - std_checkout
-  - std_restore_cache:
-      cache_name: node
-      use_lockfile: true
-  - std_restore_cache:
-      cache_name: build
+  - attach_workspace:
+      at: .
   - std_restore_cache:
       cache_name: vitest-integration
   - run:
@@ -23,8 +20,9 @@ steps:
       path: sonar
   - store_test_results:
       path: integration.report.xml
+  # i don't see any jobs that require this one, do we need to persist? Does another job use these artifacts in the same workflow?
   - persist_to_workspace:
-      root: /home/circleci/code
+      root: .
       paths:
         - sonar/integration-coverage
   - std_save_cache:
