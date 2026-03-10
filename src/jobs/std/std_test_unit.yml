@@ -5,11 +5,8 @@ executor: << parameters.executor >>
 working_directory: /home/circleci/code
 steps:
   - std_checkout
-  - std_restore_cache:
-      cache_name: node
-      use_lockfile: true
-  - std_restore_cache:
-      cache_name: build
+  - attach_workspace:
+      at: .
   - std_restore_cache:
       cache_name: vitest-unit
   - run:
@@ -23,7 +20,7 @@ steps:
   - store_test_results:
       path: unit.report.xml
   - persist_to_workspace:
-      root: /home/circleci/code
+      root: .
       paths:
         - sonar/unit-coverage
   - std_save_cache:
