@@ -134,11 +134,15 @@ steps:
       image_repo: << parameters.image_repo >>
       request_remote_docker: false
   - when:
-      condition: << parameters.check_track_exists >>
+      condition:
+        or:
+          - << parameters.check_track_exists >>
+          - << parameters.force_create_track >>
       steps:
         - check_track_exists:
             component: << parameters.component >>
             bucket: << parameters.bucket >>
+            force_create: << parameters.force_create_track >>
   - when:
       condition: << parameters.local_registry >>
       steps:
