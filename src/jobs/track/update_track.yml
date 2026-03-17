@@ -111,6 +111,11 @@ parameters:
     description: disable provenance for image. necessary for lambda images
     type: boolean
     default: false
+  force_create_track:
+    description: Always create track
+    type: boolean
+    default: false
+
 steps:
   - update_track:
       image_repo: "<< parameters.image_repo >>"
@@ -136,6 +141,7 @@ steps:
       enable_load: "<< parameters.enable_load >>"
       builder_name: "<< parameters.builder_name >>"
       update_track_file: "<< parameters.update_track_file >>"
+      force_create_track: "<< parameters.force_create_track >>"
       enable_push: "<< parameters.enable_push >>"
       sem_ver_override: "<< parameters.sem_ver_override >>"
       disable_provenance: "<< parameters.disable_provenance >>"
