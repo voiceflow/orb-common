@@ -1,4 +1,4 @@
-description: Check if a track  exists
+description: Check if a track exists
 parameters:
   component:
     description: The container image repository
@@ -11,6 +11,10 @@ parameters:
     description: Stop if the bucket does not exists
     type: boolean
     default: false
+  force_create:
+    description: Always create track
+    type: boolean
+    default: false
 steps:
   - run:
       name: If track does not exists, don't build
@@ -18,4 +22,5 @@ steps:
         STOP: << parameters.stop_if_not_exists >>
         COMPONENT: << parameters.component >>
         BUCKET: << parameters.bucket >>
+        FORCE_CREATE: << parameters.force_create >>
       command: <<include(scripts/track/check_exists.sh)>>
