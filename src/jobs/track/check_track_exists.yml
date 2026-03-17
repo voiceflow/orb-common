@@ -2,20 +2,13 @@ parameters:
   component:
     description: Component to check if the track exists
     type: string
-  force_execute:
-    description: '[DEPRECATED] no effect, kept for backward compatibility'
+  force_create:
+    description: Always create track
     type: boolean
     default: false
-  package:
-    description: Monorepo package.
-    type: string
-    default: ""
-  package_folder:
-    description: Monorepo package
-    type: string
-    default: "packages"
 executor: build-executor
 steps:
   - check_track_exists:
       component: "<< parameters.component >>"
       stop_if_not_exists: true
+      force_create: << parameters.force_create >>

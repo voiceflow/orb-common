@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Expected env vars
-echo "${STOP?}"
-echo "${COMPONENT?}"
-echo "${BUCKET?}"
+echo "STOP=${STOP?}"
+echo "COMPONENT=${COMPONENT?}"
+echo "BUCKET=${BUCKET?}"
+echo "FORCE_CREATE=${FORCE_CREATE?}"
 
 BRANCH_NAME="$CIRCLE_BRANCH"
 if [[ -z "$CIRCLE_BRANCH" && -n "$CIRCLE_TAG" ]]; then
@@ -18,8 +19,7 @@ SEARCH_TRACK_RESULT=$?
 set -e
 
 # Store the result on a file in tmp folder to use in future steps
-if [[ $SEARCH_TRACK_RESULT -eq 0 || "$CIRCLE_BRANCH" =~ ^gtmq_ ]]; then
-  # Track exists, skip following steps
+if [[ $SEARCH_TRACK_RESULT -eq 0 || "$CIRCLE_BRANCH" =~ ^gtmq_ || $FORCE_CREATE -eq 1 ]]; then
   cat <<-EOF >/tmp/TRACK_STATUS
 export TRACK_EXISTS="true"
 export TRACK="${TRACK}"

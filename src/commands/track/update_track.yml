@@ -107,6 +107,11 @@ parameters:
     description: disable provenance for image. necessary for lambda images
     type: boolean
     default: false
+  force_create_track:
+    description: Always create track
+    type: boolean
+    default: false
+
 steps:
   - when:
       condition: << parameters.checkout >>
