@@ -31,7 +31,7 @@ steps:
         if [[ $force == true ]]; then
           vfcli env delete --name "<< parameters.env-name >>" --interactive false
         else
-          if [[ -f << parameters.env-name-path >> ]]; then
+          if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
             env_name=$(cat << parameters.env-name-path >>)
             echo "Env: $env_name will be released"
           else
