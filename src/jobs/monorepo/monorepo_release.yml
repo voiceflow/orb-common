@@ -84,7 +84,7 @@ steps:
                 SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish prerelease \
                   --message "<< parameters.commit_message >>" --yes \
                   --no-push --no-git-tag-version --canary --preid $SHORT_SHA \
-                  --conventional-commits --no-verify-access << parameters.publish_args >>
+                  --conventional-commits --force-publish --no-verify-access << parameters.publish_args >>
               else
                 SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx lerna@4.0.0 publish \
                   --message "<< parameters.commit_message >>" --yes \
@@ -103,7 +103,7 @@ steps:
                 SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish prerelease \
                   --message "<< parameters.commit_message >>" --yes \
                   --no-push --no-git-tag-version --canary --preid $SHORT_SHA \
-                  --conventional-commits --no-verify-access << parameters.publish_args >>
+                  --conventional-commits --force-publish --no-verify-access << parameters.publish_args >>
               else
                 SENTRY_PROJECT=<< parameters.sentry_project >> HUSKY=0 npx --package @lerna-lite/cli@1.17.0 lerna publish \
                   --message "<< parameters.commit_message >>" --yes  \
