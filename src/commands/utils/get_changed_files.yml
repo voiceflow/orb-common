@@ -1,11 +1,11 @@
 parameters:
-  target_env_var:
-    description: Environment variable to set with the list of changed files
-    type: env_var_name
-    default: CHANGED_FILES
+  target_file:
+    description: Absolute path to write the list of changed files to. Absolute so it survives consumers that set a custom working_directory (e.g. helm).
+    type: string
+    default: /tmp/changed_files.txt
 steps:
   - run:
-      name: Put list of changed files in << parameters.target_env_var >> environment variable
+      name: Write list of changed files to << parameters.target_file >>
       command: |
        if [[ -z $COMPUTED_BASE_REVISION  ]]; then
           BASE_REVISION="master"
@@ -19,5 +19,5 @@ steps:
        if [[ $BASE == $CIRCLE_SHA1 ]]; then
           BASE="$(git rev-parse HEAD~1)"
        fi
-       FILE_CHANGES="$(git diff --name-status --no-commit-id -r $BASE...$CIRCLE_SHA1)"
-       echo "export << parameters.target_env_var >>=\"$FILE_CHANGES\"" >> "$BASH_ENV"
+       git diff --name-status --no-commit-id -r $BASE...$CIRCLE_SHA1 > "<< parameters.target_file >>"
+       echo "export CHANGED_FILES_FILE=\"<< parameters.target_file >>\"" >> "$BASH_ENV"

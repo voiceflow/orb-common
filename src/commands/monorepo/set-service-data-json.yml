@@ -1,7 +1,7 @@
 description: |
   Set the service metadata array in a json file.
-  The `CHANGED_FILES` environment variable must be set with the `get_changes_files` command prior
-  to running this command.
+  The `CHANGED_FILES_FILE` environment variable (a path to the changed-files list, set by the
+  `get_changed_files` command) must be set prior to running this command.
 parameters:
   service-directories:
     description: |
@@ -36,7 +36,7 @@ steps:
 
             echo "Checking if $SERVICE was modified..."
             MODIFIED=false
-            if grep "$DIRECTORY/$SERVICE" \<<< "${CHANGED_FILES?}"; then
+            if grep "$DIRECTORY/$SERVICE" "${CHANGED_FILES_FILE:?}"; then
               MODIFIED=true
             fi
             COMPONENT_NAME=$(jq --raw-output ".serviceName" $DIRECTORY/$SERVICE/package.json)
