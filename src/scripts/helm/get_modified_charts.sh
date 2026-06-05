@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Expected environment variables:
-echo "CHANGED_FILES: ${CHANGED_FILES?}"
+echo "CHANGED_FILES_FILE: ${CHANGED_FILES_FILE:?}"
 echo "CHART_DIR: ${CHART_DIR:?}"
 echo "MODIFIED_CHARTS_ENV: ${MODIFIED_CHARTS_ENV:?}"
 
@@ -26,7 +26,7 @@ done
 # Extract only modified charts
 MODIFIED_CHARTS=()
 for CHART in "${ALL_CHARTS[@]}"; do
-    if grep -q -oP "(M|A)\s*${CHART_DIR}${CHART}/${CHART}/.*" <<< "${CHANGED_FILES?}"; then
+    if grep -q -oP "(M|A)\s*${CHART_DIR}${CHART}/${CHART}/.*" "${CHANGED_FILES_FILE:?}"; then
     MODIFIED_CHARTS+=("$CHART")
     fi;
 done
