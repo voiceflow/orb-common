@@ -14,8 +14,10 @@ parameters:
     default: 1h
   node-group:
     type: string
-    description: Name of the node group to use
-    default: "e2e"
+    description: |
+      Name of the node group to pin the environment to. Leave empty (default) to use
+      vfcli's capacity-type scheduling: non-dev envs (test-/review-/e2e-) default to spot.
+    default: ""
   force:
     type: boolean
     description: Whether to force environment creation without checking for free environment
