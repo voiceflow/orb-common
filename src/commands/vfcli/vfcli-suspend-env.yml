@@ -17,17 +17,14 @@ steps:
   - run:
       name: Suspend Environment
       command: |
-        echo "Contents of << parameters.env-name-path >>:"
-        cat << parameters.env-name-path >>
-        if [[ -f << parameters.env-name-path >> ]]; then
+        if [ -f << parameters.env-name-path >> ] &&
+          [ -n "$(cat << parameters.env-name-path >> )" ] &&
+          [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
+
           echo "Using env_name from file << parameters.env-name-path >> in the suspend action"
           env_name=$(cat << parameters.env-name-path >>)
         else
           env_name="<< parameters.env-name >>"
         fi
-        if [[ "$env_name" == "null" ]] || [[ -z "$env_name" ]]; then
-          # If env_name from file is "null" or empty, use the default parameter
-          env_name="<< parameters.env-name >>"
-        fi
-
-        vfcli env suspend "$env_name" --interactive false --wait --track-file "<< parameters.track-file >>"
+        echo "Using env: ${env_name-}"
+        vfcli env suspend "${env_name-}" --interactive false --wait --track-file "<< parameters.track-file >>"

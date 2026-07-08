@@ -26,7 +26,8 @@ steps:
   - run:
       name: Report Test Failures
       command: |
-        if [[ -f << parameters.env-name-path >> ]]; then
+
+        if [ -f << parameters.env-name-path >> ] && [ "$(cat << parameters.env-name-path >> )" != "null" ]; then
           echo "Using env_name from file << parameters.env-name-path >> in the suspend action"
           env_name=$(cat << parameters.env-name-path >>)
         else
