@@ -3,6 +3,37 @@ set -eE
 
 BUCKET="com.voiceflow.ci.assets"
 
+# Full command trace is redirected to an artifact file instead of the console,
+# so the main log stays readable. Published as the "promote-production-logs"
+# CircleCI artifact after the run.
+LOG_DIR="/tmp/promote-production-logs"
+mkdir -p "$LOG_DIR"
+exec {trace_fd}>"${LOG_DIR}/promote-production.trace.log"
+export BASH_XTRACEFD="$trace_fd"
+set -x
+
+CURRENT_PHASE="startup"
+
+on_error() {
+  local exit_code=$?
+  cat <<EOF
+
+================================================================================
+  TAG IMAGES FAILED (exit ${exit_code}) during: ${CURRENT_PHASE}
+================================================================================
+
+  This is a real failure in the image-tagging/promotion step (unlike the
+  master-guard check that runs before it). Full command trace is in the
+  "promote-production-logs" CircleCI artifact:
+
+      ${LOG_DIR}/promote-production.trace.log
+
+================================================================================
+
+EOF
+}
+trap on_error ERR
+
 echo "IMAGE_REGISTRY=${IMAGE_REGISTRY}"
 echo "BUCKET=${BUCKET}"
 
@@ -82,14 +113,23 @@ copy_track() {
   aws s3 cp --no-progress "${MASTER_TRACK}" "s3://${BUCKET}/${PRODUCTION_TRACK}"
 }
 
+echo "==> Fetching master tracks for ${#COMPONENT_NAMES[@]} component(s)..."
+CURRENT_PHASE="fetch master tracks"
 get_master_tracks "${TMP_DIR}" "${COMPONENT_NAMES[@]}"
 
-echo "Adding production tag and updating tracks for..."
-
+echo "==> Tagging images and updating production tracks..."
 for INDEX in "${!COMPONENT_NAMES[@]}"; do
   NAME="${COMPONENT_NAMES[$INDEX]}"
+  echo "  - ${NAME}"
+
+  CURRENT_PHASE="parse tag for ${NAME}"
   TAG="$(parse_tag "$TMP_DIR" "${NAME}")"
 
+  CURRENT_PHASE="tag image ${NAME}:${TAG}"
   add_production_tags "${NAME}" "${TAG}"
+
+  CURRENT_PHASE="copy track for ${NAME}"
   copy_track "${TMP_DIR}" "${NAME}"
 done
+
+echo "==> Done. Promoted ${#COMPONENT_NAMES[@]} component(s) to production."
