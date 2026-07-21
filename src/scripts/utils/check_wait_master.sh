@@ -108,6 +108,27 @@ EOF
 echo "Looking for the master workflow matching this commit (${REVISION})..."
 
 MASTER_PIPELINE_ID=$(get_pipeline)
+
+if [[ -z "$MASTER_PIPELINE_ID" || "$MASTER_PIPELINE_ID" == "null" ]]; then
+  cat <<EOF
+
+================================================================================
+  PRODUCTION PROMOTION BLOCKED - NO MASTER WORKFLOW FOUND FOR THIS COMMIT
+================================================================================
+
+  Could not find a master-branch pipeline for commit ${REVISION}. Either the
+  master build for this commit has not started yet, or this commit was never on
+  master. Promotion is blocked until a master workflow for this commit exists
+  and succeeds.
+
+  >> Do NOT re-run this production job to force it through. Check master's
+     builds here: https://app.circleci.com/pipelines/${APP_ORG}/${PROJECT}?branch=master
+
+================================================================================
+
+EOF
+  exit 1
+fi
 WORKFLOW=$(get_workflow "$MASTER_PIPELINE_ID")
 
 # Persist the resolved pipeline id and workflow JSON to the artifact for debugging.
