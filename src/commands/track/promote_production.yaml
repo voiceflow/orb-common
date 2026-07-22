@@ -18,3 +18,8 @@ steps:
         IMAGE_REGISTRY: "<< parameters.image_registry>>"
         COMPONENT_NAMES: "<< parameters.modifiedComponentNames >>"
       command: <<include(scripts/track/promote_production.sh)>>
+
+  - store_artifacts:
+      path: /tmp/promote-production-logs
+      destination: promote-production-logs
+      when: always
