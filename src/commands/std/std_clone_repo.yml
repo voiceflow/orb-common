@@ -1,0 +1,13 @@
+parameters:
+  repo_name:
+    type: string
+  directory:
+    type: string
+  branch:
+    type: string
+steps:
+  - run:
+      name: Clone Repository
+      working_directory: /home/circleci
+      command: |
+        git clone --branch << parameters.branch >> "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/<< parameters.repo_name >>" << parameters.directory >>

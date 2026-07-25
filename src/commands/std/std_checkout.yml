@@ -1,0 +1,8 @@
+steps:
+  - run:
+      name: Checkout Repository
+      working_directory: /home/circleci
+      command: |
+        git clone "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}" code
+        cd code
+        git checkout "${CIRCLE_SHA1}"
