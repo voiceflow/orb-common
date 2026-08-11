@@ -23,6 +23,6 @@ steps:
 
         API_URL="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${<< parameters.pr_number_env_var >>:?}"
         RESPONSE=$(curl -s -H "Authorization: token ${GITHUB_TOKEN:?}" "${API_URL}")
-        PR_BRANCH=$(echo "${RESPONSE:?}" | jq -r '.head.ref')
+        PR_BRANCH=$(echo "${RESPONSE:?}" | jq -r '.head.ref // empty')
 
         echo "export << parameters.target_env_var >>=\"${PR_BRANCH}\"" >> "$BASH_ENV"
