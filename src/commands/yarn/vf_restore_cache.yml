@@ -7,7 +7,23 @@ parameters:
     description: Cache prefix
     type: string
     default: ""
+  cache_branch:
+    description: Additional branch to try when restoring, e.g. the source PR branch on a merge-queue build
+    type: string
+    default: ""
 steps:
   - restore_cache:
       keys:
         - node-module-cache-<< parameters.cache_prefix >>-{{ .Branch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
+        # Every fallback keeps the checksum, so a key can never match a different lockfile.
+        # The negated arm repeats the key above rather than rendering empty: an empty restore
+        # key is a bare prefix and would match an arbitrary cache.
+        - |
+          <<# parameters.cache_branch >>
+          node-module-cache-<< parameters.cache_prefix >>-<< parameters.cache_branch >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
+          <</ parameters.cache_branch >>
+          <<^ parameters.cache_branch >>
+          node-module-cache-<< parameters.cache_prefix >>-{{ .Branch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
+          <</ parameters.cache_branch >>
+
+        - node-module-cache-<< parameters.cache_prefix >>-master-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.yarn_lock_restore_cache_directory >>/yarn.lock" }}
