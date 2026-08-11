@@ -61,7 +61,7 @@ steps:
                     << parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-<< parameters.cache_branch >>--{{ .Revision }}
                     <</ parameters.cache_branch >>
                     <<^ parameters.cache_branch >>
-                    << parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}"
+                    << parameters.cache_identifier >>--{{ .Environment.CACHE_VERSION }}-{{ .Branch }}--{{ .Revision }}
                     <</ parameters.cache_branch >>
         - when:
             condition:
