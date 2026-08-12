@@ -15,6 +15,10 @@ parameters:
     description: Executor to run the command on
     type: executor
     default: node-executor
+  cache_branch:
+    description: Branch name to key the node_modules cache on, e.g. the source PR branch on a merge-queue build
+    type: string
+    default: ""
 executor: << parameters.executor >>
 steps:
   - setup_remote_docker:
@@ -22,6 +26,7 @@ steps:
   - checkout_clone
   - install_node_modules:
       avoid_post_install_scripts: false
+      cache_branch: << parameters.cache_branch >>
   - attach_workspace:
       at: ~/voiceflow
   - clone_repo:

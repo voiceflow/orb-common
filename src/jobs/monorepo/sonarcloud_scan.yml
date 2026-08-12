@@ -7,6 +7,10 @@ parameters:
     description: Install dependencies before scanning
     type: boolean
     default: false
+  cache_branch:
+    description: Branch name to key the node_modules cache on, e.g. the source PR branch on a merge-queue build
+    type: string
+    default: ""
 executor: << parameters.executor >>
 steps:
   - checkout
@@ -15,6 +19,7 @@ steps:
   - when:
       condition: << parameters.install_node_modules >>
       steps:
-        - install_node_modules
+        - install_node_modules:
+            cache_branch: << parameters.cache_branch >>
   - sonarcloud/scan:
       cache_version: 2
