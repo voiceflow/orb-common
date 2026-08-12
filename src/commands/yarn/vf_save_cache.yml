@@ -7,9 +7,20 @@ parameters:
     description: Cache prefix
     type: string
     default: ""
+  cache_branch:
+    description: Branch name to key the cache on, e.g. the source PR branch on a merge-queue build
+    type: string
+    default: ""
 steps:
   - save_cache: # special step to save the dependency cache
-      key: node-module-cache-<< parameters.cache_prefix >>-{{ .Branch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
+      # Only use << parameters.cache_branch >> if it is not empty
+      key: |
+        <<# parameters.cache_branch >>
+        node-module-cache-<< parameters.cache_prefix >>-<< parameters.cache_branch >>-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
+        <</ parameters.cache_branch >>
+        <<^ parameters.cache_branch >>
+        node-module-cache-<< parameters.cache_prefix >>-{{ .Branch }}-{{ .Environment.CACHE_VERSION }}-{{ checksum "<< parameters.working_directory >>/yarn.lock" }}
+        <</ parameters.cache_branch >>
       paths:
         - << parameters.working_directory >>/.yarn/cache
         - << parameters.working_directory >>/.yarn/install-state.gz
