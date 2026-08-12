@@ -22,7 +22,14 @@ steps:
         fi
 
         API_URL="https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${<< parameters.pr_number_env_var >>:?}"
-        RESPONSE=$(curl -s -H "Authorization: token ${GITHUB_TOKEN:?}" "${API_URL}")
-        PR_BRANCH=$(echo "${RESPONSE:?}" | jq -r '.head.ref // empty')
+        # Warn rather than fail — an unresolved branch only costs the cache_branch optimization.
+        # curl exits 0 on a 5xx body, so without --retry a blip silently disables cache reuse.
+        RESPONSE=$(curl -sS --max-time 15 --retry 3 --retry-delay 2 \
+          -H "Authorization: token ${GITHUB_TOKEN:?}" "${API_URL}") || RESPONSE=""
+        PR_BRANCH=$(printf '%s' "${RESPONSE}" | jq -r '.head.ref // empty') || PR_BRANCH=""
+
+        if [ -z "${PR_BRANCH}" ]; then
+          echo "WARNING: could not resolve the head branch for PR ${<< parameters.pr_number_env_var >>}; cache reuse will fall back to master"
+        fi
 
         echo "export << parameters.target_env_var >>=\"${PR_BRANCH}\"" >> "$BASH_ENV"
