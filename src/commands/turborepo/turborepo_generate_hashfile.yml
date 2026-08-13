@@ -1,0 +1,22 @@
+parameters:
+  prefix:
+    description: Cache prefix
+    type: string
+  command:
+    description: Script to execute turbo run command
+    type: string
+steps:
+  - run:
+      name: Writing '<< parameters.command >>' hashes to '/tmp/hashfiles/<< parameters.prefix >>.hashfile.json'
+      command: |
+        report=$(<< parameters.command >> --dry-run json)
+
+        echo "$report"
+
+        mkdir -p /tmp/hashfiles
+        echo "$report" \
+          | jq -c '. | { globalHash: .globalCacheInputs.hashOfExternalDependencies, tasks: .tasks | map({ taskId, hash, externalHash: .hashOfExternalDependencies }) | sort_by(.taskId) }' \
+          > /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
+  - store_artifacts:
+      name: Storing '/tmp/hashfiles/<< parameters.prefix >>.hashfile.json' as artifact
+      path: /tmp/hashfiles/<< parameters.prefix >>.hashfile.json
