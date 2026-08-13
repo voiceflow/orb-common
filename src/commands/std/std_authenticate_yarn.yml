@@ -1,0 +1,10 @@
+steps:
+  - run:
+      name: Authenticate Yarn
+      working_directory: /home/circleci/code
+      command: |
+        cat \<< EOF > ~/.yarnrc.yml
+        npmRegistries:
+          "https://registry.yarnpkg.com":
+            npmAuthToken: ${NPM_TOKEN}
+        EOF

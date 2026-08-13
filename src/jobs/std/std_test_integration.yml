@@ -1,0 +1,32 @@
+parameters:
+  executor:
+    type: executor
+executor: << parameters.executor >>
+working_directory: /home/circleci/code
+steps:
+  - setup_remote_docker
+  - std_checkout
+  - std_restore_cache:
+      cache_name: node
+      use_lockfile: true
+  - std_restore_cache:
+      cache_name: build
+  - std_restore_cache:
+      cache_name: vitest-integration
+  - run:
+      name: Run Integration Tests
+      command: |
+        yarn ci:test:integration
+  - store_artifacts:
+      path: integration.report.xml
+  - store_artifacts:
+      path: sonar
+  - store_test_results:
+      path: integration.report.xml
+  - persist_to_workspace:
+      root: /home/circleci/code
+      paths:
+        - sonar/integration-coverage
+  - std_save_cache:
+      cache_name: vitest-integration
+      path: /home/circleci/code/node_modules/.experimental-vitest-cache
