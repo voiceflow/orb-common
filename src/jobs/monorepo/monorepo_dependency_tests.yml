@@ -7,12 +7,17 @@ parameters:
     description: Executor to run the command on
     type: executor
     default: node-executor
+  cache_branch:
+    description: Branch name to key the node_modules cache on, e.g. the source PR branch on a merge-queue build
+    type: string
+    default: ""
 executor: << parameters.executor >>
 steps:
   - checkout_clone
   - attach_workspace:
       at: ~/voiceflow
-  - install_node_modules
+  - install_node_modules:
+      cache_branch: << parameters.cache_branch >>
   - monorepo_dependency_tests:
       run_on_root: << parameters.run_on_root >>
       force_execution: true

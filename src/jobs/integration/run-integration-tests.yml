@@ -6,6 +6,10 @@ parameters:
     description: Executor to run the command on
     type: executor
     default: node-executor-node-20
+  cache_branch:
+    description: Branch name to key the node_modules cache on, e.g. the source PR branch on a merge-queue build
+    type: string
+    default: ""
 executor: << parameters.executor >>
 steps:
   - checkout_clone
@@ -14,6 +18,7 @@ steps:
   - install_node_modules:
       avoid_post_install_scripts: false
       cache_prefix: integration-test
+      cache_branch: << parameters.cache_branch >>
   - run:
       name: "Reference commit SHA"
       command: git rev-parse HEAD >> commit.txt
