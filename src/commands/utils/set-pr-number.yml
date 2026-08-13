@@ -12,15 +12,13 @@ steps:
       name: Set << parameters.target_env_var >> variable with the PR number
       working_directory: << parameters.working_directory >>
       command: |
-        # If multiple PRs are merged at the same time, CIRCLE_PULL_REQUEST will
-        # be a random one of them. We need to get the PR number from the URL.
-        PR="${CIRCLE_PULL_REQUEST##*/}"
-
-        # If this is a bors branch, CIRCLE_PULL_REQUEST will be empty. We need
-        # to get the PR number from the commit message (e.g. "fix: bug (CT-000) (#1234)")
-        PR="${PR:-$(git log --format=oneline -n 1 $CIRCLE_SHA1  | grep --only-matching --extended-regexp '#[0-9]+' || echo '')}"
-
-        # Trim leading # from PR number
-        PR="${PR##\#}"
+        # Graphite merge-queue branches carry their own draft PR, so CIRCLE_PULL_REQUEST points at
+        # the draft rather than at the PR being merged. The tip commit is the top-of-stack squash,
+        # whose subject ends in "(#<PR>)".
+        if [[ "${CIRCLE_BRANCH}" =~ ^gtmq_ ]]; then
+          PR=$(git log -1 --format=%s "${CIRCLE_SHA1}" | sed -nE 's/.*\(#([0-9]+)\)[[:space:]]*$/\1/p')
+        else
+          PR="${CIRCLE_PULL_REQUEST##*/}"
+        fi
 
         echo "export << parameters.target_env_var >>=\"${PR}\"" >> "$BASH_ENV"
