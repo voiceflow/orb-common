@@ -3,6 +3,14 @@ parameters:
     description: Executor to run the command on
     type: executor
     default: java-executor
+  working_directory:
+    description: >
+      Absolute path to check out and scan in. Set to /mnt/ramdisk to run on the Docker RAM disk.
+      That path is tmpfs, so everything under it counts against the container memory limit: a full
+      checkout is ~1GB, and install_node_modules can add several GB on top. Only point this at the
+      RAM disk when the resource class has the headroom to spare.
+    type: string
+    default: "~/voiceflow"
   install_node_modules:
     description: Install dependencies before scanning
     type: boolean
@@ -12,10 +20,11 @@ parameters:
     type: string
     default: ""
 executor: << parameters.executor >>
+working_directory: << parameters.working_directory >>
 steps:
   - checkout
   - attach_workspace:
-      at: ~/voiceflow
+      at: << parameters.working_directory >>
   - when:
       condition: << parameters.install_node_modules >>
       steps:
