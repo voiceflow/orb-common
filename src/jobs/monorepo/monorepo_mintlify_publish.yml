@@ -44,9 +44,7 @@ steps:
         git config --global user.email "serviceaccount@voiceflow.com"
         git config --global user.name "Voiceflow"
         git add specs/*/openapi.public.json
-        for f in specs/*/openapi.stable.json; do
-          if [ -f "$f" ]; then git add "$f"; fi
-        done
+        git add specs/*/openapi.stable.json
         git diff-index --quiet HEAD || git commit -m "feat: evolve ${CIRCLE_PROJECT_REPONAME} schemas"
         git pull --rebase
         git push
