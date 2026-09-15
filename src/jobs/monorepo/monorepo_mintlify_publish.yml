@@ -32,15 +32,28 @@ steps:
       command: |
         yarn schema:extract:public
 
-        # copy schemas to docs repo
+        # copy schemas to docs repo: the public spec of every app, and the
+        # STABLE spec where an app produced one. creator-app's build persists
+        # apps/realtime/openapi.stable.json to the workspace (the same file
+        # update_cli hands to speakeasy), so it is already in this checkout
+        # after attach_workspace; platform's apps persist no stable spec, so
+        # the copy is guarded. The API reference renders from this file and
+        # this job never copied it - the docs' copy was dropped by hand and
+        # measured 17 operations behind the platform on 2026-09-15.
         cd apps
         cp -v --parents */openapi.public.json ~/docs/specs
+        for f in */openapi.stable.json; do
+          if [ -f "$f" ]; then cp -v --parents "$f" ~/docs/specs; fi
+        done
 
         # within the docs repo
         cd ~/docs
         git config --global user.email "serviceaccount@voiceflow.com"
         git config --global user.name "Voiceflow"
         git add specs/*/openapi.public.json
+        for f in specs/*/openapi.stable.json; do
+          if [ -f "$f" ]; then git add "$f"; fi
+        done
         git diff-index --quiet HEAD || git commit -m "feat: evolve ${CIRCLE_PROJECT_REPONAME} schemas"
         git pull --rebase
         git push
