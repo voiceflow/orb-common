@@ -1,0 +1,53 @@
+parameters:
+  executor:
+    description: Executor to run the command on
+    type: executor
+    default: node-executor-node-20
+  schema_dir:
+    description: Directory to store schemas between jobs
+    type: string
+    default: "/tmp/schemas"
+  skip_tests:
+    description: Skip the tests but save the updated schemas
+    type: boolean
+    default: false
+  command:
+    description: Script to run schema validation
+    type: string
+    default: yarn schema:validate --summarize true
+executor: << parameters.executor >>
+steps:
+  - setup_remote_docker:
+      version: default
+  - checkout_clone
+  - attach_workspace:
+      at: ~/voiceflow
+  - turborepo_install
+  - turborepo_generate_hashfile:
+      prefix: build-cache
+      command: yarn build
+  - turborepo_generate_hashfile:
+      prefix: schema-validate-cache
+      command: << parameters.command >>
+  - turborepo_restore_cache:
+      fallback_prefix: build-cache
+      prefix: schema-validate-cache
+  - clone_repo:
+      step_name: Clone openapi-schemas repository
+      github_username: GITHUB_USERNAME
+      github_token: GITHUB_TOKEN
+      github_repo_name: openapi-schemas
+      path_to_clone: ~/schemas
+  - openapi_restore_schemas:
+      from: ~/schemas
+      to: ~/voiceflow
+  - run:
+      name: Validate Schemas
+      environment:
+        SKIP_ACCEPTANCE_TESTS: "<< parameters.skip_tests >>"
+      command: << parameters.command >>
+  - turborepo_store_summaries
+  - turborepo_save_cache:
+      prefix: schema-validate-cache
+  - openapi_persist_schemas:
+      workspace_dir: "<< parameters.schema_dir >>"
