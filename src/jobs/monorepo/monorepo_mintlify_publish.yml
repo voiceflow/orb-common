@@ -37,11 +37,7 @@ steps:
         # to the workspace; platform persists none, so the copy and the add are guarded)
         cd apps
         cp -v --parents */openapi.public.json ~/docs/specs
-        stable=0
-        for f in */openapi.stable.json; do
-          if [ -f "$f" ]; then cp -v --parents "$f" ~/docs/specs; stable=1; fi
-        done
-        [ "$stable" = 1 ] || echo "no app produced openapi.stable.json - stable spec not copied"
+        cp -v --parents */openapi.stable.json ~/docs/specs
 
         # within the docs repo
         cd ~/docs
