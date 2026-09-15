@@ -28,19 +28,29 @@ steps:
       github_repo_name: "<< parameters.docs_repo >>"
       path_to_clone: ~/docs
   - run:
-      name: Commit public OpenAPI schemas to Mintlify docs repo
+      name: Commit OpenAPI schemas (public + stable) to Mintlify docs repo
       command: |
         yarn schema:extract:public
 
-        # copy schemas to docs repo
+        # copy schemas to docs repo: every app's public spec, plus the stable spec
+        # where an app produced one (creator-app persists apps/realtime/openapi.stable.json
+        # to the workspace; platform persists none, so the copy and the add are guarded)
         cd apps
         cp -v --parents */openapi.public.json ~/docs/specs
+        stable=0
+        for f in */openapi.stable.json; do
+          if [ -f "$f" ]; then cp -v --parents "$f" ~/docs/specs; stable=1; fi
+        done
+        [ "$stable" = 1 ] || echo "no app produced openapi.stable.json - stable spec not copied"
 
         # within the docs repo
         cd ~/docs
         git config --global user.email "serviceaccount@voiceflow.com"
         git config --global user.name "Voiceflow"
         git add specs/*/openapi.public.json
+        for f in specs/*/openapi.stable.json; do
+          if [ -f "$f" ]; then git add "$f"; fi
+        done
         git diff-index --quiet HEAD || git commit -m "feat: evolve ${CIRCLE_PROJECT_REPONAME} schemas"
         git pull --rebase
         git push
