@@ -49,6 +49,20 @@ steps:
   - run:
       name: Extract the public OpenAPI schemas
       command: yarn schema:extract:public
+  # The docs' home first: a failure on the legacy target below (an archived
+  # repository, a rebase conflict) must not stop the push the docs are served
+  # from. The legacy step turns off (publish_to_docs_repo: false) the day the
+  # website consumes the mailbox.
+  - when:
+      condition: << parameters.publish_to_website >>
+      steps:
+        - run:
+            name: Push the OpenAPI schemas to the docs' home (<< parameters.website_repo >>)
+            environment:
+              WEBSITE_REPO: << parameters.website_repo >>
+              WEBSITE_BRANCH: << parameters.website_branch >>
+              WEBSITE_SPECS_DIR: << parameters.website_specs_dir >>
+            command: <<include(scripts/monorepo/publish_specs_to_website.sh)>>
   - when:
       condition: << parameters.publish_to_docs_repo >>
       steps:
@@ -83,13 +97,3 @@ steps:
               git diff-index --quiet HEAD || git commit -m "feat: evolve ${CIRCLE_PROJECT_REPONAME} schemas"
               git pull --rebase
               git push
-  - when:
-      condition: << parameters.publish_to_website >>
-      steps:
-        - run:
-            name: Push the OpenAPI schemas to the docs' home (<< parameters.website_repo >>)
-            environment:
-              WEBSITE_REPO: << parameters.website_repo >>
-              WEBSITE_BRANCH: << parameters.website_branch >>
-              WEBSITE_SPECS_DIR: << parameters.website_specs_dir >>
-            command: <<include(scripts/monorepo/publish_specs_to_website.sh)>>

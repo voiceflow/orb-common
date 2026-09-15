@@ -60,14 +60,39 @@ push_mailbox() {
   git add -A -- "$WEBSITE_SPECS_DIR"
   if git diff --cached --quiet; then
     echo "the mailbox already carries these specs - nothing to push"
+    pushed=0
     return 0
   fi
+  pushed=1
   git commit -q -m "Docs: evolve ${CIRCLE_PROJECT_REPONAME:-monorepo} schemas"
   git push -q origin "HEAD:refs/heads/$WEBSITE_BRANCH"
 }
 
+# Tell the website a spec landed. A push-event workflow runs from the PUSHED
+# commit's tree, and the mailbox carries no .github/workflows/ - so `on: push`
+# there can never fire; the website's docs-spec-sync listens for this
+# repository_dispatch instead (its six-hourly schedule is the catch-up for
+# one that was lost, which is why a failed POST is a warning, not a failure).
+# `repo` scope on the token covers the dispatches endpoint.
+dispatch_sync() {
+  local sha
+  sha="$(git rev-parse HEAD)"
+  local payload
+  payload="{\"event_type\":\"docs-spec-push\",\"client_payload\":{\"sha\":\"${sha}\",\"source\":\"${CIRCLE_PROJECT_REPONAME:-monorepo}\",\"build\":\"${CIRCLE_BUILD_URL:-}\"}}"
+  if curl -sfS -o /dev/null -X POST \
+      -H "Authorization: token ${GITHUB_TOKEN}" \
+      -H "Accept: application/vnd.github+json" \
+      -d "$payload" \
+      "https://api.github.com/repos/voiceflow/${WEBSITE_REPO}/dispatches"; then
+    echo "dispatched docs-spec-push to $WEBSITE_REPO (mailbox @ ${sha:0:8})"
+  else
+    echo "WARNING: the docs-spec-push dispatch to $WEBSITE_REPO failed - the website's scheduled catch-up will pick the push up within six hours"
+  fi
+}
+
 checkout_mailbox
 copy_specs
+pushed=1
 if ! push_mailbox; then
   # the other monorepo's master merged in the same minute and moved the
   # mailbox: take its commit and re-apply this run's files on top, once
@@ -76,4 +101,5 @@ if ! push_mailbox; then
   copy_specs
   push_mailbox
 fi
+[ "$pushed" = 1 ] && dispatch_sync
 echo "$WEBSITE_REPO@$WEBSITE_BRANCH is at $(git rev-parse --short HEAD)"
