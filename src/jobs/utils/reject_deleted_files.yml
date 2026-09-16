@@ -1,0 +1,21 @@
+description: Fail the build when a file under a protected path was deleted or renamed
+parameters:
+  paths:
+    description: Space separated git pathspecs, relative to the repository root, whose files must never be deleted or renamed (e.g. "src/migrations")
+    type: string
+  base_revision:
+    description: Branch or ref to diff against, through its merge-base with the current commit. The COMPUTED_BASE_REVISION environment variable takes precedence when set
+    type: string
+    default: "master"
+  executor:
+    description: Executor to run the command on
+    type: executor
+    default: node-executor-node-20
+executor: << parameters.executor >>
+steps:
+  # Plain checkout rather than checkout_clone: resolving the merge-base with the base
+  # revision needs real history, which the default depth=2 shallow clone does not have.
+  - checkout
+  - reject_deleted_files:
+      paths: "<< parameters.paths >>"
+      base_revision: "<< parameters.base_revision >>"

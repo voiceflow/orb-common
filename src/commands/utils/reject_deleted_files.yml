@@ -1,0 +1,20 @@
+description: Fail the build when a file under a protected path was deleted or renamed
+parameters:
+  paths:
+    description: Space separated git pathspecs, relative to the repository root, whose files must never be deleted or renamed (e.g. "src/migrations")
+    type: string
+  base_revision:
+    description: Branch or ref to diff against, through its merge-base with the current commit. The COMPUTED_BASE_REVISION environment variable takes precedence when set
+    type: string
+    default: "master"
+  step_name:
+    description: Name of the Step
+    type: string
+    default: "Reject deleted files in protected paths"
+steps:
+  - run:
+      name: << parameters.step_name >>
+      environment:
+        PROTECTED_PATHS: '<< parameters.paths >>'
+        BASE_REVISION: '<< parameters.base_revision >>'
+      command: <<include(scripts/utils/reject_deleted_files.sh)>>
