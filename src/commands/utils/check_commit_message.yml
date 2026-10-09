@@ -2,6 +2,10 @@ parameters:
   commit_message:
     description: Commit message to check
     type: string
+  base_ref:
+    description: Check every commit after this ref up to CIRCLE_SHA1. When empty, only CIRCLE_SHA1 is checked
+    type: string
+    default: ""
   match_env_var:
     description: Environment variable to set with the result of the match
     type: env_var_name
@@ -18,10 +22,15 @@ steps:
             name: Check commit message
             environment:
               CHECK_COMMIT_MESSAGE: '<< parameters.commit_message >>'
+              BASE_REF: '<< parameters.base_ref >>'
             command: |
               # If a message has been introduced, we have to check that in the commit message, if it is not included, the braches will not be synced
               # this is for the use case of the bugfix mechanism
-              COMMIT_MESSAGE="$(git log --format=oneline -n 1 $CIRCLE_SHA1)"
+              if [[ -n "$BASE_REF" ]]; then
+                COMMIT_MESSAGE="$(git log --format=oneline "$BASE_REF..$CIRCLE_SHA1")"
+              else
+                COMMIT_MESSAGE="$(git log --format=oneline -n 1 "$CIRCLE_SHA1")"
+              fi
 
               # If CHECK_COMMIT_MESSAGE is empty, this is always false
               if [[ $COMMIT_MESSAGE != *"$CHECK_COMMIT_MESSAGE"* ]]; then
@@ -34,10 +43,15 @@ steps:
             name: Check commit message and set env var
             environment:
               CHECK_COMMIT_MESSAGE: '<< parameters.commit_message >>'
+              BASE_REF: '<< parameters.base_ref >>'
             command: |
               # If a message has been introduced, we have to check that in the commit message, if it is not included, the braches will not be synced
               # this is for the use case of the bugfix mechanism
-              COMMIT_MESSAGE="$(git log --format=oneline -n 1 $CIRCLE_SHA1)"
+              if [[ -n "$BASE_REF" ]]; then
+                COMMIT_MESSAGE="$(git log --format=oneline "$BASE_REF..$CIRCLE_SHA1")"
+              else
+                COMMIT_MESSAGE="$(git log --format=oneline -n 1 "$CIRCLE_SHA1")"
+              fi
 
               # If CHECK_COMMIT_MESSAGE is empty, this is always false
               MATCH="false"
