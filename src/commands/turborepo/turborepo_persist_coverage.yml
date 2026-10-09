@@ -1,0 +1,9 @@
+parameters:
+  coverage_dir:
+    description: Directory containing coverage information
+    type: string
+steps:
+  - persist_to_workspace:
+      root: "."
+      paths:
+        - << parameters.coverage_dir >>
