@@ -16,7 +16,7 @@ parameters:
     description: The SSH key with write permissions to the repository
     type: string
   check_commit_message:
-    description: The SSH key with write permissions to the repository
+    description: Only sync when a commit between the destination branch and CIRCLE_SHA1 contains this text. When empty, always sync
     type: string
     default: ""
 steps:
