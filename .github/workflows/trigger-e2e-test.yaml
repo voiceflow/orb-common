@@ -1,0 +1,115 @@
+name: Trigger e2e tests
+
+# Reusable workflow that starts a CircleCI pipeline with `run_e2e` enabled, which builds the branch's images,
+# provisions an e2e environment and runs the playwright smoke tests.
+#
+# When called from a `pull_request: labeled` event, it only runs for the `label` input, comments on the PR and
+# removes the label so it can be added again to re-run the tests. The comment id is passed to the pipeline as
+# `e2e_comment_id` so the `vfcommon/report-e2e-result` job can update it with the result.
+# When called from any other event (e.g. workflow_dispatch), it triggers the pipeline on `branch`.
+#
+# Usage:
+#   on:
+#     pull_request:
+#       types: [labeled]
+#   jobs:
+#     trigger-e2e:
+#       uses: voiceflow/orb-common/.github/workflows/trigger-e2e-test.yaml@master
+#       permissions:
+#         issues: write
+#         pull-requests: write
+#       secrets:
+#         CIRCLECI_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
+
+on:
+  workflow_call:
+    inputs:
+      label:
+        description: PR label that requests the e2e tests
+        type: string
+        default: e2e
+      branch:
+        description: Branch to run the e2e tests on, defaults to the PR's head branch or the triggering ref
+        type: string
+        default: ''
+    secrets:
+      CIRCLECI_TOKEN:
+        description: CircleCI token allowed to trigger pipelines on the calling repository
+        required: true
+
+jobs:
+  trigger-e2e:
+    name: Trigger e2e tests
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.label.name == inputs.label && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment PR
+        id: comment
+        if: github.event.pull_request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🧪 Starting e2e tests for \`${context.payload.pull_request.head.sha.slice(0, 7)}\`...`,
+            });
+            core.setOutput('comment_id', data.id);
+
+      - name: Trigger CircleCI pipeline
+        id: trigger
+        env:
+          CIRCLE_TOKEN: ${{ secrets.CIRCLECI_TOKEN }}
+          PROJECT_SLUG: gh/${{ github.repository }}
+          BRANCH: ${{ inputs.branch || github.event.pull_request.head.ref || github.ref_name }}
+          COMMENT_ID: ${{ steps.comment.outputs.comment_id }}
+        run: |
+          response=$(curl --silent --show-error --fail-with-body \
+            --request POST "https://circleci.com/api/v2/project/${PROJECT_SLUG}/pipeline" \
+            --header "Circle-Token: ${CIRCLE_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data "$(jq -n --arg branch "$BRANCH" --arg comment_id "$COMMENT_ID" \
+              '{branch: $branch, parameters: {run_e2e: true, e2e_comment_id: $comment_id}}')")
+          echo "$response"
+
+          pipeline_url="https://app.circleci.com/pipelines/${PROJECT_SLUG}/$(jq -r '.number' <<< "$response")"
+          echo "pipeline_url=${pipeline_url}" >> "$GITHUB_OUTPUT"
+          echo "e2e tests running on \`${BRANCH}\`: ${pipeline_url}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Update PR comment
+        if: always() && steps.comment.outputs.comment_id
+        uses: actions/github-script@v7
+        env:
+          COMMENT_ID: ${{ steps.comment.outputs.comment_id }}
+          PIPELINE_URL: ${{ steps.trigger.outputs.pipeline_url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            const { COMMENT_ID, PIPELINE_URL, RUN_URL } = process.env;
+            const sha = context.payload.pull_request.head.sha.slice(0, 7);
+
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: Number(COMMENT_ID),
+              body: PIPELINE_URL
+                ? `🧪 e2e tests running for \`${sha}\`: ${PIPELINE_URL}`
+                : `❌ Failed to start e2e tests for \`${sha}\`: ${RUN_URL}`,
+            });
+
+      - name: Remove e2e label
+        if: always() && github.event.pull_request
+        uses: actions/github-script@v7
+        env:
+          LABEL: ${{ inputs.label }}
+        with:
+          script: |
+            await github.rest.issues.removeLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              name: process.env.LABEL,
+            });
