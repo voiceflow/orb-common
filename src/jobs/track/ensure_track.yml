@@ -1,0 +1,19 @@
+description: Create the component's track for the current branch from the source branch's track if it doesn't exist yet
+parameters:
+  component:
+    description: The component whose track should exist
+    type: string
+  bucket:
+    description: The bucket holding the tracks
+    type: string
+    default: "com.voiceflow.ci.assets"
+  source_branch:
+    description: The branch whose track is copied when the current branch has none
+    type: string
+    default: "master"
+executor: build-executor
+steps:
+  - ensure_track:
+      component: << parameters.component >>
+      bucket: << parameters.bucket >>
+      source_branch: << parameters.source_branch >>

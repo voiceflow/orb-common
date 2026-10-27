@@ -1,0 +1,24 @@
+description: >
+  Create the component's track for the current branch from the source branch's track if it doesn't exist yet.
+  update_track only builds images for branches that already have a track, so run this before it
+  to build a branch that otherwise wouldn't have one (e.g. e2e tests requested on a PR branch).
+parameters:
+  component:
+    description: The component whose track should exist
+    type: string
+  bucket:
+    description: The bucket holding the tracks
+    type: string
+    default: "com.voiceflow.ci.assets"
+  source_branch:
+    description: The branch whose track is copied when the current branch has none
+    type: string
+    default: "master"
+steps:
+  - run:
+      name: Create << parameters.component >> track for the current branch if missing
+      environment:
+        COMPONENT: << parameters.component >>
+        BUCKET: << parameters.bucket >>
+        SOURCE_BRANCH: << parameters.source_branch >>
+      command: <<include(scripts/track/ensure_track.sh)>>

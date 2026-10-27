@@ -1,0 +1,17 @@
+description: >
+  Update the PR comment created by the trigger-e2e-test GitHub workflow with the result of the pipeline's jobs.
+  Require vfcommon/waiter so it runs once every other job in the workflow has finished.
+  Needs CIRCLECI_API_TOKEN and GITHUB_TOKEN, e.g. from the dev-test context.
+docker:
+  - image: cimg/base:current-22.04
+parameters:
+  comment_id:
+    description: The PR comment to update, usually the e2e_comment_id pipeline parameter. Nothing is reported when empty.
+    type: string
+    default: ""
+steps:
+  - run:
+      name: Update PR comment with the e2e result
+      environment:
+        COMMENT_ID: << parameters.comment_id >>
+      command: <<include(scripts/e2e/report_e2e_result.sh)>>
