@@ -1,0 +1,22 @@
+parameters:
+  executor:
+    type: executor
+  ecr_url:
+    type: string
+executor: << parameters.executor >>
+working_directory: /home/circleci/code
+environment:
+  ECR_URL: << parameters.ecr_url >>
+steps:
+  - setup_remote_docker
+  - std_checkout
+  - std_restore_cache:
+      cache_name: node
+      use_lockfile: true
+  - std_restore_cache:
+      cache_name: build
+  - run:
+      name: Docker Publish
+      command: |
+        docker buildx create --use --bootstrap --name buildy-trying
+        yarn ci:docker:publish
