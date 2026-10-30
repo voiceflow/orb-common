@@ -1,0 +1,17 @@
+parameters:
+  cache_prefix:
+    description: Cache prefix
+    type: string
+    default: ''
+  command:
+    description: Script to install dependencies
+    type: string
+    default: yarn install --immutable
+steps:
+  - authenticate_npm
+  - vf_restore_cache:
+      cache_prefix: turbo-<< parameters.cache_prefix >>
+  - run:
+      command: << parameters.command >>
+  - vf_save_cache:
+      cache_prefix: turbo-<< parameters.cache_prefix >>
