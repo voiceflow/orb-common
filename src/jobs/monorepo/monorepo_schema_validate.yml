@@ -19,10 +19,21 @@ parameters:
     description: Branch name to key the node_modules cache on, e.g. the source PR branch on a merge-queue build
     type: string
     default: ""
+  request_remote_docker:
+    description: >-
+      Set up remote Docker. Only the oasdiff comparison in `yarn schema:validate` needs it, because it runs
+      `tufin/oasdiff` in a container. Set to false when `skip_tests` is true (the script exits before Docker), or when
+      the validate script runs an oasdiff binary. A job that sets up remote Docker is billed at the Linux VM rate for
+      its whole run.
+    type: boolean
+    default: true
 executor: << parameters.executor >>
 steps:
-  - setup_remote_docker:
-      version: default
+  - when:
+      condition: << parameters.request_remote_docker >>
+      steps:
+        - setup_remote_docker:
+            version: default
   - checkout_clone
   - install_node_modules:
       avoid_post_install_scripts: false

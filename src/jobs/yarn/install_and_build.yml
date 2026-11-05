@@ -9,11 +9,14 @@ parameters:
     type: string
     default: build
   request_remote_docker:
-    description: Request remote Docker
+    description: >-
+      Set up remote Docker before the build. The build only needs it when `run_in_container` is true. The image check
+      (`check_image`) needs no engine. A job that sets up remote Docker is billed at the Linux VM rate for its whole
+      run, so set this to false when the build runs on the executor itself.
     type: boolean
     default: true
   run_in_container:
-    description: Run build in remote Docker container
+    description: Run the build inside a Docker container. Needs request_remote_docker to be true.
     type: boolean
     default: true
   use_shallow_clone:
@@ -98,18 +101,8 @@ steps:
   - when:
       condition: "<< parameters.check_image >>"
       steps:
-        - when:
-            condition: "<< parameters.request_remote_docker >>"
-            steps:
-              - check_image_exists:
-                  image_repo: "<< parameters.docker_image_repo >>"
-                  request_remote_docker: false
-        - unless:
-            condition: "<< parameters.request_remote_docker >>"
-            steps:
-              - check_image_exists:
-                  image_repo: "<< parameters.docker_image_repo >>"
-                  request_remote_docker: true
+        - check_image_exists:
+            image_repo: "<< parameters.docker_image_repo >>"
   - install_node_modules:
       avoid_post_install_scripts: "<< parameters.avoid_post_install_scripts >>"
       language: "<< parameters.language >>"
