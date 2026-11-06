@@ -21,10 +21,11 @@ parameters:
     default: ""
   request_remote_docker:
     description: >-
-      Set up remote Docker. Only the oasdiff comparison in `yarn schema:validate` needs it, because it runs
-      `tufin/oasdiff` in a container. Set to false when `skip_tests` is true (the script exits before Docker), or when
-      the validate script runs an oasdiff binary. A job that sets up remote Docker is billed at the Linux VM rate for
-      its whole run.
+      Set up remote Docker. Only the oasdiff comparison in `yarn schema:validate` needs it, and only when the repo is on
+      `@voiceflow/package-scripts` older than 1.9.0, which runs `tufin/oasdiff` in a container. When `skip_tests` is
+      false, this job installs a pinned oasdiff binary, and package-scripts 1.9.0 or later runs that binary instead.
+      Set to false when the repo is on package-scripts 1.9.0 or later, or when `skip_tests` is true (the script exits
+      before oasdiff). A job that sets up remote Docker is billed at the Linux VM rate for its whole run.
     type: boolean
     default: true
 executor: << parameters.executor >>
@@ -49,6 +50,10 @@ steps:
   - openapi_restore_schemas:
       from: ~/schemas
       to: ~/voiceflow
+  - unless:
+      condition: << parameters.skip_tests >>
+      steps:
+        - openapi_install_oasdiff
   - run:
       name: Validate Schemas
       environment:
