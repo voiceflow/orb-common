@@ -1,0 +1,14 @@
+parameters:
+  executor:
+    type: executor
+executor: << parameters.executor >>
+working_directory: /home/circleci/code
+steps:
+  - std_checkout
+  - std_restore_cache:
+      cache_name: node
+      use_lockfile: true
+  - attach_workspace:
+      at: /home/circleci/code
+  - sonarcloud/scan:
+      cache_version: 1
