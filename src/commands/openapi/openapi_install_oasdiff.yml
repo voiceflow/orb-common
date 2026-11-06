@@ -1,0 +1,26 @@
+description: >-
+  Install a pinned oasdiff release binary on a Linux amd64 or arm64 runner after checking its sha256 against the
+  checksums in this orb. Later steps get the binary on PATH and in OASDIFF_BIN through $BASH_ENV.
+  `vfpkg openapi validate-schema` in @voiceflow/package-scripts 1.9.0 or later runs this binary instead of the
+  `tufin/oasdiff` container, so it no longer needs remote Docker.
+parameters:
+  version:
+    description: oasdiff release to install, without the leading "v". Update both checksums when you change it.
+    type: string
+    default: "1.35.0"
+  sha256_linux_amd64:
+    description: Expected sha256 of oasdiff_<version>_linux_amd64.tar.gz from the GitHub release.
+    type: string
+    default: "a8023002fcb2eaa7f5758148a9303cb63d33b939886df312268bc0fc7b939140"
+  sha256_linux_arm64:
+    description: Expected sha256 of oasdiff_<version>_linux_arm64.tar.gz from the GitHub release.
+    type: string
+    default: "1f8b5aa033cd0240ae6c53460268bcd6e578526666a4487a781ece8cef39fbdd"
+steps:
+  - run:
+      name: Install oasdiff << parameters.version >>
+      environment:
+        OASDIFF_VERSION: "<< parameters.version >>"
+        OASDIFF_SHA256_LINUX_AMD64: "<< parameters.sha256_linux_amd64 >>"
+        OASDIFF_SHA256_LINUX_ARM64: "<< parameters.sha256_linux_arm64 >>"
+      command: <<include(scripts/openapi/install_oasdiff.sh)>>
