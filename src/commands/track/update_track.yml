@@ -127,7 +127,6 @@ steps:
       at: ~/voiceflow
   - check_image_exists:
       image_repo: << parameters.image_repo >>
-      request_remote_docker: false
   - when:
       condition: << parameters.check_track_exists >>
       steps:
