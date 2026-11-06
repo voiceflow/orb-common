@@ -10,13 +10,15 @@ parameters:
     default: build
   request_remote_docker:
     description: >-
-      Set up remote Docker before the build. The build only needs it when `run_in_container` is true. The image check
-      (`check_image`) needs no engine. A job that sets up remote Docker is billed at the Linux VM rate for its whole
-      run, so set this to false when the build runs on the executor itself.
+      [DEPRECATED] Has no effect. The job sets up remote Docker only when `run_in_container` is true. Kept so configs
+      that pass it still compile; IN-4637 removes it.
     type: boolean
     default: true
   run_in_container:
-    description: Run the build inside a Docker container. Needs request_remote_docker to be true.
+    description: >-
+      Run the build inside a Docker container. When true, the job sets up remote Docker for it. When false, the build
+      runs on the executor and the job sets up no remote Docker, which avoids billing the whole run at the Linux VM
+      rate.
     type: boolean
     default: true
   use_shallow_clone:
@@ -120,7 +122,7 @@ steps:
 
   - build:
       container_folder_to_copy: "<< parameters.container_folder_to_copy >>"
-      request_remote_docker: "<< parameters.request_remote_docker >>"
+      request_remote_docker: "<< parameters.run_in_container >>"
       run_in_container: "<< parameters.run_in_container >>"
       container_image_to_build: "<< parameters.container_image_to_build >>"
       package_folder: "<< parameters.package_folder >>"
