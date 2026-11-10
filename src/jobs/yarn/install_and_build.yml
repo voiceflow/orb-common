@@ -8,12 +8,6 @@ parameters:
     description: Avoid post-install scripts
     type: string
     default: build
-  request_remote_docker:
-    description: >-
-      [DEPRECATED] Has no effect. The job sets up remote Docker only when `run_in_container` is true. Kept so configs
-      that pass it still compile; IN-4637 removes it.
-    type: boolean
-    default: true
   run_in_container:
     description: >-
       Run the build inside a Docker container. When true, the job sets up remote Docker for it. When false, the build
