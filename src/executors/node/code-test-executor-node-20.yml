@@ -10,6 +10,7 @@ working_directory: ~/voiceflow # directory where steps will run
 resource_class: << parameters.default_resource_class >>
 environment:
   NODE_OPTIONS: --max-old-space-size=4096
+  TURBO_TELEMETRY_DISABLED: "1"
 docker: # run the steps with Docker
   - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/ci-node-image:<< parameters.tag >> # Test steps container
     aws_auth:

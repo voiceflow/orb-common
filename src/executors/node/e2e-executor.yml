@@ -20,6 +20,7 @@ docker: # run the steps with Docker
       DOCKERIZE_VERSION: v0.6.1
       MKCERT_VERSION: v1.4.0
       NODE_OPTIONS: --max_old_space_size=8192
+      TURBO_TELEMETRY_DISABLED: "1"
   - image: postgres:14.3-alpine # PostgresDB service container
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust

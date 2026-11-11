@@ -68,6 +68,7 @@ steps:
       key: playwright-smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
         - node_modules/.cache/turbo
+        - .turbo/cache
   - store_test_results:
       path: tests/smoke-playwright/e2e.report.xml
   - store_artifacts:

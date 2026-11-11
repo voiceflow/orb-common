@@ -18,4 +18,5 @@ docker:
       aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
 environment:
   NODE_OPTIONS: --max-old-space-size=<< parameters.default_node_memory >>
+  TURBO_TELEMETRY_DISABLED: "1"
 resource_class: << parameters.default_resource_class >>

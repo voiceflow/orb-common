@@ -3,6 +3,8 @@ parameters:
     description: Default resource class for the executor
     type: string
     default: xlarge
+environment:
+  TURBO_TELEMETRY_DISABLED: "1"
 resource_class: << parameters.default_resource_class >>
 docker: # run the steps with Docker
   - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/e2e-cypress:v1

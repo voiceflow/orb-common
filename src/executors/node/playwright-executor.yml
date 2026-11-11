@@ -5,4 +5,6 @@ parameters:
     type: string
 docker: # run the steps with Docker.
   - image: 168387678261.dkr.ecr.us-east-1.amazonaws.com/playwright:v<< parameters.playwright-version >>-<< parameters.playwright-variant >>
+environment:
+  TURBO_TELEMETRY_DISABLED: "1"
 resource_class: xlarge

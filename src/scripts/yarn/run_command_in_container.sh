@@ -7,7 +7,7 @@ docker create -v /code --name code "${CONTAINER_IMAGE:?}" /bin/true
 docker cp "$PWD/." code:/code
 
 echo "Executing command \"${COMMAND:?}\" in container"
-docker run --name runner -it --volumes-from code -w /code "${CONTAINER_IMAGE:?}" /bin/bash -c "
+docker run --name runner -it --volumes-from code -w /code -e TURBO_TELEMETRY_DISABLED=1 "${CONTAINER_IMAGE:?}" /bin/bash -c "
     for _ in {0..${MAX_RETRIES:?}}; do
         if bash -c \"${COMMAND?}\"; then
             exit 0

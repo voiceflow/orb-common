@@ -64,6 +64,7 @@ steps:
       key: smoke-test-build-cache-{{ checksum "commit.txt" }}
       paths:
         - node_modules/.cache/turbo
+        - .turbo/cache
   - store_test_results:
       path: apps/smoke-test-runner/cypress/results
   - store_artifacts:

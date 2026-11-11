@@ -10,4 +10,5 @@ docker:
   - image: circleci/mongo:4.4.5 # MongoDB service container
 environment:
   NODE_OPTIONS: --max-old-space-size=4096
+  TURBO_TELEMETRY_DISABLED: "1"
 resource_class: large
