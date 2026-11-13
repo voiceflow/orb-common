@@ -12,4 +12,6 @@ docker:
     aws_auth:
       aws_access_key_id: $AWS_ACCESS_KEY_ID
       aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+environment:
+  TURBO_TELEMETRY_DISABLED: "1"
 resource_class: << parameters.default_resource_class >>

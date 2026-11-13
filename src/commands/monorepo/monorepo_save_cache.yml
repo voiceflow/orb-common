@@ -47,12 +47,17 @@ steps:
               equal: ["turborepo", << parameters.monorepo_engine >>]
             steps:
               - run:
-                  # deletes all files in the cache directory that are older than 7 days, only mtime is persisted properly
-                  name: Clean cache directory
-                  command: find node_modules/.cache/turbo -type f -mtime +7 -delete
+                  # turbo 1 writes node_modules/.cache/turbo and turbo 2 writes .turbo/cache. Create both so
+                  # neither find nor save depends on the repo's turbo major, then delete files older than
+                  # 7 days (only mtime is persisted properly).
+                  name: Clean turbo cache directories
+                  command: |
+                    mkdir -p node_modules/.cache/turbo .turbo/cache
+                    find node_modules/.cache/turbo .turbo/cache -type f -mtime +7 -delete
               - save_cache:
                   paths:
                     - node_modules/.cache/turbo
+                    - .turbo/cache
                   # Only use << parameters.cache_branch >> if it is not empty
                   # This approach uses mustache templating to conditionally use the branch name override
                   # Docs: https://support.circleci.com/hc/en-us/articles/4417604103835-Using-mustache-conditionals-in-config-file

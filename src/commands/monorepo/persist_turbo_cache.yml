@@ -1,0 +1,14 @@
+description: >-
+  Persist the Turborepo local cache to the workspace, so later jobs that attach the workspace reuse the
+  build's task outputs. Covers turbo 1 (node_modules/.cache/turbo) and turbo 2 (.turbo/cache); callers
+  never name the path. Call it from one job per workflow: when two jobs that run at the same time persist
+  the same cache file, attach_workspace fails in any job that requires both.
+steps:
+  - run:
+      name: Ensure turbo cache directories exist
+      command: mkdir -p node_modules/.cache/turbo .turbo/cache
+  - persist_to_workspace:
+      root: "."
+      paths:
+        - node_modules/.cache/turbo
+        - .turbo/cache
