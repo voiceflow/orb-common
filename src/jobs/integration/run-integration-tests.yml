@@ -33,6 +33,5 @@ steps:
   - save_cache:
       key: integration-test-build-cache-{{ checksum "commit.txt" }}
       paths:
-        - node_modules/.cache/turbo
         - .turbo/cache
 

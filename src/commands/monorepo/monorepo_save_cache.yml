@@ -47,16 +47,14 @@ steps:
               equal: ["turborepo", << parameters.monorepo_engine >>]
             steps:
               - run:
-                  # turbo 1 writes node_modules/.cache/turbo and turbo 2 writes .turbo/cache. Create both so
-                  # neither find nor save depends on the repo's turbo major, then delete files older than
-                  # 7 days (only mtime is persisted properly).
-                  name: Clean turbo cache directories
+                  # turbo 2 writes its local cache to .turbo/cache. Create it so find and save never fail on a
+                  # missing folder, then delete files older than 7 days (only mtime is persisted properly).
+                  name: Clean turbo cache directory
                   command: |
-                    mkdir -p node_modules/.cache/turbo .turbo/cache
-                    find node_modules/.cache/turbo .turbo/cache -type f -mtime +7 -delete
+                    mkdir -p .turbo/cache
+                    find .turbo/cache -type f -mtime +7 -delete
               - save_cache:
                   paths:
-                    - node_modules/.cache/turbo
                     - .turbo/cache
                   # Only use << parameters.cache_branch >> if it is not empty
                   # This approach uses mustache templating to conditionally use the branch name override
