@@ -4,15 +4,54 @@ parameters:
   env-name:
     type: string
     description: Name of the environment to reset database and free back into the pool
+  attach-attempts:
+    type: integer
+    description: How many times to try attaching the master tracks before giving up
+    default: 3
 steps:
   - run:
       name: Reset Database and Free Environment
       command: |
         env_name="<< parameters.env-name >>"
-        echo "Releasing the environment..... $env_name"
-        vfcli env database reset --name "$env_name"
-        sleep 10
-        vfcli env resume "$env_name" --interactive false
-        vfcli track attach --branch master --components all --name "$env_name" --interactive false --no-circleci
 
-        vfcli pool free-env --env-name "$env_name"
+        # Retry a command with exponential backoff (15s, 30s, ...). Used for the steps that
+        # call GitHub and S3, which have failed transiently in the past.
+        retry() {
+          local attempts="$1"; shift
+          local n=1 delay=15
+          until "$@"; do
+            if [ "$n" -ge "$attempts" ]; then
+              return 1
+            fi
+            echo "Attempt $n/$attempts failed: $*. Retrying in ${delay}s..."
+            sleep "$delay"
+            n=$((n + 1))
+            delay=$((delay * 2))
+          done
+        }
+
+        # If any step fails, the env keeps pool-status=releasing. The pool only hands out
+        # "available" envs, so it is safely out of rotation, but nothing frees it
+        # automatically. Say so plainly so whoever picks up the alert knows what to do.
+        on_failure() {
+          echo
+          echo "=================================================================="
+          echo "FAILED to reset and free e2e environment: $env_name"
+          echo "Failed step: $1"
+          echo "The environment remains in pool-status=releasing and will NOT be"
+          echo "handed out to e2e runs until it is fixed and freed."
+          echo "After fixing the cause, re-run the env-release-system pipeline with"
+          echo "  trigger_pipeline=true  e2e_env_name=$env_name"
+          echo "=================================================================="
+          exit 1
+        }
+
+        echo "Releasing the environment..... $env_name"
+        vfcli env database reset --name "$env_name" || on_failure "database reset"
+        sleep 10
+        vfcli env resume "$env_name" --interactive false || on_failure "env resume"
+        retry << parameters.attach-attempts >> \
+          vfcli track attach --branch master --components all --name "$env_name" --interactive false --no-circleci \
+          || on_failure "track attach (after << parameters.attach-attempts >> attempts)"
+
+        vfcli pool free-env --env-name "$env_name" || on_failure "pool free-env"
