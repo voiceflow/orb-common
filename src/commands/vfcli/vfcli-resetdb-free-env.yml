@@ -14,8 +14,10 @@ steps:
       command: |
         env_name="<< parameters.env-name >>"
 
-        # Retry a command with exponential backoff (15s, 30s, ...). Used for the steps that
-        # call GitHub and S3, which have failed transiently in the past.
+        # Retry a command with exponential backoff (15s, 30s, ...). Only `track attach` is
+        # retried: it is idempotent, and it is the step that has failed in the past (GitHub
+        # and S3 lookups). Note a stuck HelmRelease fails every attempt the same way, so a
+        # persistent failure takes longer to alert.
         retry() {
           local attempts="$1"; shift
           local n=1 delay=15
