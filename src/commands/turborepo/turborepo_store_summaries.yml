@@ -1,0 +1,4 @@
+steps:
+  - store_artifacts:
+      name: Storing turborepo task summaries as artifacts
+      path: .turbo/runs
